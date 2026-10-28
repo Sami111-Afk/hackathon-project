@@ -1,7 +1,8 @@
 """Imaginea redactată: dreptunghiuri negre pe bbox-urile PII + zonele de șablon (ARCHITECTURE.md §4, pașii 6, 10).
 
 Zonele de șablon (poză, semnătură, MRZ pe buletin) se maschează indiferent de OCR.
-Coordonatele sunt fracții din pagină — de ajustat pe documentele generate de Lorena.
+Coordonatele sunt fracții din pagină, luate din șablonul generatorului (data/generator/build_demo.py,
+`id_card`, 1600×1010): poza la x 40–400, y 200–660; textul începe la x=440; MRZ de la y=820.
 """
 import io
 
@@ -13,10 +14,11 @@ from app.agents.paznic.redact import Replacement
 PAD = 4  # pixeli în jurul fiecărui cuvânt, ca să nu rămână margini de litere
 
 # x0, y0, x1, y1 ca fracții din lățimea/înălțimea paginii
+# (zonele nu ating coloana de text de la x=440, altfel ascund etichetele și strică grounding-ul)
 ID_CARD_ZONES = {
-    "poza": (0.02, 0.18, 0.32, 0.78),
-    "semnatura": (0.33, 0.62, 0.62, 0.74),
-    "mrz": (0.0, 0.76, 1.0, 1.0),
+    "poza": (0.02, 0.19, 0.26, 0.665),
+    "semnatura": (0.02, 0.665, 0.26, 0.80),  # sub poză, unde o are buletinul real; zona e goală în șablon
+    "mrz": (0.0, 0.805, 1.0, 1.0),
 }
 
 

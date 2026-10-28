@@ -17,6 +17,7 @@ FINGERPRINT_KEYS = {"CNP": "cnp", "IBAN": "iban", "TELEFON": "phone", "EMAIL": "
                     "CUI": "cui", "PERSOANA": "name"}
 ADDRESS_NOISE = re.compile(r"\b(?:mun|municipiul|oras|orasul|com|comuna|sat|jud|judetul|str|strada|nr|bl|sc|et|ap|"
                            r"sector|sect|bd|bdul|bulevardul|cal|calea|sos|soseaua)\b\.?")
+COUNTY_RX = re.compile(r"\bjud(?:etul)?\.?\s+[\w-]+")
 PERSON_GAP = 80  # „Nume” și „Prenume” de pe buletin, la mai puțin de atâtea caractere → aceeași persoană
 
 
@@ -35,8 +36,11 @@ def normalize_value(kind: str, value: str) -> str:
             clean = re.sub(r"^(?:\+40|0040)", "0", clean)
         return clean
     if kind == "ADRESA":
-        text = ADDRESS_NOISE.sub(" ", _base_normalize(value))
-        return " ".join(re.sub(r"[^\w\s]", " ", text).split())
+        # județul lipsește des sau e abreviat („jud. Prahova” / „Jud. PH” / nimic) → nu intră în amprentă;
+        # componentele sortate, ca „Ploiești, Str. Florilor 12” = „Str. Florilor nr. 12, Ploiești, jud. Prahova”
+        text = COUNTY_RX.sub(" ", _base_normalize(value))
+        text = ADDRESS_NOISE.sub(" ", text)
+        return " ".join(sorted(re.sub(r"[^\w\s]", " ", text).split()))
     return _base_normalize(value)
 
 
@@ -60,6 +64,7 @@ class CaseRedactor:
     vault: dict[str, list[str]] = field(default_factory=lambda: defaultdict(list))  # etichetă → valorile originale
     fingerprints: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
     fingerprint_by_label: dict[str, str] = field(default_factory=dict)
+    extra_fingerprints: dict[str, set[str]] = field(default_factory=lambda: defaultdict(set))
 
     def _remember(self, label: str, value: str) -> None:
         if value not in self.vault[label]:
@@ -114,6 +119,11 @@ class CaseRedactor:
                 fp = fingerprint(self.secret, s.kind, norm)
                 self.fingerprint_by_label[label] = fp
             out.append(Replacement(s, label))
+        series = [normalize_value("SERIE", s.value) for s in spans if s.kind == "SERIE"]
+        numbers = [normalize_value("NR", s.value) for s in spans if s.kind == "NR"]
+        if len(series) == 1 and len(numbers) == 1:
+            # același buletin în dosare cu identități diferite = semnal puternic pentru Detectiv
+            self.extra_fingerprints["id_document"].add(fingerprint(self.secret, "ID_DOCUMENT", series[0] + numbers[0]))
         return out
 
     def finalize_fingerprints(self) -> dict[str, list[str]]:
@@ -126,6 +136,8 @@ class CaseRedactor:
                 tokens = next(t for t, lbl in self.people if lbl == label)
                 fp = fingerprint(self.secret, "PERSOANA", " ".join(sorted(tokens)))
             result[FINGERPRINT_KEYS[kind]].add(fp)
+        for key, fps in self.extra_fingerprints.items():
+            result[key] |= fps
         return {k: sorted(v) for k, v in result.items()}
 
 
