@@ -2,8 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph2D, { type ForceGraphMethods, type NodeObject } from 'react-force-graph-2d'
 import type { GraphData, GraphNode } from '@/lib/graph'
 
-const FP_ICON: Record<string, string> = { phone: '📞', iban: '💳', email: '✉️', address: '🏠', cnp: '🪪' }
-const FP_LABEL: Record<string, string> = { phone: 'telefon', iban: 'cont', email: 'email', address: 'adresă', cnp: 'CNP' }
+const FP_ICON: Record<string, string> = { phone: '📞', iban: '💳', email: '✉️', address: '🏠', cnp: '🪪', name: '👤', cui: '🏢' }
+const FP_LABEL: Record<string, string> = {
+  phone: 'telefon', iban: 'cont', email: 'email', address: 'adresă', cnp: 'CNP', name: 'nume', cui: 'angajator',
+}
 
 type N = NodeObject & GraphNode
 
@@ -98,7 +100,7 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
         <div><span className="mr-1 inline-block h-3 w-3 rounded-full bg-yellow-400 align-middle" /> acest dosar</div>
         <div><span className="mr-1 inline-block h-3 w-3 rounded-full bg-red-500 align-middle" /> rețea suspectă ({Math.max(0, ringSize - 1)} dosare)</div>
         <div><span className="mr-1 inline-block h-3 w-3 rounded-full bg-slate-500 align-middle" /> alte dosare</div>
-        <div>📞 telefon · 💳 cont · 🏠 adresă · 🪪 CNP</div>
+        <div>📞 telefon · 💳 cont · 🏠 adresă · 🪪 CNP · 👤 nume · 🏢 angajator</div>
       </div>
     </div>
   )
