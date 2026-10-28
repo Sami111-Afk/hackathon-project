@@ -22,6 +22,12 @@ export function apiUrl(): string {
   return saved || import.meta.env.VITE_API_URL || 'http://localhost:8000'
 }
 
+/**
+ * Headere trimise la FIECARE cerere către backend.
+ * ngrok gratuit răspunde cu o pagină HTML de avertizare (nu cu JSON) dacă lipsește headerul ăsta.
+ */
+export const API_HEADERS: Record<string, string> = { 'ngrok-skip-browser-warning': '1' }
+
 export function isMock(): boolean {
   return safe(() => sessionStorage.getItem(MOCK_KEY) === '1', false)
 }

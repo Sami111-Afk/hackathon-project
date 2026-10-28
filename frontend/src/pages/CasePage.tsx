@@ -1,6 +1,6 @@
 import { FileDown, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
 import { AppNav } from '@/components/AppNav'
 import { DecisionPanel } from '@/components/DecisionPanel'
@@ -10,7 +10,8 @@ import { NetworkGraph } from '@/components/NetworkGraph'
 import { Panel } from '@/components/Panel'
 import { VerdictCard } from '@/components/VerdictCard'
 import { useCaseLive } from '@/hooks/useCaseLive'
-import { getGraph, openReport } from '@/lib/api'
+import { getGraph, listCases, openReport, rerunDemo } from '@/lib/api'
+import { isMock } from '@/lib/config'
 import type { ConnectionState } from '@/lib/events'
 import { AGENT_INFO } from '@/lib/labels'
 import { AGENTS, type AgentName, type CaseStatus, type Finding } from '@/lib/types'
@@ -31,8 +32,37 @@ const STATUS: Record<CaseStatus, string> = {
 
 const lei = (n?: number | null) => (n ? `${n.toLocaleString('ro-RO')} lei` : '—')
 
+/** `/cases/case_maria` (linkul din meniu) → cel mai recent dosar al Mariei; fiecare rulare a demo-ului are id nou. */
 export function CasePage() {
   const { caseId = 'case_maria' } = useParams()
+  const [latest, setLatest] = useState<string | null>(null)
+  const alias = caseId === 'case_maria' && !isMock()
+  useEffect(() => {
+    if (!alias) return
+    listCases()
+      .then((cases) => {
+        const maria = cases.filter((c) => c.id.startsWith('case_maria_'))
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
+        setLatest(maria?.id ?? caseId)
+      })
+      .catch(() => setLatest(caseId))
+  }, [alias, caseId])
+  if (!alias) return <CaseView caseId={caseId} />
+  if (latest === null) return <Shell><p className="p-8 text-lg text-ink-2">Se încarcă dosarul.</p></Shell>
+  if (latest !== caseId) return <Navigate to={`/cases/${latest}`} replace />
+  return <CaseView caseId={caseId} />
+}
+
+function CaseView({ caseId }: { caseId: string }) {
+  const navigate = useNavigate()
+  const [starting, setStarting] = useState(false)
+  const runLive = () => {
+    setStarting(true)
+    rerunDemo()
+      .then((id) => navigate(`/cases/${id}`))
+      .catch(() => alert('Nu am putut porni analiza: serverul nu a răspuns.'))
+      .finally(() => setStarting(false))
+  }
   const [replayKey, setReplayKey] = useState(0)
   const { snapshot, state, dispatch, conn, mock } = useCaseLive(caseId, replayKey)
   const [selected, setSelected] = useState<Finding | null>(null)
@@ -96,10 +126,18 @@ export function CasePage() {
                 <RotateCcw className="h-4 w-4" aria-hidden /> Reia analiza
               </button>
             ) : (
+              <>
+              {caseId.startsWith('case_maria') && (
+                <button type="button" disabled={starting || status === 'processing'} onClick={runLive}
+                  className="flex h-10 items-center gap-2 rounded-sm border border-line bg-surface px-4 text-[15px] font-medium text-ink hover:bg-canvas disabled:opacity-40">
+                  <RotateCcw className="h-4 w-4" aria-hidden /> {starting ? 'Pornește…' : 'Analizează din nou, live'}
+                </button>
+              )}
               <button type="button" disabled={!state.verdict} onClick={() => openReport(c.id).catch(() => alert('Raportul nu s-a generat: serverul nu a răspuns.'))}
                 className="flex h-10 items-center gap-2 rounded-sm border border-line bg-surface px-4 text-[15px] font-medium text-ink hover:bg-canvas disabled:opacity-40">
                 <FileDown className="h-4 w-4" aria-hidden /> Raport de anchetă
               </button>
+              </>
             )}
           </div>
         </div>

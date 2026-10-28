@@ -1,5 +1,5 @@
 import { getToken, logout } from './auth'
-import { apiUrl } from './config'
+import { API_HEADERS, apiUrl } from './config'
 import type { GraphData } from './graph'
 import type { Case, Decision, DecisionAction } from './types'
 
@@ -13,6 +13,7 @@ export class ApiError extends Error {
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers)
+  for (const [k, v] of Object.entries(API_HEADERS)) headers.set(k, v)
   const token = getToken()
   if (token) headers.set('Authorization', `Bearer ${token}`)
   const res = await fetch(`${apiUrl()}${path}`, { ...init, headers })
@@ -98,6 +99,12 @@ export async function setLlmMode(llm_mode: LlmMode): Promise<ServerSettings> {
     body: JSON.stringify({ llm_mode }),
   })
   return res.json()
+}
+
+/** Demo live: dosarul Mariei e procesat din nou de la zero de toți agenții; întoarce id-ul dosarului nou. */
+export async function rerunDemo(): Promise<string> {
+  const res = await apiFetch('/api/admin/rerun-demo', { method: 'POST' })
+  return (await res.json()).case_id
 }
 
 /**

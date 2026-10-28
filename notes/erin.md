@@ -55,3 +55,11 @@ Probleme rămase (nu vin din redesign, dar blochează deploy-ul pe ngrok gratuit
 3. `npm audit` raportează vulnerabilități în dependențe (nu am rulat `audit fix`); neurgent.
 
 Info: există acum API-ul ZK gata (`POST /api/zk/demo`, vezi `zk/README.md`). Lorena va construi pagina ZK și te poate întreba unde s-o pună în meniu (`components/AppNav.tsx`).
+
+## Reparație mică făcută de Samuel (28.10, ~13:45)
+Linkul din meniu `/cases/case_maria` dădea „Dosarul nu s-a încărcat” — fiecare `rerun-demo` creează un id nou (`case_maria_xxxxxx`).
+În `pages/CasePage.tsx` am pus un wrapper: `case_maria` (în afara modului mock) → caută cel mai recent `case_maria_*` din `/api/cases`
+și redirecționează; restul paginii e neschimbat (acum e `CaseView`). Dacă refaci pagina, păstrează comportamentul.
+- (13:55) Am adăugat în `CasePage` butonul **„Analizează din nou, live”** (doar pe dosarele Mariei, nu în mock): `POST /api/admin/rerun-demo`
+  → navighează la dosarul nou, iar agenții apar live prin SSE. Funcția e `rerunDemo()` în `lib/api.ts`. Rămâne la tine: butonul **„Dosar nou”**
+  cu încărcare de documente (`POST /api/cases`, multipart — vezi `backend/app/api/cases.py`).
