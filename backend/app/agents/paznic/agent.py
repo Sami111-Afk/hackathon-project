@@ -26,13 +26,13 @@ OCR_ID_MIN = 72.0
 
 log = logging.getLogger("orb.paznic")
 
-KIND_RO = {"PERSOANA": "nume", "CNP": "CNP", "IBAN": "IBAN", "ADRESA": "adresă", "MRZ": "MRZ", "CUI": "CUI",
-           "TELEFON": "telefon", "EMAIL": "email", "SERIE": "serie buletin", "NR": "nr. buletin", "FIRMA": "firmă"}
+KIND_RO = {"PERSOANA": "name", "CNP": "CNP", "IBAN": "IBAN", "ADRESA": "address", "MRZ": "MRZ", "CUI": "CUI",
+           "TELEFON": "phone", "EMAIL": "email", "SERIE": "ID series", "NR": "ID number", "FIRMA": "company"}
 CHECKSUM_FINDINGS = {
-    "CNP": ("CNP_CHECKSUM_INVALID", "high", "CNP cu cifră de control invalidă"),
-    "IBAN": ("IBAN_CHECKSUM_INVALID", "medium", "IBAN cu cifre de control invalide"),
-    "CUI": ("CUI_CHECKSUM_INVALID", "medium", "CUI cu cifră de control invalidă"),
-    "MRZ": ("MRZ_INVALID", "high", "Zona MRZ a buletinului are cifre de control invalide"),
+    "CNP": ("CNP_CHECKSUM_INVALID", "high", "CNP with an invalid check digit"),
+    "IBAN": ("IBAN_CHECKSUM_INVALID", "medium", "IBAN with invalid check digits"),
+    "CUI": ("CUI_CHECKSUM_INVALID", "medium", "CUI with an invalid check digit"),
+    "MRZ": ("MRZ_INVALID", "high", "The ID card MRZ zone has invalid check digits"),
 }
 
 
@@ -50,7 +50,7 @@ def _is_id_card(text: str, spans: list[detect.Span]) -> bool:
 
 class Paznic:
     name = "paznic"
-    start_message = "Ascund datele personale"
+    start_message = "Hiding personal data"
 
     async def run(self, case, ctx) -> AgentResult:
         if not any(ctx.files.get(d.id) for d in case.documents):
@@ -71,15 +71,15 @@ class Paznic:
             kind = sniff(data) if data else None
             if not kind:
                 findings.append(Finding(code="DOCUMENT_UNREADABLE", severity="low",
-                                        message="Un document nu a putut fi citit", evidence=Evidence(doc_id=doc.id)))
+                                        message="A document could not be read", evidence=Evidence(doc_id=doc.id)))
                 continue
             try:
                 ext = await asyncio.to_thread(ocr.extract, data, kind[0])
             except ocr.OCRUnavailable:
                 log.error("OCR indisponibil pentru %s", doc.id)
                 raise  # fără OCR nu putem garanta redactarea → agentul pică, Compliance marchează „incomplet”
-            how = "strat text" if ext.source == "pdf_text" else "OCR"
-            await ctx.emit("agent_progress", f"Citit {doc.filename} ({how})")
+            how = "text layer" if ext.source == "pdf_text" else "OCR"
+            await ctx.emit("agent_progress", f"Read {doc.filename} ({how})")
             for s in detect.find_all(ext.text):
                 if s.kind == "PERSOANA":
                     known_names |= redact.name_tokens(s.value)
@@ -101,7 +101,7 @@ class Paznic:
             findings.extend(self._mrz_vs_cnp(doc.id, ext, replacements))
             if detect.find_prompt_injection(ext.text):
                 findings.append(Finding(code="PROMPT_INJECTION_SUSPECTED", severity="high",
-                                        message="Documentul conține instrucțiuni adresate AI-ului",
+                                        message="The document contains instructions addressed to the AI",
                                         evidence=Evidence(doc_id=doc.id)))
 
             id_card = _is_id_card(ext.text, spans)
@@ -118,9 +118,9 @@ class Paznic:
             if low:
                 findings.append(Finding(
                     code="OCR_LOW_QUALITY", severity="low", evidence=Evidence(doc_id=doc.id),
-                    message=f"Document greu de citit (încredere OCR {quality:.0f}%)"
-                            + (": nu a fost trimis la AI-ul din cloud; verificare umană recomandată"
-                               if cloud_blocked else "; verificare umană recomandată")))
+                    message=f"Document hard to read (OCR confidence {quality:.0f}%)"
+                            + (": not sent to the cloud AI; human review recommended"
+                               if cloud_blocked else "; human review recommended")))
             scratch[doc.id] = {"source": ext.source, "is_id_card": id_card, "ocr_quality": quality,
                                "cloud_blocked": cloud_blocked,
                                "words": redacted_words(doc.id, ext, replacements)}
@@ -135,9 +135,9 @@ class Paznic:
         total = sum(hidden.values()) + zones
         parts = ", ".join(f"{KIND_RO.get(k, k.lower())} ×{n}" for k, n in hidden.most_common())
         if zones:
-            parts += f", zone buletin ×{zones}"
+            parts += f", ID card zones ×{zones}"
         findings.insert(0, Finding(code="PII_REDACTED", severity="info",
-                                   message=f"{total} valori personale ascunse ({parts or 'nimic găsit'})"))
+                                   message=f"{total} personal values hidden ({parts or 'nothing found'})"))
         return AgentResult(agent="paznic", status="done", findings=findings,
                            artifacts={"redacted_view": "redacted"})
 
@@ -151,7 +151,7 @@ class Paznic:
             mrz = parse_mrz_td2_line2(r.span.value)
             if mrz and cnps and not any(mrz_matches_cnp(mrz, c) for c in cnps):
                 out.append(Finding(code="MRZ_CNP_MISMATCH", severity="high",
-                                   message="Data nașterii / sexul din MRZ nu corespund cu CNP-ul",
+                                   message="Birth date / sex in the MRZ do not match the CNP",
                                    evidence=_evidence(doc_id, ext, r.span, r.label)))
         return out
 

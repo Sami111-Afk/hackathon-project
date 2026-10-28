@@ -45,11 +45,11 @@ def test_maria_is_caught_on_every_axis(no_llm, monkeypatch):
     result = run_both(maria_case(), paznic_scratch(), monkeypatch, MARIA_VAULT)
     f = by_code(result)
 
-    assert f["NET_MISMATCH"].message == "Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)"
+    assert f["NET_MISMATCH"].message == "Calculated net pay (8.307 lei) differs from the declared one (8.500 lei)"
     assert f["NET_MISMATCH"].evidence.bbox[1] == 900 and f["NET_MISMATCH"].evidence.field == "net_salary"
-    assert f["COMPANY_INACTIVE"].message == "Angajatorul [CUI_1] figurează inactiv (registru demo, nu ANAF real)"
-    assert f["BALANCE_MISMATCH"].message == "Soldul final (26.480 lei) nu iese din tranzacții (2.851,50 lei)"
-    assert f["AGE_EMPLOYMENT_MISMATCH"].message == "Solicitant de 67 de ani declarat angajat activ"
+    assert f["COMPANY_INACTIVE"].message == "Employer [CUI_1] is listed as inactive (demo registry, not real ANAF)"
+    assert f["BALANCE_MISMATCH"].message == "The closing balance (26.480 lei) does not follow from the transactions (2.851,50 lei)"
+    assert f["AGE_EMPLOYMENT_MISMATCH"].message == "Applicant aged 67 declared as actively employed"
     assert {"SALARY_NOT_IN_STATEMENT", "PENSION_INCOME"} <= set(f)
     assert not {"ID_EXPIRED", "CNP_SEX_MISMATCH", "SERIES_COUNTY_MISMATCH", "IBAN_BANK_MISMATCH"} & set(f)
 

@@ -16,8 +16,8 @@ from app.models import Case
 # - CUI-ul (angajatorul): comun legitim între colegi
 STRONG_KINDS = {"phone", "iban", "email"}
 
-KIND_LABEL = {"phone": "telefon", "iban": "cont IBAN", "email": "email", "address": "adresă", "cnp": "CNP",
-              "name": "nume", "cui": "angajator"}
+KIND_LABEL = {"phone": "phone", "iban": "IBAN account", "email": "email", "address": "address", "cnp": "CNP",
+              "name": "name", "cui": "employer"}
 
 
 def case_label(applicant: str | None, case_id: str) -> str:
