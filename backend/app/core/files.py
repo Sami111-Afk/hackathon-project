@@ -36,6 +36,49 @@ def delete_case_files(case_id: str) -> None:
         folder.rmdir()
 
 
+VIEWS = {"redacted", "ela"}
+
+
+def save_derived(case_id: str, doc_id: str, view: str, page: int, png: bytes) -> None:
+    """Imagini produse de agenți (Paznic: view="redacted", Detector: view="ela"), salvate criptat."""
+    if view not in VIEWS:
+        raise ValueError("vedere necunoscută")
+    folder = UPLOAD_DIR / _safe(case_id)
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{_safe(doc_id)}.{view}.p{int(page)}.enc").write_bytes(_fernet().encrypt(png))
+
+
+def load_derived(case_id: str, doc_id: str, view: str, page: int) -> bytes | None:
+    if view not in VIEWS:
+        return None
+    path = UPLOAD_DIR / _safe(case_id) / f"{_safe(doc_id)}.{view}.p{int(page)}.enc"
+    try:
+        return _fernet().decrypt(path.read_bytes()) if path.exists() else None
+    except InvalidToken:
+        return None
+
+
+def render_pages(data: bytes, scale: float = 2.0) -> list:
+    """PDF → listă de imagini PIL (o pagină = o imagine); imagine → [imaginea]."""
+    import io
+
+    from PIL import Image
+
+    kind = sniff(data)
+    if kind and kind[0] == "pdf":
+        import pypdfium2 as pdfium
+        pdf = pdfium.PdfDocument(data)
+        return [pdf[i].render(scale=scale).to_pil().convert("RGB") for i in range(len(pdf))]
+    return [Image.open(io.BytesIO(data)).convert("RGB")]
+
+
+def to_png(img) -> bytes:
+    import io
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return buf.getvalue()
+
+
 def save_encrypted(case_id: str, doc_id: str, data: bytes) -> None:
     folder = UPLOAD_DIR / _safe(case_id)
     folder.mkdir(parents=True, exist_ok=True)

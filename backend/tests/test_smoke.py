@@ -97,3 +97,32 @@ def test_report_lists_evidence_and_ring_without_pii():
         html = c.get(f"/api/cases/{case_id}/report", headers=AUTH).text
         assert "NET_MISMATCH" in html and "case_ring_1" in html
         assert "2590312" not in html and "IONESCU" not in html
+
+
+def test_rerun_demo_uses_real_maria_files_and_renders_pdf():
+    with TestClient(app) as c:
+        case_id = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        case = wait_for_review(c, case_id)
+        assert [d["type"] for d in case["documents"]] == ["id_card", "payslip", "bank_statement"]
+        assert case["fingerprints"]  # scrise de Paznic (aici: stub)
+        jpg = c.get(f"/api/cases/{case_id}/documents/doc_2/image", headers=AUTH)
+        assert jpg.headers["content-type"] == "image/jpeg"
+        pdf_page = c.get(f"/api/cases/{case_id}/documents/doc_3/image?page=1", headers=AUTH)
+        assert pdf_page.headers["content-type"] == "image/png"
+        assert c.get(f"/api/cases/{case_id}/documents/doc_1/image?view=ela", headers=AUTH).status_code == 404
+
+
+def test_downstream_agents_skipped_when_paznic_fails(monkeypatch):
+    from app.agents import registry
+
+    class Broken:
+        async def run(self, case, ctx):
+            raise RuntimeError("x")
+
+    monkeypatch.setitem(registry.AGENTS, "paznic", Broken())
+    with TestClient(app) as c:
+        case = wait_for_review(c, c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"])
+        status = {r["agent"]: r["status"] for r in case["results"]}
+        assert status["paznic"] == "error"
+        assert status["functionar"] == status["verificator"] == status["detectiv"] == "skipped"
+        assert status["detector"] == "done" and case["verdict"]["incomplete"]
