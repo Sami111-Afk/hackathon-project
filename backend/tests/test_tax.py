@@ -7,7 +7,9 @@ from app.agents.verificator.tax import (
     compute_payslip,
     expected_net,
     format_ron,
+    min_wage_for,
     personal_deduction,
+    untaxed_amount,
 )
 from app.models import Evidence
 
@@ -32,8 +34,20 @@ def test_tolerance_is_two_lei():
 
 
 def test_components_round_half_up():
-    t = compute_payslip(4326)  # CAS = 1081,5 → 1082
-    assert (t.cas, t.cass, t.deduction, t.income_tax, t.net) == (1082, 433, 843, 197, 2614)
+    t = compute_payslip(4326)  # cu suma netaxabilă de 200: CAS = 0,25·4126 = 1031,5 → 1032
+    assert (t.untaxed, t.cas, t.cass, t.deduction) == (200, 1032, 413, 843)
+
+
+def test_minimum_wage_net_matches_published_value():
+    # iulie 2026: brut 4.325, suma netaxabilă 200 → net 2.699 (valoarea publicată în presă)
+    assert compute_payslip(4325, period="2026-09").net == 2699
+    assert check_net(4325, 2699, period="2026-09") is None
+
+
+def test_minimum_wage_depends_on_month():
+    assert min_wage_for("2026-03") == 4050 and min_wage_for("2026-09") == 4325
+    assert untaxed_amount(4050, "2026-03") == 300 and untaxed_amount(4400, "2026-03") == 0
+    assert untaxed_amount(4600, "2026-09") == 200 and untaxed_amount(4601, "2026-09") == 0
 
 
 @pytest.mark.parametrize(
@@ -59,7 +73,7 @@ def test_linear_formula_agrees_with_rounded_payslip():
     for gross in range(MIN_WAGE_RON, 30000, 37):
         for dependents in range(5):
             t = compute_payslip(gross, dependents)
-            assert abs(t.net - expected_net(gross, t.deduction)) <= NET_TOLERANCE_RON, (gross, dependents)
+            assert abs(t.net - expected_net(gross, t.deduction, t.untaxed)) <= NET_TOLERANCE_RON, (gross, dependents)
 
 
 @pytest.mark.parametrize(

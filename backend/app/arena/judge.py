@@ -21,7 +21,7 @@ def check(doc: dict) -> list[AgentResult]:
     company = COMPANIES.get(doc["employer"])
     issued = date.fromisoformat(doc["issue_date"])
 
-    if mismatch := check_net(gross, net):  # calculul real al Verificatorului (Stefan)
+    if mismatch := check_net(gross, net, period=doc["issue_date"][:7]):  # calculul real al Verificatorului (Stefan)
         verificator.append(mismatch)
     if company is None:
         verificator.append(Finding(code="COMPANY_NOT_FOUND", severity="critical", message="Angajatorul nu există"))

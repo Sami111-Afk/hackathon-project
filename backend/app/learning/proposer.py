@@ -86,7 +86,7 @@ def legit_dataset() -> list[dict]:
                     if issued < c["founded"]:
                         continue
                     docs.append({"employee": "[PERSOANA_X]", "employer": name, "job_title": role,
-                                 "gross_salary": gross, "net_salary": net_from_gross(gross),
+                                 "gross_salary": gross, "net_salary": net_from_gross(gross, issued.isoformat()[:7]),
                                  "issue_date": issued.isoformat(), "tricks": []})
     return docs
 
