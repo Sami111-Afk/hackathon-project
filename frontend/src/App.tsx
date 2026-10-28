@@ -26,7 +26,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Suspense fallback={<div className="p-8 text-lg text-slate-500">Se încarcă…</div>}>
+        <Suspense fallback={<div className="p-8 text-lg text-slate-500">Loading…</div>}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />

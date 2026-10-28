@@ -47,12 +47,12 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   for (const [k, v] of Object.entries(API_HEADERS)) headers.set(k, v)
   const res = await fetch(`${apiUrl()}/api/arena${path}`, { ...init, headers })
   if (!res.ok) {
-    let msg = `Eroare ${res.status}`
+    let msg = `Error ${res.status}`
     try {
       const d = (await res.json()).detail
-      msg = typeof d === 'string' ? d : 'Câmpuri invalide. Verifică valorile și încearcă din nou.'
+      msg = typeof d === 'string' ? d : 'Invalid fields. Check the values and try again.'
     } catch { /* nu e JSON */ }
-    if (res.status === 429) msg = 'Prea multe încercări. Mai așteaptă un minut.'
+    if (res.status === 429) msg = 'Too many attempts. Wait a minute.'
     throw new Error(msg)
   }
   return res.json()
@@ -64,7 +64,7 @@ export const getLeaderboard = () => call<Leaderboard>('/leaderboard')
 /** Imaginea falsului, cerută cu headerele noastre (un <img src> simplu nu le poate trimite prin ngrok). */
 export async function getSubmissionImage(id: string): Promise<string> {
   const res = await fetch(`${apiUrl()}/api/arena/submissions/${encodeURIComponent(id)}/image`, { headers: API_HEADERS })
-  if (!res.ok) throw new Error(`Eroare ${res.status}`)
+  if (!res.ok) throw new Error(`Error ${res.status}`)
   return URL.createObjectURL(await res.blob())
 }
 
@@ -132,8 +132,8 @@ export function saveNick(n: string) {
 }
 
 export const AGENT_RO: Record<string, string> = {
-  paznic: 'Paznicul', functionar: 'Funcționarul', verificator: 'Verificatorul',
-  detector: 'Detectorul', detectiv: 'Detectivul', compliance: 'Compliance',
+  paznic: 'Guard', functionar: 'Clerk', verificator: 'Verifier',
+  detector: 'Detector', detectiv: 'Detective', compliance: 'Compliance',
 }
 
 export const lei = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`
