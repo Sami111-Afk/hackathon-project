@@ -172,8 +172,8 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 |---|---|---|---|---|
 | **Samuel** | `backend/app/core`, `api`, `models.py`, `agents/compliance`, `arena`, `learning`, `data/attacker` | modele + orchestrator + SSE + client LLM (cloud/local/mock + poarta anti-PII) + Compliance + fixture-uri | **bucla AI contra AI:** Arena (Forge Studio, scor, coadă) + **self-learning** (propunere → backtest → aprobare) + ecranul `/arena/live` | **Atacatorul** (falsuri tot mai bune pe runde) + raport PDF |
 | **Narcis** | `agents/paznic`, `agents/detector`, deploy | Paznic (OCR, regex, MRZ, zone, normalizare, HMAC, seif) + Ollama + **tunel testat cu SSE** | Detector (ELA z-score, structură PDF, metadate, C2PA) | AI-detector pe GPU |
-| **Stefan** | `agents/functionar`, `agents/verificator`, `agents/detectiv` | Funcționar (grounding, parsare extrase) + Verificator (taxe, extras, verificări românești) | criptare homomorfică + ANAF + **Detectiv** | motorul de reguli în Verificator (rulează regulile aprobate) |
-| **Erin** | `frontend/` | pagina Dosar (3 vederi + bbox + banda agenților) pe replay-ul Mariei, login | Dashboard + Arena pe mobil (Forge Studio) | Birou animat, hartă |
+| **Stefan** | `agents/functionar`, `agents/verificator` | Funcționar (grounding, parsare extrase) + Verificator (taxe, extras, verificări românești) | criptare homomorfică + ANAF | motorul de reguli în Verificator (rulează regulile aprobate) |
+| **Erin** | `frontend/`, `backend/app/agents/detectiv` | motorul de live (SSE, reconectare, replay după `seq`) + pagina Dosar (3 vederi + bbox + banda agenților) pe replay-ul Mariei, login | **Detectivul cap-coadă:** graf networkx pe amprente, detectarea rețelelor, scor de cluster, `/api/graph` + **graful live** (react-force-graph) · Dashboard + Arena pe mobil cu componente gata (shadcn, Recharts) | Birou animat, hartă |
 | **Lorena** | `data/`, `zk/`, `employer/`, `backend/app/zk`, pagina ZK | generator (CNP/IBAN/CUI/MRZ valide) + **documentele Mariei, brut, până la ora 2** | ZK cap-coadă (circuit, angajator, browser, verificare) | degradări realiste ale documentelor (poze de telefon) pentru benchmark |
 
 **Ora 18–24: toți** — bugfix, video de rezervă, pitch. Fiecare poate explica tehnic partea lui în 30 de secunde.
@@ -183,7 +183,7 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 - **Samuel:** confirmă `models.py` (`Case`, `AgentResult`, `PipelineEvent`, `PipelineContext`) · `pipeline.py` care emite evenimente false prin SSE · `shared/fixtures/maria_case.json` + `maria_events.jsonl` complete · CI pe GitHub · protecție pe `main`.
 - **Narcis:** Python 3.11 + torch CUDA + Tesseract `ron` + Ollama · pornește ngrok (domeniu static) și **testează SSE de pe un telefon** · GLiNER pe un text românesc · postează URL-ul pe grup.
 - **Stefan:** schemele Funcționarului per tip de document · `tax.py` cu teste (net = 0,585·G + 0,1·D) · `import tenseal` funcționează · numele exacte ale modelelor pe Featherless + model vizual testat.
-- **Erin:** `npm create vite@latest frontend -- --template react-ts` + Tailwind + shadcn · proiect Vercel · client SSE (`fetch-event-source`) + override `?api=` + replay din `maria_events.jsonl`.
+- **Erin:** `npm create vite@latest frontend -- --template react-ts` + Tailwind + shadcn · proiect Vercel · client SSE (`fetch-event-source`) + override `?api=` + replay din `maria_events.jsonl` · venv mic de Python cu `requirements-core.txt` (fără torch) pentru Detectiv.
 - **Lorena:** generatoare CNP/IBAN/CUI/MRZ cu teste · prima versiune a documentelor Mariei (JPEG) · versiunile `nargo` / `noir_js` / `bb.js` fixate în `zk/README.md` + „hello world” care face o dovadă în browser.
 
 ## 9. Priorități (P0 / P1 / P2)

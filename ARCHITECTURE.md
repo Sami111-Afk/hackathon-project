@@ -232,11 +232,13 @@ toleranță: ±2 lei (rotunjiri pe fiecare componentă)
 | **C2PA** | `c2pa-python`, Content Credentials | mare dacă există |
 | **AI-detector** | model HF pe crop-ul pozei (zonă de șablon), GPU | **maximum „medium”** — modelele sunt antrenate pe imagini naturale, nesigure pe crop-uri mici; validat pe ~30 de exemple/clasă înainte să-l folosim |
 
-### 🕵️ Detectiv — Stefan (P1)
+### 🕵️ Detectiv — Erin (P1, backend + graful din frontend)
 - Graf `networkx`: noduri = dosare + amprente; muchii = „dosarul folosește amprenta”.
 - Semnal: amprentă comună la ≥ N dosare cu **solicitanți diferiți**; IBAN de destinație comun; componente conexe mari.
 - Ieșire: cluster-ul dosarului (pentru vizualizare) + `FRAUD_RING_SUSPECTED`.
 - Doar amprente, fără acces la seif. Dosarele din Arena sunt excluse.
+- `/api/graph?case_id=` întoarce noduri + muchii + clusterul marcat; frontend-ul (react-force-graph) adaugă nodurile live, din evenimentele SSE, și colorează clusterul suspect.
+- Rulează pe CPU, fără torch → merge și pe Mac-ul lui Erin.
 
 ### ⚖️ Compliance — Samuel
 - **Scor:** noisy-OR pe ponderile finding-urilor: `risk = 1 − Π(1 − wᵢ)`. Ponderi în config.
@@ -594,7 +596,7 @@ hackathon-project/
 │   │   │   ├── detector/        ela, pdf_structure, metadata, c2pa, ai  [Narcis]
 │   │   │   ├── functionar/      prompts, schemas, grounding, statement  [Stefan]
 │   │   │   ├── verificator/     tax, statement, anaf, ro_checks, he     [Stefan]
-│   │   │   ├── detectiv/        graph                                   [Stefan]
+│   │   │   ├── detectiv/        graph, clusters, scoring                [Erin]
 │   │   │   └── compliance/      scoring, summary, report                [Samuel]
 │   │   ├── learning/            rule engine, proposer, backtest         [Samuel; evaluarea regulilor în Verificator: Stefan]
 │   │   ├── arena/               missions, forge, scoring, ratelimit     [Samuel]
