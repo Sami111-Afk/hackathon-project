@@ -79,6 +79,17 @@ def find_in_words(source_text: str, words: list[dict], min_score: float = MIN_SC
                  page=window[0]["page"], bbox=union_bbox(window))
 
 
+def narrow_to_value(match: Match, value: str, words: list[dict]) -> Match:
+    """LLM-ul citează des tot rândul („NET DE PLATĂ 8.500,00”); dovada pe imagine e doar valoarea."""
+    if not match.bbox or compact(value) == compact(match.text):
+        return match
+    x0, y0, x1, y1 = match.bbox
+    inside = [w for w in words if w["page"] == match.page and w["bbox"][0] >= x0 - 1 and w["bbox"][2] <= x1 + 1
+              and w["bbox"][1] >= y0 - 1 and w["bbox"][3] <= y1 + 1]
+    sub = find_in_words(value, inside, min_score=1.0)
+    return Match(text=match.text, score=match.score, page=match.page, bbox=sub.bbox) if sub else match
+
+
 def find_in_text(source_text: str, text: str, min_score: float = MIN_SCORE) -> Match | None:
     """Fără cuvinte cu bbox (ex. dosar redat din fixture): doar textul, fără dovadă pe imagine."""
     target, hay = compact(source_text), compact(text or "")

@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import pytest
 from pydantic import BaseModel
@@ -69,3 +70,12 @@ def test_task_routing():
     assert "haiku" in llm.model_for("extract", "bedrock")
     assert "sonnet" in llm.model_for("summary", "bedrock")
     assert "opus" in llm.model_for("learn", "bedrock")
+
+
+def test_extract_json_recovers_object_without_opening_brace():
+    # așa răspunde Featherless (DeepSeek-V4-Flash): obiectul fără „{” de început
+    raw = '  "gross": 14200,\n  "net": {"v": 8500}\n}'
+    assert llm._extract_json(raw) == {"gross": 14200, "net": {"v": 8500}}
+    assert llm._extract_json('```json\n{"gross": 1}\n```') == {"gross": 1}
+    with pytest.raises(json.JSONDecodeError):
+        llm._extract_json('"doar text, nu JSON"}')
