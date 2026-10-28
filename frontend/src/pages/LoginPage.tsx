@@ -1,18 +1,34 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '@/lib/auth'
-import { apiUrl } from '@/lib/config'
+import { API_HEADERS, apiUrl } from '@/lib/config'
 
 export function LoginPage() {
   const nav = useNavigate()
   const [name, setName] = useState('')
   const [token, setToken] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  function submit(e: FormEvent) {
+  // verificăm cheia înainte să intrăm: altfel prima cerere dă 401 și utilizatorul e scos imediat din cont
+  async function submit(e: FormEvent) {
     e.preventDefault()
     if (!name.trim() || !token.trim()) return
-    login(token, name)
-    nav('/dashboard')
+    setBusy(true)
+    setError('')
+    try {
+      const r = await fetch(`${apiUrl()}/api/settings`, {
+        headers: { ...API_HEADERS, Authorization: `Bearer ${token.trim()}` },
+      })
+      if (r.status === 401) { setError('Cheia de acces nu e corectă pentru acest server.'); return }
+      if (!r.ok) { setError(`Serverul a răspuns cu eroare (${r.status}).`); return }
+      login(token, name)
+      nav('/dashboard')
+    } catch {
+      setError('Serverul nu răspunde. Verifică adresa de mai jos sau deschide demo-ul fără server.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const input = 'h-11 w-full rounded-sm border border-input bg-surface px-3 text-base outline-none focus:border-info'
@@ -38,7 +54,10 @@ export function LoginPage() {
               <label htmlFor="token" className="text-sm font-medium text-ink-2">Cheia de acces a sucursalei</label>
               <input id="token" type="password" className={input} value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" />
             </div>
-            <button type="submit" className="h-11 w-full rounded-sm bg-ink text-base font-semibold text-white hover:bg-black">Intră</button>
+            {error && <p className="text-sm text-danger" role="alert">{error}</p>}
+            <button type="submit" disabled={busy} className="h-11 w-full rounded-sm bg-ink text-base font-semibold text-white hover:bg-black disabled:opacity-60">
+              {busy ? 'Se verifică…' : 'Intră'}
+            </button>
           </form>
           <p className="mt-4 text-sm text-ink-3">Server: {apiUrl()}</p>
           <a href="/cases/case_maria?mock=1" className="mt-1 inline-block text-sm font-medium text-info hover:underline">Deschide demo-ul fără server</a>
