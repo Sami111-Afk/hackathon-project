@@ -82,3 +82,12 @@ def test_linear_formula_agrees_with_rounded_payslip():
 )
 def test_format_ron(amount, text):
     assert format_ron(amount) == text
+
+
+def test_honest_payslips_with_dependents_are_not_flagged():
+    # bug găsit de benchmark: 108/112 fluturași cinstiți cu persoane în întreținere erau marcați falși
+    for gross in range(4325, 6400, 75):
+        for dep in range(5):
+            net = compute_payslip(gross, dep, period="2026-09").net
+            assert check_net(gross, net, period="2026-09") is None, (gross, dep)
+    assert check_net(14200, 8500, period="2026-09") is not None  # Maria rămâne prinsă
