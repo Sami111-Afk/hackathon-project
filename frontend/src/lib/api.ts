@@ -54,3 +54,32 @@ export async function getGraph(caseId?: string): Promise<GraphData> {
   const q = caseId ? `?case_id=${encodeURIComponent(caseId)}` : ''
   return (await apiFetch(`/api/graph${q}`)).json()
 }
+
+export interface DashboardStats {
+  cases_processed: number
+  hours_saved: number
+  money_saved_ron: number
+  frauds_stopped: number
+  amount_stopped_ron: number
+  ai_cost_usd: number
+  pii_values_protected: number
+  external_calls_with_pii: number
+  assumptions: { manual_minutes_per_case: number; review_minutes_per_case: number; cost_per_hour_ron: number }
+}
+
+export interface CaseSummary {
+  id: string
+  status: import('./types').CaseStatus
+  created_at: string
+  requested_amount_ron?: number | null
+  risk?: number | null
+  recommendation?: 'clear' | 'review' | 'escalate' | null
+}
+
+export async function getStats(): Promise<DashboardStats> {
+  return (await apiFetch('/api/dashboard/stats')).json()
+}
+
+export async function listCases(): Promise<CaseSummary[]> {
+  return (await apiFetch('/api/cases')).json()
+}
