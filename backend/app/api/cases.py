@@ -10,7 +10,7 @@ from app.agents.compliance import report
 from app.api.deps import require_bank
 from app.config import settings
 from app.core.events import bus, now_iso
-from app.core.files import load_decrypted, save_encrypted, sniff
+from app.core.files import load_decrypted, load_derived, render_pages, save_encrypted, sniff, to_png
 from app.core.pipeline import start_pipeline
 from app.core.store import store
 from app.models import Case, Decision, Document
@@ -77,19 +77,28 @@ def case_report(case_id: str):
 
 
 @router.get("/cases/{case_id}/documents/{doc_id}/image")
-def get_image(case_id: str, doc_id: str, view: str = "original"):
-    if view != "original":
-        raise HTTPException(404, f"vederea '{view}' nu e încă disponibilă")  # redacted/ela: Narcis
+async def get_image(case_id: str, doc_id: str, view: str = "original", page: int = 1):
+    """view=original | redacted (Paznic) | ela (Detector). PDF-urile se întorc randate ca PNG, pagina `page`."""
+    headers = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
     if not store.get(case_id):
         raise HTTPException(404, "dosar inexistent")
     try:
+        if view != "original":
+            png = load_derived(case_id, doc_id, view, page)
+            if not png:
+                raise HTTPException(404, f"vederea '{view}' nu există (încă) pentru acest document")
+            return Response(png, media_type="image/png", headers=headers)
         data = load_decrypted(case_id, doc_id)
     except ValueError:
         data = None
     if not data:
         raise HTTPException(404, "document inexistent")
-    return Response(data, media_type=sniff(data)[1],
-                    headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
+    if sniff(data)[0] == "pdf":
+        pages = await asyncio.to_thread(render_pages, data)
+        if not 1 <= page <= len(pages):
+            raise HTTPException(404, "pagină inexistentă")
+        return Response(await asyncio.to_thread(to_png, pages[page - 1]), media_type="image/png", headers=headers)
+    return Response(data, media_type=sniff(data)[1], headers=headers)
 
 
 class DecisionIn(BaseModel):

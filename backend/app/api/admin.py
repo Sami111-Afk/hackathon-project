@@ -1,5 +1,4 @@
 import asyncio
-import json
 import random
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -13,7 +12,7 @@ from app.arena import service as arena_service
 from app.config import REPO_ROOT, settings
 from app.core import audit
 from app.core.events import bus, now_iso
-from app.core.files import delete_case_files
+from app.core.files import delete_case_files, save_encrypted
 from app.core.pipeline import start_pipeline
 from app.core.store import store
 from app.learning import proposer
@@ -21,19 +20,29 @@ from app.models import AgentResult, Case, Decision, Document, Finding, Verdict
 
 router = APIRouter(prefix="/api/admin", dependencies=[Depends(require_bank)])
 
+MARIA_DIR = REPO_ROOT / "data" / "demo" / "maria"
+MARIA_FILES = ["buletin.jpg", "fluturas.jpg", "extras.pdf"]
+
 
 @router.post("/rerun-demo")
 async def rerun_demo():
     """Pornește din nou dosarul Mariei prin pipeline (cu agenții actuali). Pentru demo și pentru Erin."""
-    fixture = json.loads((REPO_ROOT / "shared/fixtures/maria_case.json").read_text(encoding="utf-8"))
     case_id = f"case_maria_{uuid.uuid4().hex[:6]}"
-    docs = [Document(id=d["id"], type=d["type"], filename=d["filename"], pages=d.get("pages", []))
-            for d in fixture["documents"]]
-    case = Case(id=case_id, created_at=now_iso(), requested_amount_ron=fixture["requested_amount_ron"],
-                applicant_token=fixture["applicant_token"], fingerprints=fixture["fingerprints"], documents=docs)
+    files: dict[str, bytes] = {}
+    docs = []
+    for i, name in enumerate(MARIA_FILES, start=1):
+        path = MARIA_DIR / name
+        if not path.exists():
+            raise HTTPException(500, "lipsesc documentele Mariei: rulați python -m data.generator.build_demo")
+        data = path.read_bytes()
+        doc_id = f"doc_{i}"
+        files[doc_id] = data
+        save_encrypted(case_id, doc_id, data)
+        docs.append(Document(id=doc_id, filename=name))  # type/pages le setează agenții, ca la un upload real
+    case = Case(id=case_id, created_at=now_iso(), requested_amount_ron=45000, documents=docs)
     await store.save(case)
     bus.publish(case_id, "case_created", message=f"Dosar nou: {len(docs)} documente, credit 45.000 lei")
-    start_pipeline(case)
+    start_pipeline(case, files)
     return {"case_id": case_id}
 
 
