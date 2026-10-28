@@ -87,3 +87,13 @@ def test_seed_demo_fills_dashboard():
         assert stats["cases_processed"] >= 15 and stats["frauds_stopped"] >= 5
         ring = [x for x in c.get("/api/cases", headers=AUTH).json() if x["id"].startswith("case_ring")]
         assert len(ring) == 5
+
+
+def test_report_lists_evidence_and_ring_without_pii():
+    with TestClient(app) as c:
+        c.post("/api/admin/seed-demo", headers=AUTH)
+        case_id = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        wait_for_review(c, case_id)
+        html = c.get(f"/api/cases/{case_id}/report", headers=AUTH).text
+        assert "NET_MISMATCH" in html and "case_ring_1" in html
+        assert "2590312" not in html and "IONESCU" not in html

@@ -2,10 +2,11 @@ import asyncio
 import uuid
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
+from app.agents.compliance import report
 from app.api.deps import require_bank
 from app.config import settings
 from app.core.events import bus, now_iso
@@ -64,6 +65,15 @@ def get_case(case_id: str):
     if not case:
         raise HTTPException(404, "dosar inexistent")
     return case.model_dump(exclude_none=True)
+
+
+@router.get("/cases/{case_id}/report")
+def case_report(case_id: str):
+    """Raport de anchetă HTML (din browser: „Salvează ca PDF”)."""
+    case = store.get(case_id)
+    if not case:
+        raise HTTPException(404, "dosar inexistent")
+    return HTMLResponse(report.render(case), headers={"Cache-Control": "no-store"})
 
 
 @router.get("/cases/{case_id}/documents/{doc_id}/image")

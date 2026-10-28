@@ -5,3 +5,7 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP"]
 # B008: File()/Depends() în argumente e stilul normal FastAPI
 ignore = ["B008"]
+
+[lint.per-file-ignores]
+# șablon HTML: rândurile lungi sunt normale
+"app/agents/compliance/report.py" = ["E501"]
