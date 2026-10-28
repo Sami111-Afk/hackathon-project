@@ -52,12 +52,12 @@ def evaluate(cond: dict, ctx: dict) -> bool:
     right = _value(ctx, cond.get("right", cond.get("value")))
     if left is None and cond["op"] not in ("exists", "missing"):
         return False
-    if isinstance(left, date) and isinstance(right, str):
-        right = date.fromisoformat(right)
     try:
+        if isinstance(left, date) and isinstance(right, str):
+            right = date.fromisoformat(right)
         return bool(op(left, right))
-    except (TypeError, ZeroDivisionError):
-        return False
+    except (TypeError, ValueError, IndexError, ZeroDivisionError, AttributeError):
+        return False  # o regulă greșită nu are voie să blocheze verificarea
 
 
 def apply_rules(doc: dict, rules: list[dict] | None = None) -> list[Finding]:
@@ -75,3 +75,8 @@ def apply_rules(doc: dict, rules: list[dict] | None = None) -> list[Finding]:
 def add_rule(rule: dict) -> None:
     with _lock:
         RULES.append(rule)
+
+
+def clear() -> None:
+    with _lock:
+        RULES.clear()
