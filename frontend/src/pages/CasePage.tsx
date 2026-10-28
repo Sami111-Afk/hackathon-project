@@ -1,16 +1,16 @@
 import { useQuery } from '@tanstack/react-query'
 import { EyeOff, FileDown, RotateCcw } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
 import { AppNav } from '@/components/AppNav'
 import { DecisionPanel } from '@/components/DecisionPanel'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { FindingsList } from '@/components/FindingsList'
-import { NetworkGraph } from '@/components/NetworkGraph'
 import { PrivacyPanel } from '@/components/PrivacyPanel'
 import { Panel } from '@/components/Panel'
 import { VerdictCard } from '@/components/VerdictCard'
+import { WhenVisible } from '@/components/WhenVisible'
 import { useCaseLive } from '@/hooks/useCaseLive'
 import { getCase, getGraph, listCases, openReport, rerunDemo } from '@/lib/api'
 import { isMock } from '@/lib/config'
@@ -18,6 +18,9 @@ import type { ConnectionState } from '@/lib/events'
 import { AGENT_INFO } from '@/lib/labels'
 import { AGENTS, type AgentName, type CaseStatus, type Finding } from '@/lib/types'
 import { cn } from '@/lib/utils'
+
+// Graful (d3 + canvas) e sub documente: se încarcă doar când ajunge pe ecran.
+const NetworkGraph = lazy(() => import('@/components/NetworkGraph').then((m) => ({ default: m.NetworkGraph })))
 
 const CONN: Record<ConnectionState, { label: string; dot: string }> = {
   connecting: { label: 'Connecting', dot: 'bg-ink-3' },
@@ -186,7 +189,7 @@ function CaseView({ caseId }: { caseId: string }) {
                               highlighted={selected} docId={activeDoc} onDocChange={setDocId} />
             </section>
             <Panel title="Links to other applications" bodyClassName="p-0">
-              <NetworkGraph graph={state.graph} height={320} />
+              <WhenVisible className="h-80"><NetworkGraph graph={state.graph} height={320} /></WhenVisible>
             </Panel>
           </div>
 

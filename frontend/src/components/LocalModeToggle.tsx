@@ -11,7 +11,8 @@ export function LocalModeToggle() {
   const q = useQuery({ queryKey: ['settings'], queryFn: getSettings, refetchInterval: 15000 })
   const m = useMutation({ mutationFn: setLlmMode, onSuccess: (s) => qc.setQueryData(['settings'], s) })
   const mode = q.data?.llm_mode
-  if (!mode) return null
+  // Cât se încarcă, comutatorul ține locul (invizibil): altfel pe telefon bara se lungește și împinge pagina în jos.
+  if (!mode && !q.isPending) return null
   const local = mode === 'local'
 
   function choose(wantLocal: boolean) {
@@ -31,7 +32,8 @@ export function LocalModeToggle() {
     on ? 'bg-ink text-white' : 'text-ink-2 hover:text-ink',
   )
   return (
-    <div role="group" aria-label="Where the AI runs" className="flex items-center gap-2">
+    <div role="group" aria-label="Where the AI runs" aria-hidden={!mode || undefined}
+         className={cn('flex items-center gap-2', !mode && 'invisible')}>
       <span className="hidden text-sm text-ink-3 lg:inline">AI</span>
       <div className="flex overflow-hidden rounded-sm border border-line">
         <button type="button" className={seg(!local)} aria-pressed={!local} onClick={() => choose(false)}
