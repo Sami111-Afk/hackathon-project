@@ -87,3 +87,11 @@ Linkul din meniu `/cases/case_maria` dădea „Dosarul nu s-a încărcat” — 
    link spre Arena în meniu.
 
 - (14:55) Am pus eu panoul „Confidențialitate” (punctul 1 de mai sus): `components/PrivacyPanel.tsx`, montat în `CasePage` sub banda agenților, doar în afara modului mock. Ajustează-l liber la stilul tău.
+
+## Deploy fără blocaj (Samuel, ~15:00)
+Vercel (plan gratuit, repo privat) blochează deploy-ul dacă ultimul commit nu e al tău. Folosește de acum:
+```
+git pull && scripts/deploy_frontend.sh
+```
+Copiază `frontend/` + `shared/` într-un folder temporar fără git și rulează `npx vercel --prod` de acolo. Caută singur
+`.vercel` în rădăcina repo-ului sau în `frontend/`. Joi, după ce facem repo-ul public, merge și `npx vercel --prod` direct.
