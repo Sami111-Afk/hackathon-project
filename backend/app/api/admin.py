@@ -28,7 +28,16 @@ MARIA_FILES = ["buletin.jpg", "fluturas.jpg", "extras.pdf"]
 
 @router.post("/rerun-demo")
 async def rerun_demo():
-    """Pornește din nou dosarul Mariei prin pipeline (cu agenții actuali). Pentru demo și pentru Erin."""
+    """Pornește din nou dosarul Mariei prin pipeline (cu agenții actuali). Pentru demo și pentru Erin.
+
+    Rulările anterioare ale Mariei (terminate) sunt șterse, ca Dashboard-ul și graful să nu numere
+    aceeași fraudă de mai multe ori."""
+    finished = [c for c in store.list()
+                if c.id.startswith("case_maria_") and c.status not in ("received", "processing")]
+    for old in finished:
+        store.delete(old.id)
+        vault.forget(old.id)
+        delete_case_files(old.id)
     case_id = f"case_maria_{uuid.uuid4().hex[:6]}"
     files: dict[str, bytes] = {}
     docs = []
