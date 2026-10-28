@@ -140,5 +140,5 @@ def test_romanian_checks():
 def test_anaf_lookup_and_unknown_company_is_not_a_hard_override():
     assert anaf.lookup(cui="40211937").name == "Agro Prahova Distribuție SRL"
     assert anaf.lookup(name="AGRO PRAHOVA DISTRIBUTIE S.R.L").active is False
-    f = anaf.check_company(None, "d", "[CUI_1]")
+    f = anaf.check_company(None, "unavailable", "d", "[CUI_1]")
     assert f[0].code == "COMPANY_UNVERIFIED" and f[0].severity == "info"
