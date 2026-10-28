@@ -4,12 +4,14 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import require_bank
+from app.arena import service as arena_service
 from app.config import REPO_ROOT, settings
 from app.core import audit
 from app.core.events import bus, now_iso
 from app.core.files import delete_case_files
 from app.core.pipeline import start_pipeline
 from app.core.store import store
+from app.learning import proposer
 from app.models import Case, Document
 
 router = APIRouter(prefix="/api/admin", dependencies=[Depends(require_bank)])
@@ -39,4 +41,6 @@ def reset():
     store.reset()
     bus.reset()
     audit.reset()
+    arena_service.reset()
+    proposer.reset()
     return {"ok": True}
