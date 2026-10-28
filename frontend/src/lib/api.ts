@@ -83,3 +83,37 @@ export async function getStats(): Promise<DashboardStats> {
 export async function listCases(): Promise<CaseSummary[]> {
   return (await apiFetch('/api/cases')).json()
 }
+
+export type LlmMode = 'bedrock' | 'cloud' | 'local' | 'mock'
+export interface ServerSettings { llm_mode: LlmMode; he_enabled: boolean }
+
+export async function getSettings(): Promise<ServerSettings> {
+  return (await apiFetch('/api/settings')).json()
+}
+
+export async function setLlmMode(llm_mode: LlmMode): Promise<ServerSettings> {
+  const res = await apiFetch('/api/settings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ llm_mode }),
+  })
+  return res.json()
+}
+
+/**
+ * Raportul de anchetă (HTML printabil). Cere token, deci îl luăm ca blob.
+ * Fereastra se deschide sincron, din click (altfel browserul o blochează ca pop-up).
+ */
+export async function openReport(caseId: string): Promise<void> {
+  const win = window.open('', '_blank')
+  try {
+    const res = await apiFetch(`/api/cases/${encodeURIComponent(caseId)}/report`)
+    const url = URL.createObjectURL(new Blob([await res.text()], { type: 'text/html' }))
+    if (win) win.location.href = url
+    else window.location.assign(url)
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  } catch (e) {
+    win?.close()
+    throw e
+  }
+}

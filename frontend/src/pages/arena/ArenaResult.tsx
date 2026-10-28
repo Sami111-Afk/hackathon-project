@@ -60,7 +60,7 @@ export function ArenaResult() {
               <div className="mt-1 text-center text-xl text-red-200">+{s.points} puncte pentru încercare</div>
               <h3 className="mt-4 text-lg font-bold">De ce:</h3>
               <ul className="mt-2 space-y-2">
-                {s.reasons.map((r) => <li key={r} className="rounded-lg bg-slate-900 p-3 text-base">• {r}</li>)}
+                {s.reasons.map((r, i) => <li key={`${i}-${r}`} className="rounded-lg bg-slate-900 p-3 text-base">• {r}</li>)}
               </ul>
             </div>
           )}

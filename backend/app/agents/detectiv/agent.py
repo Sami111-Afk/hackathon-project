@@ -11,6 +11,7 @@ from collections import defaultdict
 from datetime import UTC, datetime
 
 from app.agents.detectiv.graph import (
+    STRONG_KINDS,
     bank_cases,
     build_graph,
     case_node,
@@ -82,9 +83,10 @@ def analyze(case: Case, others: list[Case], now: datetime | None = None) -> tupl
                 code="SHARED_ADDRESS", severity="medium",
                 message=f"Adresa din cerere apare la {k} persoane diferite, {when}"))
 
-    linked_ids = {c.id for cs in users.values() for c in cs}
-    stats = {"linked_cases": len(linked_ids),
-             "linked_identities": len({identity_of(c) for cs in users.values() for c in cs})}
+    # doar legăturile care pot forma o rețea (un coleg cu același angajator nu pornește animația grafului)
+    strong = [c for (kind, _v), cs in users.items() if kind in STRONG_KINDS for c in cs]
+    stats = {"linked_cases": len({c.id for c in strong}),
+             "linked_identities": len({identity_of(c) for c in strong})}
     return findings, stats
 
 

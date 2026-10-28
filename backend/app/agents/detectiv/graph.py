@@ -9,13 +9,12 @@ import networkx as nx
 
 from app.models import Case
 
-# Amprente care, comune între identități diferite, sugerează o rețea.
+# Singurele amprente care leagă dosare într-o rețea (comune între identități diferite).
+# Restul apar pe graf, dar nu leagă nimic:
+# - adresa: comună legitim (familie, bloc) → doar semnal slab, la ≥3 identități (vezi agent.py)
+# - CNP-ul și numele: identifică persoana (vezi identity_of), nu sunt legături
+# - CUI-ul (angajatorul): comun legitim între colegi
 STRONG_KINDS = {"phone", "iban", "email"}
-# Adresa poate fi comună legitim (familie, bloc) → semnal slab, nu extinde clusterul.
-WEAK_KINDS = {"address"}
-# CNP-ul și numele identifică persoana → nu sunt „legături”, ci aceeași identitate.
-# CUI-ul (angajatorul) e comun legitim între colegi → apare în graf, dar nu leagă dosare.
-IDENTITY_KINDS = {"cnp", "name"}
 
 KIND_LABEL = {"phone": "telefon", "iban": "cont IBAN", "email": "email", "address": "adresă", "cnp": "CNP",
               "name": "nume", "cui": "angajator"}
@@ -106,7 +105,7 @@ def node_payload(g: nx.Graph, node: str, cluster: set[str], focus: str | None) -
                 "in_cluster": a["case_id"] in cluster, "is_focus": a["case_id"] == focus}
     shared = g.degree(node)
     return {"id": node, "type": "fingerprint", "kind": a["kind"], "label": f"{KIND_LABEL.get(a['kind'], a['kind'])}",
-            "shared_by": shared, "in_cluster": shared >= 2 and any(
+            "shared_by": shared, "in_cluster": a["kind"] in STRONG_KINDS and shared >= 2 and any(
                 g.nodes[nb]["case_id"] in cluster for nb in g.neighbors(node))}
 
 

@@ -1,5 +1,5 @@
-// Date de demo pentru Dashboard în modul mock — aceeași formă și aceleași formule ca backend-ul
-// (backend/app/api/system.py, /api/admin/seed-demo), ca să nu „inventăm” altceva pe scenă.
+// Date de demo pentru Dashboard în modul mock (fără backend). Forma e cea din backend/app/api/system.py,
+// dar dosarele sunt inventate → pagina afișează mereu bannerul „DATE DE DEMO” când rulează pe ele.
 import type { CaseSummary, DashboardStats } from './api'
 
 const DAY = 86400000
@@ -34,6 +34,8 @@ export function mockCases(): CaseSummary[] {
 export function mockStats(cases: CaseSummary[]): DashboardStats {
   const assumptions = { manual_minutes_per_case: 20, review_minutes_per_case: 1, cost_per_hour_ron: 60 }
   const done = cases.filter((c) => c.risk != null)
+  // ca în backend: verdict de fraudă sau dosar respins / trimis la investigație
+  // (lista nu are eticheta verdictului; în datele de demo, „escalate” = verdict de fraudă)
   const fraud = done.filter((c) => c.recommendation === 'escalate' || c.status === 'rejected' || c.status === 'escalated')
   const savedMin = done.length * (assumptions.manual_minutes_per_case - assumptions.review_minutes_per_case)
   return {
@@ -42,8 +44,8 @@ export function mockStats(cases: CaseSummary[]): DashboardStats {
     money_saved_ron: Math.round((savedMin / 60) * assumptions.cost_per_hour_ron),
     frauds_stopped: fraud.length,
     amount_stopped_ron: fraud.reduce((s, c) => s + (c.requested_amount_ron ?? 0), 0),
-    ai_cost_usd: Math.round(done.length * 0.00056 * 10000) / 10000,
-    pii_values_protected: done.length * 23,
+    ai_cost_usd: 0, // dosarele de demo nu au trecut prin AI
+    pii_values_protected: done.length * 4, // 4 amprente (CNP, telefon, IBAN, adresă) per dosar, ca în /seed-demo
     external_calls_with_pii: 0,
     assumptions,
   }
