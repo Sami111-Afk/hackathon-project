@@ -11,7 +11,7 @@ const BTN = 'h-11 rounded-sm px-4 text-[15px] font-semibold transition-colors di
 const FIELD = 'h-11 w-full rounded-sm border border-input bg-surface px-3 text-base outline-none focus:border-info'
 
 const ACTOR_ICON: Record<string, typeof Landmark> = {
-  bank: Landmark, employer: Building2, client: Smartphone, attacker: ShieldAlert,
+  bank: Landmark, employer: Building2, customer: Smartphone, attacker: ShieldAlert,
 }
 
 const ron = (n: number) => `${n.toLocaleString('ro-RO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} lei`
