@@ -22,8 +22,10 @@ _lock = threading.Lock()
 RULES: list[dict] = []  # doar regulile aprobate se aplică
 
 
-def context(doc: dict) -> dict:
-    company = dict(COMPANIES.get(doc.get("employer"), {}))
+def context(doc: dict, company: dict | None = None) -> dict:
+    """`company` = datele firmei de la ANAF real (Verificatorul), altfel registrul demo după numele angajatorului.
+    Câmpurile pe care ANAF nu le dă (angajați, mediane) rămân lipsă → regulile pe ele nu se declanșează."""
+    company = dict(company) if company is not None else dict(COMPANIES.get(doc.get("employer"), {}))
     company["role_median"] = company.pop("role_medians", {}).get(doc.get("job_title"))
     ctx = {f"doc.{k}": v for k, v in doc.items()}
     ctx.update({f"company.{k}": v for k, v in company.items()})
@@ -60,8 +62,8 @@ def evaluate(cond: dict, ctx: dict) -> bool:
         return False  # o regulă greșită nu are voie să blocheze verificarea
 
 
-def apply_rules(doc: dict, rules: list[dict] | None = None) -> list[Finding]:
-    ctx = context(doc)
+def apply_rules(doc: dict, rules: list[dict] | None = None, company: dict | None = None) -> list[Finding]:
+    ctx = context(doc, company)
     out = []
     with _lock:
         active = [r for r in (rules if rules is not None else RULES) if r.get("status") == "approved"]
