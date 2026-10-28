@@ -51,3 +51,5 @@ video/voice/
 video/edit/node_modules/
 video/edit/out/
 video/edit/public/
+video/voice_clone/
+video/music/*.mp3

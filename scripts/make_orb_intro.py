@@ -22,9 +22,9 @@ T_MERGE = 1.15                 # când se adună punctele în ochi
 T_BEAM = 1.55                  # când pornește fasciculul
 T_SCAN0, T_SCAN1 = 1.65, 3.05  # scanarea textului, de sus în jos
 
-LINES_INTRO = [("Checks a loan file in 20 seconds.", True),
-               ("The AI never sees the customer's name. A human always decides.", False)]
-LINES_FINAL = [("ORB does the checking.", True), ("Your people decide.", False)]
+LINES_INTRO = [("Loan-document checks for credit analysts.", True), ("A human always decides.", False)]
+LINES_FINAL = [("ORB does the checking. Your people decide.", True),
+               ("ORB checks documents, not creditworthiness  ·  synthetic data  ·  voice: AI-generated", False)]
 
 SS = 2                         # factorul de supraeșantionare (se setează din argumente)
 

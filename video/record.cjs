@@ -66,6 +66,11 @@ async function scrollToEl(p, loc, offset = 120, ms = 1600) {
   const y = await loc.evaluate((el, o) => el.getBoundingClientRect().top + scrollY - o, offset)
   await smoothScroll(p, Math.max(0, y), ms)
 }
+// imaginea documentului vine prin ngrok, poate dura câteva secunde
+async function waitDocImage(p, timeout = 30000) {
+  await p.waitForFunction(() => !document.body.innerText.includes('Loading the document') &&
+    [...document.images].some((i) => i.complete && i.naturalWidth > 300), null, { timeout }).catch(() => {})
+}
 async function waitVerdict(p, timeout = 120000) {
   await p.getByText('Risk level', { exact: true }).waitFor({ timeout })
 }
@@ -99,9 +104,9 @@ const SCENES = {
     await scrollToEl(p, net, 300); await click(p, net, 1500)
     const viewer = p.getByRole('tablist', { name: /Documents/i })
     if (await viewer.count()) await scrollToEl(p, viewer.first(), 160)
-    await pause(p, 2500)
+    await waitDocImage(p); await pause(p, 3000)
     const edit = p.getByRole('button', { name: 'Edit map' })
-    if (await edit.count()) { await click(p, edit.first(), 3000) }
+    if (await edit.count()) { await click(p, edit.first(), 800); await waitDocImage(p); await pause(p, 3000) }
     const orig = p.getByRole('button', { name: 'Original' })
     if (await orig.count()) { await click(p, orig.first(), 1500) }
   },
@@ -150,8 +155,8 @@ const SCENES = {
 
 // 9 — Arena pe telefon (alt context, ecran de telefon)
 async function arena(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
-    recordVideo: { dir: OUT, size: { width: 780, height: 1688 } } })
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true,
+    recordVideo: { dir: OUT, size: { width: 390, height: 844 } } })
   await ctx.addInitScript(`try { localStorage.setItem('orb.arena.nick', 'Juror') } catch (e) {}`)
   const p = await ctx.newPage()
   await p.goto(SITE + '/arena'); await pause(p, 2500)
@@ -163,7 +168,7 @@ async function arena(browser) {
   }
   await p.getByRole('button', { name: /The 9,000 payslip/ }).tap(); await pause(p, 2000)
   const net = p.getByRole('spinbutton', { name: /Net salary/ })
-  await net.fill(''); await net.pressSequentially('9500', { delay: 120 }); await pause(p, 1000)
+  await net.fill(''); await net.pressSequentially(String(9400 + Math.floor(Math.random() * 500)), { delay: 120 }); await pause(p, 1000)
   await p.getByRole('button', { name: 'Submit the fake' }).tap()
   await pause(p, 6500)
   const v = p.video(); await ctx.close(); await v.saveAs(path.join(OUT, 's9_arena.webm')); await v.delete()

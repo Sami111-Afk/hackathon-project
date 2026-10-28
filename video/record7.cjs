@@ -108,6 +108,8 @@ const SCENES = {
     await waitVerdict(p); mark('verdict', { x: 0, y: 0, width: 0, height: 0 }); await pause(p, 2000)
     const viewer = p.getByRole('tablist', { name: /Documents/i })
     if (await viewer.count()) await scrollToEl(p, viewer.first(), 160)
+    const slip = p.getByRole('tab', { name: /Payslip/ })
+    if (await slip.count()) { await click(p, slip.first(), 600, 'payslip tab'); await waitDocImage(p); await pause(p, 800) }
     const ai = p.getByRole('button', { name: 'What the AI saw' })
     if (await ai.count()) { await click(p, ai.first(), 600, 'what the AI saw'); await waitDocImage(p); await pause(p, 3500) }
     const orig = p.getByRole('button', { name: 'Original' })
@@ -197,6 +199,14 @@ const SCENES = {
     await pause(p, 3000)
     const ap = p.getByRole('button', { name: 'Approve', exact: true }).first()
     await focus(p, ap, 1200, 'rule box'); await click(p, ap, 4000, 'approve rule')
+  },
+  // 11c — după atac: regula propusă (testată pe istoric) → un om o aprobă
+  async v11_approve(p) {
+    await p.goto(SITE + '/arena/live?base=https://orb-raiffeisen.vercel.app'); await pause(p, 3500)
+    const box = p.getByText('Rule proposed by AI', { exact: false }).first()
+    await box.waitFor({ timeout: 30000 })
+    await focus(p, box, 3000, 'rule box')
+    await click(p, p.getByRole('button', { name: 'Approve', exact: true }).first(), 3500, 'approve rule')
   },
 }
 

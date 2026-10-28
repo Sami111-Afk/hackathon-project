@@ -3,16 +3,16 @@
 „Orb” e scris așa intenționat (altfel vocea AI spune „or B”). Cifrele sunt transformate în cuvinte la generare.
 
 **s01 (~13 s)**
-This payslip says 8,500 lei net. Romanian payroll rules say 8,307. Today a credit analyst catches that by hand: read, recalculate, cross-check. About twenty minutes a file, by our own timing.
+This payslip says 8,500 lei take-home pay. Romanian payroll rules say 8,307. Today a credit analyst catches that by hand: read, recalculate, cross-check. About twenty minutes a file, by our own timing.
 
 **s02 (~13 s)**
 We built Orb to help credit analysts check loan documents. Today that's slow: every payslip, statement and employer is checked by hand, and fraud rings hide across files. Orb flags exactly what's wrong.
 
 **s03 (~10 s)**
-Watch the names. Maria's application: three synthetic documents. Before any AI sees them, the Guard swaps every name and ID number for a label.
+Watch the names. Maria's application: three documents, all synthetic. Before any AI sees them, the Guard swaps every name and ID number for a label.
 
 **s04 (~26 s)**
-Six agents, one job each, and only two of them use AI. The Clerk extracts the fields; any value it can't point to in the document is discarded. Watch the box. The Verifier recomputes the tax: net should be 8,307, not 8,500. The employer, in our demo registry: inactive. And the salary never arrives in her statement.
+Six agents, one job each, and only two of them use AI. The Clerk extracts the fields; any value it can't point to in the document is discarded. Watch the box. The Verifier recalculates the tax: net should be 8,307, not 8,500. The employer, in our demo registry: inactive. And the salary never arrives in her statement.
 
 **s05 (~9 s)**
 The Detector marks the edited pixels. The Detective finds the same bank account in six applications, under six names.
@@ -27,7 +27,7 @@ Different file now: blurry phone photos. Orb can't guarantee it hid everything, 
 Why this shape? Audits need identical steps, so the order is fixed in code. AI only reads and summarises; the rest is rules and tools: tax tables, the company registry, image forensics. If a step fails, the file is never shown as clean.
 
 **s09 (~10 s)**
-Most files are honest: clean in seconds, every value linked to its source. Twenty minutes becomes about a minute of review, our estimate.
+Most files are honest: most come back clean in seconds and are approved in one click. Twenty minutes becomes about a minute of review, our estimate.
 
 **s10 (~12 s)**
 Built for a bank: the cloud AI sees only labels, and a second gate blocks any request still carrying a name. Local mode, tested on our laptop: about nine seconds a file.
@@ -39,4 +39,7 @@ Sixty synthetic files, real cloud AI: no name or ID number left the bank. None o
 Limits: synthetic data and our own forgeries, so real-fraud accuracy is untested; a forger who also fakes the statement would pass. Next: a pilot on a hundred real files, in-house.
 
 **s13 (~4 s)**
-Orb does the checking. Your people decide.
+Orb does the checking... and your people decide.
+
+**s14 (~12 s)**
+Think you can fool it? Anyone can try in our public Arena: most fakes get caught, with the reason. When one slips through, the AI proposes a rule, tests it on honest files, and a human approves it.
