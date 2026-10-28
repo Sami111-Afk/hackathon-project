@@ -16,7 +16,7 @@ export function LoginPage() {
     e.preventDefault()
     if (!name.trim() || !token.trim()) return
     login(token, name)
-    nav('/cases/case_maria')
+    nav('/dashboard')
   }
 
   return (
