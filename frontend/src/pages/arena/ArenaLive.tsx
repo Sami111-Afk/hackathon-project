@@ -54,6 +54,13 @@ export function ArenaLive() {
   const [attacker, setAttacker] = useState<AttackerStatus | null>(null)
   const [attackerLine, setAttackerLine] = useState('')
   const [now, setNow] = useState(() => Date.now())
+  const [show, setShow] = useState<Submission[]>([]) // încercările de afișat mare, pe rând
+  const current = show[0]
+  useEffect(() => {
+    if (!current) return
+    const t = setTimeout(() => setShow((q) => q.slice(1)), current.outcome === 'passed' ? 6000 : 3500)
+    return () => clearTimeout(t)
+  }, [current])
   const base = publicBase()
   const url = playUrl(base)
 
@@ -69,7 +76,11 @@ export function ArenaLive() {
       },
       onDown: () => setConnected(false),
       onMessage: ({ event, data }) => {
-        if (event === 'arena_scored') qc.invalidateQueries({ queryKey: ['arena-top'] })
+        if (event === 'arena_scored') {
+          qc.invalidateQueries({ queryKey: ['arena-top'] })
+          const sub = data.data as unknown as Submission | undefined
+          if (sub && sub.outcome !== 'invalid') setShow((q) => [...q, sub].slice(-6)) // coadă scurtă: nu rămânem în urmă
+        }
         if (event === 'rule_proposed' || event === 'rule_approved') {
           setLearning((l) => [{ approved: event === 'rule_approved', message: data.message, at: Date.now() }, ...l].slice(0, 3))
         }
@@ -94,6 +105,7 @@ export function ArenaLive() {
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-night text-night-ink">
       <ArenaControls running={Boolean(attacker?.running)} />
+      {current && <Spotlight key={current.id} s={current} waiting={show.length - 1} />}
       <div className="h-1.5 shrink-0 bg-brand" />
       <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,5fr)_minmax(0,7fr)_minmax(0,5fr)] gap-12 p-12">
         <section className="flex flex-col justify-center">
@@ -183,6 +195,30 @@ export function ArenaLive() {
             </div>
           )}
         </section>
+      </div>
+    </div>
+  )
+}
+
+/** Încercarea curentă, mare, peste tot ecranul: PRINS sau A TRECUT. Momentul pe care îl vede sala. */
+function Spotlight({ s, waiting }: { s: Submission; waiting: number }) {
+  const passed = s.outcome === 'passed'
+  return (
+    <div className="pointer-events-none fixed inset-0 z-30 flex items-center justify-center bg-night/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className={cn('w-[min(90vw,64rem)] rounded-lg border-4 p-12 text-center shadow-2xl animate-in zoom-in-90 duration-300',
+        passed ? 'border-brand bg-[#2A2610]' : 'border-night-danger bg-[#2A1517]')}>
+        <div className={cn('font-condensed text-[9rem] font-bold leading-none tracking-tight', passed ? 'text-brand' : 'text-night-danger')}>
+          {passed ? 'A TRECUT' : 'PRINS'}
+        </div>
+        <div className="mt-6 text-5xl font-semibold text-night-ink">{s.nickname}</div>
+        <div className="mt-4 text-3xl text-night-mute">
+          {passed
+            ? `a păcălit agenții${s.points ? `, +${s.points} puncte` : ''}`
+            : `de ${s.caught_by.map((a) => AGENT_RO[a] ?? a).join(' și ')}`}
+        </div>
+        {!passed && s.reasons[0] && <div className="mx-auto mt-6 max-w-3xl text-3xl leading-snug text-night-ink">„{s.reasons[0]}”</div>}
+        {passed && <div className="mt-6 text-3xl text-night-ink">Agenții învață acum din falsul ăsta.</div>}
+        {waiting > 0 && <div className="mt-8 text-xl text-night-mute">încă {waiting} {waiting === 1 ? 'încercare' : 'încercări'} la rând</div>}
       </div>
     </div>
   )
