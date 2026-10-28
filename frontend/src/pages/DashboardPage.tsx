@@ -49,13 +49,13 @@ function useDashboard() {
 
 function Kpi({ label, value, unit, note }: { label: string; value: string; unit?: string; note?: string }) {
   return (
-    <div className="bg-surface px-6 py-5">
-      <div className="text-[15px] font-medium text-ink-2">{label}</div>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className="font-condensed text-6xl font-bold leading-none tabular-nums text-ink">{value}</span>
-        {unit && <span className="text-xl font-medium text-ink-2">{unit}</span>}
+    <div className="bg-night px-6 py-6">
+      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-night-mute">{label}</div>
+      <div className="mt-3 flex items-baseline gap-2">
+        <span className="font-condensed text-6xl font-bold leading-none tabular-nums text-brand xl:text-7xl">{value}</span>
+        {unit && <span className="text-xl font-medium text-night-ink">{unit}</span>}
       </div>
-      <div className="mt-2 text-[15px] text-ink-3">{note ?? '\u00a0'}</div>
+      <div className="mt-3 text-[15px] text-night-mute">{note ?? '\u00a0'}</div>
     </div>
   )
 }
@@ -120,10 +120,10 @@ export function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            {!mock && <span className="flex items-center gap-2 text-sm text-ink-2"><span className="h-2 w-2 rounded-full bg-ok" />Updates every 5 seconds</span>}
+            {!mock && <span className="flex items-center gap-2 whitespace-nowrap text-sm text-ink-2"><span className="h-2 w-2 rounded-full bg-ok motion-safe:animate-pulse" />Updates every 5 seconds</span>}
             {!mock && !creating && (
               <button type="button" onClick={() => setCreating(true)}
-                className="flex h-11 items-center gap-2 rounded-sm bg-ink px-4 text-[15px] font-semibold text-white hover:bg-black">
+                className="flex h-11 items-center gap-2 whitespace-nowrap rounded-sm bg-ink px-4 text-[15px] font-semibold text-white hover:bg-black">
                 <Plus className="h-4 w-4" aria-hidden /> New application
               </button>
             )}
@@ -138,7 +138,8 @@ export function DashboardPage() {
 
       <main className="space-y-6 px-4 py-6 md:px-8">
         {creating && <NewCaseForm onClose={() => setCreating(false)} />}
-        <section aria-label="Indicators" className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
+        {/* Banda cifrelor: întunecată, ca Arena, ca să fie primul lucru văzut */}
+        <section aria-label="Indicators" className="grid grid-cols-1 gap-px overflow-hidden rounded-md border border-night bg-night-line sm:grid-cols-2 xl:grid-cols-4">
           <Kpi label="Applications checked" value={s ? num(s.cases_processed) : '—'}
                note={s ? `AI cost: $${s.ai_cost_usd.toLocaleString('en-GB', { minimumFractionDigits: 2 })} in total` : undefined} />
           <Kpi label="Working time saved" value={s ? num(s.hours_saved) : '—'} unit="hours"

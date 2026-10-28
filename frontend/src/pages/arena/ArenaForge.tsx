@@ -4,7 +4,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { getMissions, lei, savedNick, submitFake, type Mission } from '@/lib/arena'
 import { Check, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { ArenaShell } from './ArenaShell'
+import { ArenaHeading, ArenaShell } from './ArenaShell'
 import { usePageMeta } from '@/hooks/usePageMeta'
 
 /** Previzualizarea fluturașului, desenată local (falsul real îl face serverul). */
@@ -66,13 +66,13 @@ function Forge({ mission }: { mission: Mission }) {
 
   return (
     <ArenaShell>
-      <h2 className="text-2xl font-semibold">{mission.title}</h2>
+      <ArenaHeading>{mission.title}</ArenaHeading>
       <p className="mt-1 text-night-mute">{mission.brief}</p>
 
       <div className="mt-4"><PayslipPreview doc={doc} tricks={tricks} jobLabels={mission.editable.job_title?.option_labels} /></div>
 
-      <h3 className="mt-8 text-lg font-semibold">Edit the document</h3>
-      <div className="mt-2 space-y-4">
+      <ArenaHeading as="h3" step={1} className="mt-10 text-xl">Edit the document</ArenaHeading>
+      <div className="mt-4 space-y-4">
         {Object.entries(mission.editable).map(([key, spec]) => {
           const disabled = key === 'net_salary' && recompute
           const cls = 'mt-1 h-14 w-full rounded-md border border-night-line bg-night-2 px-4 text-lg outline-none focus:border-brand disabled:opacity-40'
@@ -100,8 +100,8 @@ function Forge({ mission }: { mission: Mission }) {
         })}
       </div>
 
-      <h3 className="mt-8 text-lg font-semibold">Tricks</h3>
-      <div className="mt-2 space-y-2">
+      <ArenaHeading as="h3" step={2} className="mt-10 text-xl">Tricks</ArenaHeading>
+      <div className="mt-4 space-y-2">
         {Object.entries(mission.tricks).map(([key, label]) => {
           const on = tricks.includes(key)
           return (
@@ -116,7 +116,7 @@ function Forge({ mission }: { mission: Mission }) {
         })}
       </div>
 
-      <div className="sticky bottom-20 mt-8 space-y-2 bg-night/95 py-3 backdrop-blur">
+      <div className="sticky bottom-20 mt-8 space-y-2 border-t border-night-line bg-night/95 py-3 backdrop-blur md:bottom-0">
         <p className={cn('text-center text-base', targetMet ? 'text-night-ok' : 'text-brand')}>
           {targetMet ? 'Target reached' : `Target: net of at least ${lei(target.min)}`}
         </p>

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { EyeOff, FileDown, RotateCcw } from 'lucide-react'
+import { ArrowLeft, EyeOff, FileDown, RotateCcw } from 'lucide-react'
 import { lazy, useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
@@ -34,6 +34,13 @@ const CONN: Record<ConnectionState, { label: string; dot: string }> = {
 const STATUS: Record<CaseStatus, string> = {
   received: 'Received', processing: 'Under analysis', awaiting_review: 'Awaiting your decision', cleared: 'Approved',
   rejected: 'Rejected', escalated: 'Under investigation', error: 'Error',
+}
+
+// culoarea etichetei de stare: ce trebuie făcut se vede dintr-o privire
+const STATUS_TONE: Record<CaseStatus, string> = {
+  received: 'border-line bg-surface text-ink', processing: 'border-info/30 bg-[#EFF4FF] text-info',
+  awaiting_review: 'border-warn/30 bg-warn-bg text-warn', cleared: 'border-ok/30 bg-ok-bg text-ok',
+  rejected: 'border-danger/30 bg-danger-bg text-danger', escalated: 'border-danger/30 bg-danger-bg text-danger', error: 'border-danger/30 bg-danger-bg text-danger',
 }
 
 const lei = (n?: number | null) => (n ? `${n.toLocaleString('en-GB')} lei` : '—')
@@ -122,10 +129,13 @@ function CaseView({ caseId }: { caseId: string }) {
   return (
     <Shell>
       <div className="border-b border-line bg-surface px-4 py-5 md:px-8">
-        <nav className="text-sm text-ink-3"><Link to="/dashboard" className="hover:text-ink">Applications</Link> / <span className="text-ink-2">{c.id}</span></nav>
+        <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-sm text-ink-3">
+          <Link to="/dashboard" className="flex items-center gap-1.5 font-medium text-ink-2 hover:text-ink"><ArrowLeft className="h-4 w-4" aria-hidden />Applications</Link>
+          <span aria-hidden>/</span><span className="truncate font-mono text-[13px] text-ink-2">{c.id}</span>
+        </nav>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-ink">Loan application for {lei(c.requested_amount_ron)}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Loan application for {lei(c.requested_amount_ron)}</h1>
             <p className="mt-1 text-base text-ink-2">
               {c.applicant_token ? `Applicant ${c.applicant_token.startsWith('[') ? c.applicant_token : 'anonymized'}, ` : ''}
               {c.documents.length} documents, submitted on {new Date(c.created_at).toLocaleString('en-GB', { dateStyle: 'long', timeStyle: 'short' })}
@@ -138,7 +148,7 @@ function CaseView({ caseId }: { caseId: string }) {
             )}
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-sm border border-line px-2.5 py-1 text-sm font-medium text-ink">{STATUS[status]}</span>
+            <span className={cn('rounded-sm border px-2.5 py-1 text-sm font-semibold', STATUS_TONE[status])}>{STATUS[status]}</span>
             <span className="flex items-center gap-2 text-sm text-ink-2"><span className={cn('h-2 w-2 rounded-full', CONN[conn].dot)} />{CONN[conn].label}</span>
             {mock ? (
               <button type="button" onClick={() => { setSelected(null); setReplayKey((k) => k + 1) }}
