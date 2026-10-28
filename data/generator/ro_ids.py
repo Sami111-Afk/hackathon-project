@@ -7,6 +7,7 @@ import string
 
 CNP_KEY = "279146358279"
 CUI_KEY = "753217532"
+SAFE_CUIS = ("9185472906", "9341910290", "9402119372", "9477321003")
 COUNTY_CODES = {"AB": "01", "B": "40", "CJ": "12", "IS": "22", "PH": "29", "TM": "35", "BV": "08"}
 
 
@@ -44,18 +45,22 @@ def iban_valid(value: str) -> bool:
     return len(v) == 24 and v.startswith("RO") and _iban_mod97(v[4:] + v[:4]) == 1
 
 
-def cui(base: str | None = None) -> str:
-    base = base or str(random.randint(10**6, 10**8 - 1))
+def _cui_with_check_digit(base: str) -> str:
     padded = base.rjust(9, "0")
     c = sum(int(a) * int(b) for a, b in zip(padded, CUI_KEY)) * 10 % 11
     return base + ("0" if c == 10 else str(c))
+
+
+def cui() -> str:
+    """Return a checksum-valid synthetic CUI confirmed unallocated at ANAF."""
+    return random.choice(SAFE_CUIS)
 
 
 def cui_valid(value: str) -> bool:
     v = value.upper().removeprefix("RO")
     if not v.isdigit() or not 2 <= len(v) <= 10:
         return False
-    return cui(v[:-1]) == v
+    return _cui_with_check_digit(v[:-1]) == v
 
 
 # ── MRZ pentru cartea de identitate românească (TD2: 2 rânduri × 36) ──

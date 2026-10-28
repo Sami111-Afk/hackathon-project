@@ -14,7 +14,7 @@ from app.core.llm import LLMUnavailable
 from tests.test_functionar_agent import PAYSLIP, STATEMENT, Ctx, maria_case, paznic_scratch
 
 TODAY = date(2026, 10, 28)
-MARIA_VAULT = {"[CNP_1]": ["2590312290171"], "[IBAN_1]": ["RO54RZBR0000060012345678"], "[CUI_1]": ["RO40211937"],
+MARIA_VAULT = {"[CNP_1]": ["2590312290171"], "[IBAN_1]": ["RO54RZBR0000060012345678"], "[CUI_1]": ["RO9402119372"],
                "[SERIE_1]": ["PH"], "[ADRESA_1]": ["Str. Florilor nr. 12, Ploiești, jud. Prahova"]}
 
 
@@ -79,7 +79,7 @@ def honest_scratch():
 
 
 def test_honest_case_is_cleared(no_llm, monkeypatch):
-    vault = dict(MARIA_VAULT, **{"[CUI_1]": ["RO34191029"], "[CNP_1]": ["2900312290171"]})  # Bitwave, activă; 36 ani
+    vault = dict(MARIA_VAULT, **{"[CUI_1]": ["RO9341910290"], "[CNP_1]": ["2900312290171"]})  # Bitwave, activă; 36 ani
     result = run_both(maria_case(), honest_scratch(), monkeypatch, vault)
     assert [f.code for f in result.findings if f.severity != "info"] == []
     verdict, _ = score([result])
@@ -138,7 +138,7 @@ def test_romanian_checks():
 
 
 def test_anaf_lookup_and_unknown_company_is_not_a_hard_override():
-    assert anaf.lookup(cui="40211937").name == "Agro Prahova Distribuție SRL"
+    assert anaf.lookup(cui="9402119372").name == "Agro Prahova Distribuție SRL"
     assert anaf.lookup(name="AGRO PRAHOVA DISTRIBUTIE S.R.L").active is False
     f = anaf.check_company(None, "d", "[CUI_1]")
     assert f[0].code == "COMPANY_UNVERIFIED" and f[0].severity == "info"
