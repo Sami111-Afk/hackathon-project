@@ -42,3 +42,8 @@ zk/**/target/
 .DS_Store
 Thumbs.db
 logs/
+
+# video: înregistrări brute și exporturi (mari)
+video/rec/
+video/out/
+video/voice/
