@@ -73,8 +73,16 @@ def check_card_sex(cnp: str | None, card_sex: str | None, doc_id: str) -> Findin
                    evidence=Evidence(doc_id=doc_id, field="sex"))
 
 
+def parse_iso(value) -> date | None:
+    """„2026-09-30” → date; orice altceva (format greșit, None, număr) → None, fără excepții."""
+    try:
+        return date.fromisoformat(str(value)) if value else None
+    except ValueError:
+        return None
+
+
 def check_id_validity(expiry: str | None, on: date, doc_id: str) -> Finding | None:
-    if not expiry or date.fromisoformat(expiry) >= on:
+    if parse_iso(expiry) is None or parse_iso(expiry) >= on:
         return None
     return Finding(code="ID_EXPIRED", severity="medium", message=f"Buletinul a expirat ({expiry})",
                    evidence=Evidence(doc_id=doc_id, field="expiry_date"))
@@ -108,7 +116,9 @@ def check_iban_bank(iban: str | None, bank_name: str | None, doc_id: str) -> Fin
 def check_dates(issue_date: str | None, founded: date | None, today: date, doc_id: str) -> list[Finding]:
     if not issue_date:
         return []
-    issued = date.fromisoformat(issue_date)
+    issued = parse_iso(issue_date)
+    if issued is None:
+        return []
     out = []
     if issued > today:
         out.append(Finding(code="DOC_FUTURE_DATE", severity="high", message="Data emiterii e în viitor",
