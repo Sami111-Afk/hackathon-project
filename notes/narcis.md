@@ -72,3 +72,11 @@ Minor:
 - `--stop` folosește `pkill -f` pe `uvicorn app.main:app`, `ollama serve`, `ngrok http`: oprește și serverul de dev de pe 8000 sau un Ollama pornit ca serviciu. De știut înainte de demo.
 - Pasul "Test: dosarul Mariei" apelează `rerun-demo`, care șterge dosarele Maria terminate (intenționat), și se sare silențios dacă `BANK_UI_TOKEN` e gol.
 - Scriptul nu e menționat în README.
+
+## Review PR #45 (navigare + proiector) — Samuel, ~20:30 — NU e pe main încă
+Navigarea instant, bara de sus și QR-ul centrat pe proiector arată bine și merg (testat pe build de producție).
+**Un bug, de reparat înainte de merge:** linkul „Maria Ionescu's application” din bara de sus duce acum direct la id-ul
+dosarului Mariei luat dintr-o listă ținută în cache 5 s. După „Re-run live”, backend-ul șterge rularea veche, dar linkul
+arată tot spre ea → click pe tab = „The application could not be loaded”.
+Reparația simplă: linkul să rămână `/cases/case_maria` (alias-ul din `CasePage` redirecționează la cel mai recent dosar),
+sau `qc.invalidateQueries({ queryKey: ['cases', false] })` după `rerunDemo()` în `CasePage`. Prima variantă e mai sigură.
