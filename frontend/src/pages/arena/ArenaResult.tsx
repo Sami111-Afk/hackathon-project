@@ -7,6 +7,7 @@ import { AGENT_INFO } from '@/lib/labels'
 import type { AgentName } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { ArenaShell } from './ArenaShell'
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 const CHECKERS: AgentName[] = ['paznic', 'verificator', 'detector']
 
@@ -27,6 +28,7 @@ function pick<T>(list: T[], seed: string): T {
 }
 
 export function ArenaResult() {
+  usePageMeta("Your result · ORB Arena", "Did the bank's AI agents catch your fake payslip? See which agent caught you, and why.")
   const { sid = '' } = useParams()
   const fromForge = useLocation().state as Submission | null
   const q = useQuery({ queryKey: ['arena-sub', sid], queryFn: () => getSubmission(sid), initialData: fromForge ?? undefined })

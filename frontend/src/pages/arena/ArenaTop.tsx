@@ -2,8 +2,10 @@ import { useQuery } from '@tanstack/react-query'
 import { getLeaderboard, savedNick } from '@/lib/arena'
 import { cn } from '@/lib/utils'
 import { ArenaShell } from './ArenaShell'
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 export function ArenaTop() {
+  usePageMeta("Leaderboard · ORB Arena", "The players who got furthest against the bank's AI agents in ORB Arena.")
   const q = useQuery({ queryKey: ['arena-top'], queryFn: getLeaderboard, refetchInterval: 5000 })
   const me = savedNick().toLowerCase()
   return (
