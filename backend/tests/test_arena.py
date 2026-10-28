@@ -35,7 +35,7 @@ def test_naive_fake_is_caught_and_explained():
     with TestClient(app) as c:
         r = post(c, {"nickname": "Ana", "mission_id": "payslip_9000", "edits": {"net_salary": 9500}}).json()
         assert r["outcome"] == "caught" and r["points"] > 0
-        assert any("Netul calculat" in x for x in r["reasons"])
+        assert any("Calculated net pay" in x for x in r["reasons"])
         assert "doc" not in r  # proiecția publică nu conține date interne
         img = c.get(f"/api/arena/submissions/{r['id']}/image")
         assert img.headers["content-type"] == "image/jpeg"
