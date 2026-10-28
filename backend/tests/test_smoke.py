@@ -77,3 +77,13 @@ def test_agent_failure_marks_incomplete(monkeypatch):
         assert det["status"] == "error"
         assert "1590312" not in det["error"]  # nu scurgem date în mesajele de eroare
         assert case["verdict"]["incomplete"] is True
+
+
+def test_seed_demo_fills_dashboard():
+    with TestClient(app) as c:
+        r = c.post("/api/admin/seed-demo", headers=AUTH).json()
+        assert len(r["seeded"]) == 15
+        stats = c.get("/api/dashboard/stats", headers=AUTH).json()
+        assert stats["cases_processed"] >= 15 and stats["frauds_stopped"] >= 5
+        ring = [x for x in c.get("/api/cases", headers=AUTH).json() if x["id"].startswith("case_ring")]
+        assert len(ring) == 5
