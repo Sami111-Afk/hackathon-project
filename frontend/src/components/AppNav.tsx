@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 const LINKS = [
   { to: '/dashboard', label: 'Privire de ansamblu' },
   { to: '/cases/case_maria', label: 'Dosarul Mariei Ionescu' },
+  { to: '/zk', label: 'Dovadă de venit (ZK)' },
 ]
 
 /** Bara de sus a aplicației băncii. Galbenul apare doar aici, ca semn de brand. */
