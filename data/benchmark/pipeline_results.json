@@ -35,13 +35,13 @@
       },
       "fals_perfect_semnalat": "0/8 (limită cunoscută; doar prin extras)",
       "fals_perfect_cu_semnal_salariu": "8/8 (netul de pe fluturaș nu apare în extras)",
-      "ms_median_pe_dosar": 3320
+      "ms_median_pe_dosar": 4085
     },
     "cases": [
       {
         "id": "bench_000",
         "kind": "honest",
-        "ms": 3054,
+        "ms": 3551,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -53,7 +53,7 @@
       {
         "id": "bench_001",
         "kind": "forged_net",
-        "ms": 3414,
+        "ms": 5026,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -67,7 +67,7 @@
       {
         "id": "bench_002",
         "kind": "forged_balance",
-        "ms": 3559,
+        "ms": 5209,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -81,7 +81,7 @@
       {
         "id": "bench_003",
         "kind": "inactive_employer",
-        "ms": 3559,
+        "ms": 3382,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -95,7 +95,7 @@
       {
         "id": "bench_004",
         "kind": "perfect_fake",
-        "ms": 3268,
+        "ms": 2955,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -109,7 +109,7 @@
       {
         "id": "bench_005",
         "kind": "honest",
-        "ms": 3468,
+        "ms": 2755,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -121,7 +121,7 @@
       {
         "id": "bench_006",
         "kind": "forged_net",
-        "ms": 3320,
+        "ms": 4764,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -135,7 +135,7 @@
       {
         "id": "bench_007",
         "kind": "forged_balance",
-        "ms": 3320,
+        "ms": 5114,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -149,7 +149,7 @@
       {
         "id": "bench_008",
         "kind": "inactive_employer",
-        "ms": 3554,
+        "ms": 3070,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -163,7 +163,7 @@
       {
         "id": "bench_009",
         "kind": "perfect_fake",
-        "ms": 3136,
+        "ms": 2900,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -177,7 +177,7 @@
       {
         "id": "bench_010",
         "kind": "honest",
-        "ms": 2762,
+        "ms": 2630,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -189,7 +189,7 @@
       {
         "id": "bench_011",
         "kind": "forged_net",
-        "ms": 3268,
+        "ms": 4720,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -203,7 +203,7 @@
       {
         "id": "bench_012",
         "kind": "forged_balance",
-        "ms": 3850,
+        "ms": 5109,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -217,7 +217,7 @@
       {
         "id": "bench_013",
         "kind": "inactive_employer",
-        "ms": 3261,
+        "ms": 3060,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -231,7 +231,7 @@
       {
         "id": "bench_014",
         "kind": "perfect_fake",
-        "ms": 3663,
+        "ms": 3513,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -245,7 +245,7 @@
       {
         "id": "bench_015",
         "kind": "honest",
-        "ms": 3211,
+        "ms": 4077,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -257,7 +257,7 @@
       {
         "id": "bench_016",
         "kind": "forged_net",
-        "ms": 3339,
+        "ms": 6640,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -271,7 +271,7 @@
       {
         "id": "bench_017",
         "kind": "forged_balance",
-        "ms": 3596,
+        "ms": 6657,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -287,7 +287,7 @@
       {
         "id": "bench_018",
         "kind": "inactive_employer",
-        "ms": 3294,
+        "ms": 4050,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -301,7 +301,7 @@
       {
         "id": "bench_019",
         "kind": "perfect_fake",
-        "ms": 3295,
+        "ms": 4085,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -315,7 +315,7 @@
       {
         "id": "bench_020",
         "kind": "honest",
-        "ms": 3686,
+        "ms": 3900,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -327,7 +327,7 @@
       {
         "id": "bench_021",
         "kind": "forged_net",
-        "ms": 2733,
+        "ms": 6202,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -341,7 +341,7 @@
       {
         "id": "bench_022",
         "kind": "forged_balance",
-        "ms": 2923,
+        "ms": 6399,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -355,7 +355,7 @@
       {
         "id": "bench_023",
         "kind": "inactive_employer",
-        "ms": 3219,
+        "ms": 4085,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -369,7 +369,7 @@
       {
         "id": "bench_024",
         "kind": "perfect_fake",
-        "ms": 3227,
+        "ms": 3791,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -383,7 +383,7 @@
       {
         "id": "bench_025",
         "kind": "honest",
-        "ms": 3233,
+        "ms": 3737,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -395,15 +395,15 @@
       {
         "id": "bench_026",
         "kind": "forged_net",
-        "ms": 3314,
+        "ms": 9190,
         "agents_ok": true,
         "leaks": [],
         "codes": [
-          "BALANCE_MISMATCH",
+          "AMOUNT_UNCERTAIN",
           "NET_MISMATCH"
         ],
-        "recommendation": "escalate",
-        "risk": 0.84,
+        "recommendation": "review",
+        "risk": 0.64,
         "expected_caught": true,
         "fields_wrong": [
           "sold final"
@@ -412,7 +412,7 @@
       {
         "id": "bench_027",
         "kind": "forged_balance",
-        "ms": 3091,
+        "ms": 6498,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -428,7 +428,7 @@
       {
         "id": "bench_028",
         "kind": "inactive_employer",
-        "ms": 3322,
+        "ms": 4217,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -442,7 +442,7 @@
       {
         "id": "bench_029",
         "kind": "perfect_fake",
-        "ms": 3178,
+        "ms": 3745,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -456,7 +456,7 @@
       {
         "id": "bench_030",
         "kind": "honest",
-        "ms": 3501,
+        "ms": 3801,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -468,7 +468,7 @@
       {
         "id": "bench_031",
         "kind": "forged_net",
-        "ms": 3300,
+        "ms": 5959,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -482,7 +482,7 @@
       {
         "id": "bench_032",
         "kind": "forged_balance",
-        "ms": 3385,
+        "ms": 6213,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -496,7 +496,7 @@
       {
         "id": "bench_033",
         "kind": "inactive_employer",
-        "ms": 3624,
+        "ms": 3726,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -510,7 +510,7 @@
       {
         "id": "bench_034",
         "kind": "perfect_fake",
-        "ms": 3286,
+        "ms": 4282,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -524,7 +524,7 @@
       {
         "id": "bench_035",
         "kind": "honest",
-        "ms": 3268,
+        "ms": 3947,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -536,15 +536,15 @@
       {
         "id": "bench_036",
         "kind": "forged_net",
-        "ms": 4327,
+        "ms": 7646,
         "agents_ok": true,
         "leaks": [],
         "codes": [
-          "BALANCE_MISMATCH",
+          "AMOUNT_UNCERTAIN",
           "NET_MISMATCH"
         ],
-        "recommendation": "escalate",
-        "risk": 0.84,
+        "recommendation": "review",
+        "risk": 0.64,
         "expected_caught": true,
         "fields_wrong": [
           "sold final"
@@ -553,7 +553,7 @@
       {
         "id": "bench_037",
         "kind": "forged_balance",
-        "ms": 3923,
+        "ms": 6069,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -567,7 +567,7 @@
       {
         "id": "bench_038",
         "kind": "inactive_employer",
-        "ms": 4308,
+        "ms": 4142,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -583,7 +583,7 @@
       {
         "id": "bench_039",
         "kind": "perfect_fake",
-        "ms": 4306,
+        "ms": 3338,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -632,13 +632,13 @@
       },
       "fals_perfect_semnalat": "0/8 (limită cunoscută; doar prin extras)",
       "fals_perfect_cu_semnal_salariu": "8/8 (netul de pe fluturaș nu apare în extras)",
-      "ms_median_pe_dosar": 4136
+      "ms_median_pe_dosar": 4463
     },
     "cases": [
       {
         "id": "bench_000",
         "kind": "honest",
-        "ms": 4223,
+        "ms": 4553,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -650,7 +650,7 @@
       {
         "id": "bench_001",
         "kind": "forged_net",
-        "ms": 4635,
+        "ms": 6653,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -664,7 +664,7 @@
       {
         "id": "bench_002",
         "kind": "forged_balance",
-        "ms": 4637,
+        "ms": 6642,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -678,7 +678,7 @@
       {
         "id": "bench_003",
         "kind": "inactive_employer",
-        "ms": 4262,
+        "ms": 4376,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -692,7 +692,7 @@
       {
         "id": "bench_004",
         "kind": "perfect_fake",
-        "ms": 4112,
+        "ms": 3972,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -706,7 +706,7 @@
       {
         "id": "bench_005",
         "kind": "honest",
-        "ms": 4772,
+        "ms": 4198,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -718,7 +718,7 @@
       {
         "id": "bench_006",
         "kind": "forged_net",
-        "ms": 4136,
+        "ms": 6619,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -732,7 +732,7 @@
       {
         "id": "bench_007",
         "kind": "forged_balance",
-        "ms": 4672,
+        "ms": 6769,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -746,7 +746,7 @@
       {
         "id": "bench_008",
         "kind": "inactive_employer",
-        "ms": 3897,
+        "ms": 4479,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -760,7 +760,7 @@
       {
         "id": "bench_009",
         "kind": "perfect_fake",
-        "ms": 5015,
+        "ms": 4373,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -774,7 +774,7 @@
       {
         "id": "bench_010",
         "kind": "honest",
-        "ms": 3990,
+        "ms": 3956,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -786,7 +786,7 @@
       {
         "id": "bench_011",
         "kind": "forged_net",
-        "ms": 4235,
+        "ms": 6340,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -800,7 +800,7 @@
       {
         "id": "bench_012",
         "kind": "forged_balance",
-        "ms": 4575,
+        "ms": 6607,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -814,7 +814,7 @@
       {
         "id": "bench_013",
         "kind": "inactive_employer",
-        "ms": 4116,
+        "ms": 4530,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -830,7 +830,7 @@
       {
         "id": "bench_014",
         "kind": "perfect_fake",
-        "ms": 4202,
+        "ms": 3755,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -844,7 +844,7 @@
       {
         "id": "bench_015",
         "kind": "honest",
-        "ms": 4272,
+        "ms": 4336,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -856,7 +856,7 @@
       {
         "id": "bench_016",
         "kind": "forged_net",
-        "ms": 3896,
+        "ms": 5863,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -870,7 +870,7 @@
       {
         "id": "bench_017",
         "kind": "forged_balance",
-        "ms": 3799,
+        "ms": 6601,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -886,7 +886,7 @@
       {
         "id": "bench_018",
         "kind": "inactive_employer",
-        "ms": 3967,
+        "ms": 3733,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -900,7 +900,7 @@
       {
         "id": "bench_019",
         "kind": "perfect_fake",
-        "ms": 4455,
+        "ms": 4164,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -914,7 +914,7 @@
       {
         "id": "bench_020",
         "kind": "honest",
-        "ms": 3803,
+        "ms": 3993,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -928,7 +928,7 @@
       {
         "id": "bench_021",
         "kind": "forged_net",
-        "ms": 4201,
+        "ms": 6387,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -942,7 +942,7 @@
       {
         "id": "bench_022",
         "kind": "forged_balance",
-        "ms": 4037,
+        "ms": 6357,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -956,7 +956,7 @@
       {
         "id": "bench_023",
         "kind": "inactive_employer",
-        "ms": 4192,
+        "ms": 4218,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -970,7 +970,7 @@
       {
         "id": "bench_024",
         "kind": "perfect_fake",
-        "ms": 4017,
+        "ms": 4037,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -984,7 +984,7 @@
       {
         "id": "bench_025",
         "kind": "honest",
-        "ms": 4020,
+        "ms": 3758,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -996,7 +996,7 @@
       {
         "id": "bench_026",
         "kind": "forged_net",
-        "ms": 4155,
+        "ms": 6900,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1010,7 +1010,7 @@
       {
         "id": "bench_027",
         "kind": "forged_balance",
-        "ms": 4217,
+        "ms": 6804,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1024,7 +1024,7 @@
       {
         "id": "bench_028",
         "kind": "inactive_employer",
-        "ms": 4238,
+        "ms": 4239,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1040,7 +1040,7 @@
       {
         "id": "bench_029",
         "kind": "perfect_fake",
-        "ms": 4062,
+        "ms": 3848,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1054,7 +1054,7 @@
       {
         "id": "bench_030",
         "kind": "honest",
-        "ms": 3848,
+        "ms": 3930,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -1066,7 +1066,7 @@
       {
         "id": "bench_031",
         "kind": "forged_net",
-        "ms": 4106,
+        "ms": 6994,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1080,7 +1080,7 @@
       {
         "id": "bench_032",
         "kind": "forged_balance",
-        "ms": 3955,
+        "ms": 6677,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1094,7 +1094,7 @@
       {
         "id": "bench_033",
         "kind": "inactive_employer",
-        "ms": 4256,
+        "ms": 4463,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1108,7 +1108,7 @@
       {
         "id": "bench_034",
         "kind": "perfect_fake",
-        "ms": 4378,
+        "ms": 3837,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1122,7 +1122,7 @@
       {
         "id": "bench_035",
         "kind": "honest",
-        "ms": 3596,
+        "ms": 3751,
         "agents_ok": true,
         "leaks": [],
         "codes": [],
@@ -1137,7 +1137,7 @@
       {
         "id": "bench_036",
         "kind": "forged_net",
-        "ms": 3960,
+        "ms": 5909,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1151,7 +1151,7 @@
       {
         "id": "bench_037",
         "kind": "forged_balance",
-        "ms": 3965,
+        "ms": 6126,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1165,7 +1165,7 @@
       {
         "id": "bench_038",
         "kind": "inactive_employer",
-        "ms": 3791,
+        "ms": 3978,
         "agents_ok": true,
         "leaks": [],
         "codes": [
@@ -1179,7 +1179,7 @@
       {
         "id": "bench_039",
         "kind": "perfect_fake",
-        "ms": 3640,
+        "ms": 3761,
         "agents_ok": true,
         "leaks": [],
         "codes": [
