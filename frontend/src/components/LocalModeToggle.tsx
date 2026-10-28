@@ -31,15 +31,15 @@ export function LocalModeToggle() {
     on ? 'bg-ink text-white' : 'text-ink-2 hover:text-ink',
   )
   return (
-    <div role="group" aria-label="Unde rulează AI-ul" className="flex items-center gap-2">
+    <div role="group" aria-label="Where the AI runs" className="flex items-center gap-2">
       <span className="hidden text-sm text-ink-3 lg:inline">AI</span>
       <div className="flex overflow-hidden rounded-sm border border-line">
         <button type="button" className={seg(!local)} aria-pressed={!local} onClick={() => choose(false)}
-                title={mode === 'mock' ? 'Răspunsuri salvate (test)' : 'Modele din cloud, primesc doar date pseudonimizate'}>
+                title={mode === 'mock' ? 'Saved responses (test)' : 'Cloud models, receive only pseudonymized data'}>
           <Cloud className="h-4 w-4" aria-hidden /> {mode === 'mock' ? 'Test' : 'Cloud'}
         </button>
         <button type="button" className={seg(local)} aria-pressed={local} onClick={() => choose(true)}
-                title="Totul rulează pe serverul băncii, fără internet">
+                title="Everything runs on the bank's server, no internet">
           <HardDrive className="h-4 w-4" aria-hidden /> Local
         </button>
       </div>

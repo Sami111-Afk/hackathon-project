@@ -21,7 +21,7 @@ export interface ZkStep {
 
 export interface ZkDemoResult {
   ok: boolean
-  answer: 'DA' | 'NU'
+  answer: 'YES' | 'NO' | 'DA' | 'NU' // backend-ul vechi trimite DA/NU
   reason: string
   attack: ZkAttack
   steps: ZkStep[]
@@ -36,11 +36,11 @@ export interface ZkDemoResult {
 export const DSTI = 0.4
 
 export const ATTACKS: { id: ZkAttack; label: string; hint: string }[] = [
-  { id: 'none', label: 'Fără atac', hint: 'Clientul cinstit dovedește venitul atestat.' },
-  { id: 'lie_salary', label: 'Minte la salariu', hint: 'Pretinde un salariu mai mare decât cel semnat de angajator.' },
-  { id: 'lower_threshold', label: 'Coboară pragul', hint: 'Dovedește un prag mai mic decât cel cerut de bancă.' },
-  { id: 'fake_signature', label: 'Semnătură falsă', hint: 'Semnează singur atestarea, cu o cheie din afara registrului.' },
-  { id: 'replay', label: 'Retrimite dovada', hint: 'Folosește a doua oară o dovadă deja acceptată.' },
+  { id: 'none', label: 'No attack', hint: 'The honest client proves the attested income.' },
+  { id: 'lie_salary', label: 'Lies about salary', hint: 'Claims a higher salary than the one signed by the employer.' },
+  { id: 'lower_threshold', label: 'Lower the threshold', hint: 'Proves a lower threshold than the one the bank asked for.' },
+  { id: 'fake_signature', label: 'Fake signature', hint: 'Signs the attestation itself, with a key from outside the registry.' },
+  { id: 'replay', label: 'Replay the proof', hint: 'Reuses a proof that was already accepted.' },
 ]
 
 // Firmele inventate din Arenă (aceleași CUI-uri ca în registrul angajatorilor de pe backend).
@@ -48,7 +48,7 @@ export const EMPLOYERS: { cui: string; name: string }[] = [
   { cui: 'RO9341910290', name: 'Bitwave Software SRL' },
   { cui: 'RO9185472906', name: 'Tehnoserv Construct SRL' },
   { cui: 'RO9477321003', name: 'Nordic Consulting Grup SRL' },
-  { cui: 'RO9402119372', name: 'Agro Prahova Distribuție SRL' },
+  { cui: 'RO9402119372', name: 'Agro Prahova Distribution SRL' },
 ]
 
 export async function runZkDemo(body: ZkDemoRequest): Promise<ZkDemoResult> {
@@ -61,15 +61,15 @@ export async function runZkDemo(body: ZkDemoRequest): Promise<ZkDemoResult> {
     return res.json()
   } catch (e) {
     if (e instanceof ApiError) throw new Error(errorMessage(e.status))
-    throw new Error('Serverul nu răspunde. Verifică backend-ul sau deschide pagina cu ?mock=1.')
+    throw new Error('The server is not responding. Check the backend or open the page with ?mock=1.')
   }
 }
 
 function errorMessage(status: number): string {
-  if (status === 503) return 'ZK nu e disponibil pe acest server: lipsesc nargo/bb (vezi zk/README.md). Pentru demo, folosește ?mock=1.'
-  if (status === 404) return 'Angajatorul nu e în registru.'
-  if (status === 422) return 'Datele din formular nu sunt valide.'
-  return `Cererea a eșuat (${status}).`
+  if (status === 503) return 'ZK is not available on this server: nargo/bb are missing (see zk/README.md). For the demo, use ?mock=1.'
+  if (status === 404) return 'The employer is not in the registry.'
+  if (status === 422) return 'The form data is not valid.'
+  return `The request failed (${status}).`
 }
 
 /** Același flux ca pe backend, cu valori inventate, pentru demo fără server (?mock=1). */
@@ -80,31 +80,42 @@ export function mockZkDemo(body: ZkDemoRequest): ZkDemoResult {
   const commitment = '0x1c3f9a52e07b4d18a6e2c9f05b7d3e41a8c6f2b90d4e7a15c3b8f60e92d4a7b1'
   const proofBytes = 14_592
   const steps: ZkStep[] = [
-    { actor: 'bancă', action: 'cere dovadă', detail: `rată ${fmt(body.installment_ron)} lei → prag ${fmt(threshold)} lei, nonce unic` },
-    { actor: 'angajator', action: 'atestă', detail: 'angajament + semnătură ECDSA (salariul merge doar la client)' },
+    { actor: 'bank', action: 'requests proof', detail: `installment ${fmt(body.installment_ron)} lei → threshold ${fmt(threshold)} lei, unique nonce` },
+    { actor: 'employer', action: 'attests', detail: 'commitment + ECDSA signature (the salary goes only to the client)' },
   ]
   const base = { employer, threshold_ron: threshold, installment_ron: body.installment_ron, attack: body.attack, verify_ms: 41 }
-  const no = (reason: string): ZkDemoResult => ({ ...base, ok: false, answer: 'NU', reason, steps })
+  const no = (reason: string): ZkDemoResult => ({ ...base, ok: false, answer: 'NO', reason, steps })
 
   // Ca în circuit: clientul nu poate genera dovada dacă afirmația e falsă.
   const proven = body.attack === 'lower_threshold' ? threshold / 2 : threshold
   if (body.attack === 'lie_salary' || body.net_salary_ron < proven) {
-    const reason = 'circuitul refuză: salariul nu corespunde angajamentului sau e sub prag'
-    steps.push({ actor: 'client', action: 'nu poate genera dovada', detail: reason })
-    return no(`clientul nu poate dovedi: ${reason}`)
+    const reason = 'the circuit refuses: the salary does not match the commitment or is below the threshold'
+    steps.push({ actor: 'client', action: 'cannot generate proof', detail: reason })
+    return no(`the client cannot prove it: ${reason}`)
   }
-  steps.push({ actor: 'client', action: 'generează dovada', detail: `${proofBytes} octeți în 1840 ms` })
+  steps.push({ actor: 'client', action: 'generates proof', detail: `${proofBytes} bytes in 1840 ms` })
   const bank_saw = { cui: body.cui, period: body.period, commitment, proof_bytes: proofBytes }
 
   let res: ZkDemoResult
-  if (body.attack === 'lower_threshold') res = no('dovada ZK nu e validă pentru pragul și cererea băncii')
-  else if (body.attack === 'fake_signature') res = no('semnătura angajatorului nu e validă')
-  else res = { ...base, ok: true, answer: 'DA', reason: 'venit net ≥ prag, atestat de angajator; salariul nu a fost văzut', steps }
-  steps.push({ actor: 'bancă', action: 'verifică', detail: `${res.answer} — ${res.reason}` })
+  if (body.attack === 'lower_threshold') res = no('the ZK proof is not valid for the bank\'s threshold and request')
+  else if (body.attack === 'fake_signature') res = no('the employer\'s signature is not valid')
+  else res = { ...base, ok: true, answer: 'YES', reason: 'net income ≥ threshold, attested by the employer; the salary was never seen', steps }
+  steps.push({ actor: 'bank', action: 'verifies', detail: `${res.answer} — ${res.reason}` })
 
   if (body.attack === 'replay') {
-    res = no('nonce necunoscut, expirat sau deja folosit')
-    steps.push({ actor: 'atacator', action: 'retrimite aceeași dovadă', detail: `NU — ${res.reason}` })
+    res = no('nonce unknown, expired or already used')
+    steps.push({ actor: 'attacker', action: 'resends the same proof', detail: `NO — ${res.reason}` })
   }
   return { ...res, steps, bank_saw }
 }
+
+// Backend-ul poate trimite încă text românesc (DA/NU, actori, motive); îl afișăm în engleză.
+const ACTOR_EN: Record<string, string> = { 'bancă': 'bank', angajator: 'employer', client: 'client', atacator: 'attacker' }
+export const normActor = (a: string) => ACTOR_EN[a] ?? a
+export const normAnswer = (a: string) => (a === 'DA' ? 'YES' : a === 'NU' ? 'NO' : a)
+const REASON_EN: Record<string, string> = {
+  'venit net ≥ prag, atestat de angajator; salariul nu a fost văzut': 'net income ≥ threshold, attested by the employer; the salary was never seen',
+  'semnătura angajatorului nu e validă': "the employer's signature is not valid",
+  'nonce necunoscut, expirat sau deja folosit': 'nonce unknown, expired or already used',
+}
+export const normText = (t: string) => REASON_EN[t] ?? t

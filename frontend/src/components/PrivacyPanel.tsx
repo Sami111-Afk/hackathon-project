@@ -1,6 +1,7 @@
 import { Calculator, EyeOff, Lock, ShieldCheck } from 'lucide-react'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { apiFetch } from '@/lib/api'
+import { normAnswer, normText } from '@/lib/zk'
 import { cn } from '@/lib/utils'
 
 // Dovezile de confidențialitate ale dosarului (GET /api/cases/{id}/privacy).
@@ -17,7 +18,7 @@ interface Privacy {
     he_scheme: string; he_formula: string; he_ms: string; he_ciphertext_kb: string; he_context_kb: string
     he_ciphertext_sample: string; verifier_has_secret_key: boolean
   }
-  zk: null | { answer: 'DA' | 'NU'; reason: string; threshold_ron?: number | null; employer?: string | null }
+  zk: null | { answer: string; reason: string; threshold_ron?: number | null; employer?: string | null }
   prompt_injection_detected: boolean
 }
 
@@ -39,7 +40,7 @@ function Card({ icon, title, status, ok, children, proof }: {
       <div className="mt-3 text-sm text-ink-2">{children}</div>
       {proof && (
         <details className="mt-3 text-sm">
-          <summary className="cursor-pointer font-medium text-ink hover:underline">Vezi dovada</summary>
+          <summary className="cursor-pointer font-medium text-ink hover:underline">See the evidence</summary>
           <div className="mt-2 space-y-2">{proof}</div>
         </details>
       )}
@@ -71,65 +72,65 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ case_id: caseId }),
     })
       .then(load)
-      .catch(() => alert('Dovada ZK nu a putut fi generată: serverul nu a răspuns.'))
+      .catch(() => alert('The ZK proof could not be generated: the server did not respond.'))
       .finally(() => setZkBusy(false))
   }
 
   if (!ready) return null
-  if (error) return <p className="text-sm text-ink-3">Dovezile de confidențialitate nu s-au încărcat.</p>
-  if (!data) return <p className="text-sm text-ink-3">Se încarcă dovezile de confidențialitate.</p>
+  if (error) return <p className="text-sm text-ink-3">The privacy evidence could not be loaded.</p>
+  if (!data) return <p className="text-sm text-ink-3">Loading the privacy evidence.</p>
 
   const { at_rest: rest, ai_saw: ai, homomorphic: he, zk } = data
   const totalEnc = rest.documents.reduce((s, d) => s + d.encrypted_bytes, 0)
 
   return (
-    <section aria-label="Confidențialitate" className="space-y-3">
+    <section aria-label="Privacy" className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold text-ink">Ce poate demonstra banca despre datele clientului</h2>
-        <span className="text-sm text-ink-3">Nimic nu e decriptat pentru această pagină.</span>
+        <h2 className="text-lg font-semibold text-ink">What the bank can prove about the client's data</h2>
+        <span className="text-sm text-ink-3">Nothing is decrypted for this page.</span>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card icon={<Lock className="h-4 w-4" />} title="Criptat pe disc" ok={rest.documents.length > 0}
-          status={`${rest.documents.length} documente, ${rest.vault.count} valori în seif`}
+        <Card icon={<Lock className="h-4 w-4" />} title="Encrypted on disk" ok={rest.documents.length > 0}
+          status={`${rest.documents.length} documents, ${rest.vault.count} values in the vault`}
           proof={<>
             {rest.documents.map((d) => (
-              <div key={d.doc_id}><div className="text-xs text-ink-3">{d.filename}, {kb(d.encrypted_bytes)} pe disc</div><Mono>{d.sample}</Mono></div>
+              <div key={d.doc_id}><div className="text-xs text-ink-3">{d.filename}, {kb(d.encrypted_bytes)} on disk</div><Mono>{d.sample}</Mono></div>
             ))}
-            {rest.vault.sample && <div><div className="text-xs text-ink-3">Seif: {rest.vault.labels.join(' ')}</div><Mono>{rest.vault.sample}</Mono></div>}
+            {rest.vault.sample && <div><div className="text-xs text-ink-3">Vault: {rest.vault.labels.join(' ')}</div><Mono>{rest.vault.sample}</Mono></div>}
           </>}>
-          Fișierele ({kb(totalEnc)}) și datele personale stau criptate ({rest.scheme.split(' ')[0]}, AES). Pe disc nu există o imagine sau un CNP în clar.
+          The files ({kb(totalEnc)}) and personal data are stored encrypted ({rest.scheme.split(' ')[0]}, AES). There is no plaintext image or CNP on disk.
         </Card>
 
-        <Card icon={<EyeOff className="h-4 w-4" />} title="AI-ul n-a văzut date personale" ok={ai.with_pii === 0}
+        <Card icon={<EyeOff className="h-4 w-4" />} title="The AI saw no personal data" ok={ai.with_pii === 0}
           status={ai.llm_calls > 0 && ai.local_calls === ai.llm_calls
-            ? `${ai.llm_calls} cereri către AI, toate pe calculatorul băncii`
-            : `${ai.llm_calls} cereri către AI, ${ai.with_pii} cu date personale`}
-          proof={ai.redacted_sample ? <><div className="text-xs text-ink-3">Textul exact primit de AI:</div><Mono>{ai.redacted_sample}</Mono></> : undefined}>
-          AI-ul lucrează pe etichete ca [PERSOANA_1] și [CNP_1]. Chiar păcălit printr-un text ascuns, nu are ce date reale să scape.
-          {ai.blocked > 0 && ` Poarta anti-date-personale a blocat ${ai.blocked} cereri.`}
-          {data.prompt_injection_detected && <span className="mt-1 block font-medium text-danger">Documentul conține un text care încearcă să păcălească AI-ul.</span>}
+            ? `${ai.llm_calls} AI requests, all on the bank's own computer`
+            : `${ai.llm_calls} AI requests, ${ai.with_pii} with personal data`}
+          proof={ai.redacted_sample ? <><div className="text-xs text-ink-3">The exact text the AI received:</div><Mono>{ai.redacted_sample}</Mono></> : undefined}>
+          The AI works on labels like [PERSOANA_1] and [CNP_1]. Even if tricked by hidden text, it has no real data to leak.
+          {ai.blocked > 0 && ` The PII gate blocked ${ai.blocked} requests.`}
+          {data.prompt_injection_detected && <span className="mt-1 block font-medium text-danger">The document contains text that tries to trick the AI.</span>}
         </Card>
 
-        <Card icon={<Calculator className="h-4 w-4" />} title="Calcul pe date criptate" ok={he ? true : null}
-          status={he ? `${he.he_scheme.split(',')[0]}, ${he.he_ms} ms` : 'nefolosit la acest dosar'}
+        <Card icon={<Calculator className="h-4 w-4" />} title="Computation on encrypted data" ok={he ? true : null}
+          status={he ? `${he.he_scheme.split(',')[0]}, ${he.he_ms} ms` : 'not used for this application'}
           proof={he ? <>
-            <div className="text-xs text-ink-3">Formula calculată pe ciphertext: {he.he_formula}</div>
-            <div className="text-xs text-ink-3">Primii octeți din salariul criptat ({he.he_ciphertext_kb} KB):</div>
+            <div className="text-xs text-ink-3">Formula computed on the ciphertext: {he.he_formula}</div>
+            <div className="text-xs text-ink-3">First bytes of the encrypted salary ({he.he_ciphertext_kb} KB):</div>
             <Mono>{he.he_ciphertext_sample}…</Mono>
           </> : undefined}>
           {he
-            ? <>Taxele de pe fluturaș au fost refăcute de un verificator care a primit doar sumele criptate și <b>nu are cheia</b>. Banca decriptează doar rezultatul.</>
-            : 'Fluturașul nu a avut sume citibile pentru verificarea criptată.'}
+            ? <>The payslip deductions were recomputed by a verifier that received only the encrypted amounts and <b>does not hold the key</b>. The bank decrypts only the result.</>
+            : 'The payslip had no readable amounts for the encrypted check.'}
         </Card>
 
-        <Card icon={<ShieldCheck className="h-4 w-4" />} title="Venit dovedit fără să-l vedem" ok={zk ? zk.answer === 'DA' : null}
-          status={zk ? `Răspuns ZK: ${zk.answer}` : 'încă necerut'}>
+        <Card icon={<ShieldCheck className="h-4 w-4" />} title="Income proved without seeing it" ok={zk ? normAnswer(zk.answer) === 'YES' : null}
+          status={zk ? `ZK answer: ${normAnswer(zk.answer)}` : 'not requested yet'}>
           {zk
-            ? <>{zk.reason}{zk.threshold_ron ? ` (prag ${zk.threshold_ron.toLocaleString('ro-RO')} lei` : ''}{zk.employer ? `, atestat de ${zk.employer})` : zk.threshold_ron ? ')' : ''}.</>
-            : 'Clientul poate dovedi că venitul lui trece pragul cerut, fără să-l arate băncii (zero-knowledge).'}
+            ? <>{normText(zk.reason)}{zk.threshold_ron ? ` (threshold ${zk.threshold_ron.toLocaleString('ro-RO')} lei` : ''}{zk.employer ? `, attested by ${zk.employer})` : zk.threshold_ron ? ')' : ''}.</>
+            : 'The client can prove their income clears the required threshold without showing it to the bank (zero-knowledge).'}
           <button type="button" onClick={askZk} disabled={zkBusy}
             className="mt-3 flex h-9 items-center rounded-sm border border-line px-3 text-sm font-medium text-ink hover:bg-canvas disabled:opacity-40">
-            {zkBusy ? 'Se generează dovada…' : zk ? 'Cere din nou' : 'Cere dovadă de venit'}
+            {zkBusy ? 'Generating the proof…' : zk ? 'Request again' : 'Request income proof'}
           </button>
         </Card>
       </div>

@@ -20,12 +20,12 @@ export function LoginPage() {
       const r = await fetch(`${apiUrl()}/api/settings`, {
         headers: { ...API_HEADERS, Authorization: `Bearer ${token.trim()}` },
       })
-      if (r.status === 401) { setError('Cheia de acces nu e corectă pentru acest server.'); return }
-      if (!r.ok) { setError(`Serverul a răspuns cu eroare (${r.status}).`); return }
+      if (r.status === 401) { setError('The access key is not correct for this server.'); return }
+      if (!r.ok) { setError(`The server responded with an error (${r.status}).`); return }
       login(token, name)
       nav('/dashboard')
     } catch {
-      setError('Serverul nu răspunde. Verifică adresa de mai jos sau deschide demo-ul fără server.')
+      setError('The server is not responding. Check the address below or open the demo without a server.')
     } finally {
       setBusy(false)
     }
@@ -41,26 +41,26 @@ export function LoginPage() {
             <span className="grid h-10 w-10 place-items-center rounded-sm bg-ink font-condensed text-xl font-bold text-brand">O</span>
             <div>
               <div className="text-xl font-bold tracking-tight text-ink">ORB</div>
-              <div className="text-sm text-ink-3">Verificarea dosarelor de credit</div>
+              <div className="text-sm text-ink-3">Loan application verification</div>
             </div>
           </div>
           <form onSubmit={submit} className="space-y-5 rounded-md border border-line bg-surface p-6">
-            <h1 className="text-xl font-semibold text-ink">Autentificare</h1>
+            <h1 className="text-xl font-semibold text-ink">Sign in</h1>
             <div className="space-y-1.5">
-              <label htmlFor="name" className="text-sm font-medium text-ink-2">Numele tău, apare pe decizii</label>
+              <label htmlFor="name" className="text-sm font-medium text-ink-2">Your name, shown on decisions</label>
               <input id="name" className={input} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="token" className="text-sm font-medium text-ink-2">Cheia de acces a sucursalei</label>
+              <label htmlFor="token" className="text-sm font-medium text-ink-2">Branch access key</label>
               <input id="token" type="password" className={input} value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" />
             </div>
             {error && <p className="text-sm text-danger" role="alert">{error}</p>}
             <button type="submit" disabled={busy} className="h-11 w-full rounded-sm bg-ink text-base font-semibold text-white hover:bg-black disabled:opacity-60">
-              {busy ? 'Se verifică…' : 'Intră'}
+              {busy ? 'Checking…' : 'Sign in'}
             </button>
           </form>
           <p className="mt-4 text-sm text-ink-3">Server: {apiUrl()}</p>
-          <a href="/cases/case_maria?mock=1" className="mt-1 inline-block text-sm font-medium text-info hover:underline">Deschide demo-ul fără server</a>
+          <a href="/cases/case_maria?mock=1" className="mt-1 inline-block text-sm font-medium text-info hover:underline">Open the demo without a server</a>
         </div>
       </div>
     </div>

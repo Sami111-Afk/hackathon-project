@@ -33,7 +33,7 @@ export function AgentBand({ agents }: { agents: Record<AgentName, AgentLane> }) 
               </div>
             </div>
             <p className={cn('min-h-[3.75rem] text-[15px] leading-snug', lane.message ? 'text-ink-2' : 'text-ink-3')}>
-              {lane.message || (running ? 'Lucrează…' : failed ? 'Nu a terminat' : 'În așteptare')}
+              {lane.message || (running ? 'Working…' : failed ? 'Did not finish' : 'Waiting')}
             </p>
             {risk != null && (
               <div className="flex items-center gap-2">
@@ -41,7 +41,7 @@ export function AgentBand({ agents }: { agents: Record<AgentName, AgentLane> }) 
                   <div className={cn('h-full', risk >= 0.5 ? 'bg-danger' : risk >= 0.25 ? 'bg-warn' : 'bg-ok')}
                        style={{ width: `${Math.round(risk * 100)}%` }} />
                 </div>
-                <span className="w-16 text-right text-sm font-semibold tabular-nums text-ink">risc {Math.round(risk * 100)}</span>
+                <span className="w-16 text-right text-sm font-semibold tabular-nums text-ink">risk {Math.round(risk * 100)}</span>
               </div>
             )}
           </li>
