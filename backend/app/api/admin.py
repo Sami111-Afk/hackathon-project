@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from app.agents.paznic.vault import vault
 from app.api.deps import require_bank
 from app.arena import attacker
 from app.arena import service as arena_service
@@ -111,6 +112,8 @@ def reset():
         raise HTTPException(403, "reset dezactivat în modul demo")
     for case in store.list():
         delete_case_files(case.id)
+        vault.forget(case.id)
+    vault.reset()
     store.reset()
     bus.reset()
     audit.reset()
