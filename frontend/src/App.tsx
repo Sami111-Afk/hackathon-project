@@ -7,6 +7,7 @@ import { isMock } from '@/lib/config'
 // Fiecare pagină se încarcă separat: telefonul din Arena nu descarcă graficele băncii.
 const CasePage = lazy(() => import('@/pages/CasePage').then((m) => ({ default: m.CasePage })))
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
+const ZkPage = lazy(() => import('@/pages/ZkPage').then((m) => ({ default: m.ZkPage })))
 const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
 const ArenaStart = lazy(() => import('@/pages/arena/ArenaStart').then((m) => ({ default: m.ArenaStart })))
 const ArenaForge = lazy(() => import('@/pages/arena/ArenaForge').then((m) => ({ default: m.ArenaForge })))
@@ -29,6 +30,7 @@ export default function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+            <Route path="/zk" element={<RequireAuth><ZkPage /></RequireAuth>} />
             <Route path="/cases/:caseId" element={<RequireAuth><CasePage /></RequireAuth>} />
             {/* Arena: publică, fără login */}
             <Route path="/arena" element={<ArenaStart />} />
