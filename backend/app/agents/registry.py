@@ -9,6 +9,7 @@ redă rezultatul din dosarul Mariei. Când e gata, înlocuiești aici linia ta:
 import logging
 
 from app.agents.compliance.agent import Compliance
+from app.agents.functionar.agent import Functionar
 from app.agents.paznic.agent import Paznic
 from app.agents.paznic.ocr import ocr_available
 from app.agents.stubs import StubAgent
@@ -24,7 +25,7 @@ def _paznic():
 
 AGENTS = {
     "paznic": _paznic(),                                                        # Narcis
-    "functionar": StubAgent("functionar", "Citesc documentele", delay=2.0),     # Stefan
+    "functionar": Functionar(),                                                 # Stefan
     "verificator": StubAgent("verificator", "Refac calculele", delay=1.8),      # Stefan
     "detector": StubAgent("detector", "Caut urme de editare", delay=2.5),       # Narcis
     "detectiv": StubAgent("detectiv", "Compar cu alte dosare", delay=0.5),      # Erin

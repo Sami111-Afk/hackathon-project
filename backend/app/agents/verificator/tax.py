@@ -102,15 +102,21 @@ def compute_payslip(gross: float, dependents: int = 0, min_wage: float | None = 
 def check_net(
     gross: float,
     declared_net: float,
-    dependents: int = 0,
+    dependents: int | None = None,
     evidence: Evidence | None = None,
     min_wage: float | None = None,
     period: str | None = None,
 ) -> Finding | None:
-    """NET_MISMATCH dacă netul declarat nu iese din brut, altfel None. `period` = luna fluturașului („YYYY-MM”)."""
-    taxes = compute_payslip(gross, dependents, min_wage, period)
-    if abs(declared_net - taxes.net) <= NET_TOLERANCE_RON:
+    """NET_MISMATCH dacă netul declarat nu iese din brut, altfel None. `period` = luna fluturașului („YYYY-MM”).
+
+    `dependents=None` (nu scrie pe fluturaș) → acceptăm netul dacă se potrivește cu ORICE număr de persoane
+    în întreținere (0–4): altfel am marca drept falși oamenii cinstiți cu copii și salariu mic.
+    """
+    options = range(5) if dependents is None else [dependents]
+    candidates = [compute_payslip(gross, d, min_wage, period) for d in options]
+    if any(abs(declared_net - t.net) <= NET_TOLERANCE_RON for t in candidates):
         return None
+    taxes = candidates[0]
     return Finding(
         code="NET_MISMATCH",
         severity="high",
