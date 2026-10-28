@@ -467,6 +467,9 @@ def summarize(run: dict) -> dict:
         "scurgeri_pe_tip": dict(Counter(k for r in cases for k in r["leaks"])),
         "extragere_corecta": {k: f"{v}/{len(cases)}" for k, v in field_ok.items()},
         "cinstiti_loviti": f"{sum(r['recommendation'] != 'clear' for r in honest)}/{len(honest)}",
+        # „lovit” = nu e aprobat automat; separat: trimis la verificare umană vs. acuzat (escaladat la investigație)
+        "cinstiti_trimisi_la_om": f"{sum(r['recommendation'] == 'review' for r in honest)}/{len(honest)}",
+        "cinstiti_acuzati": f"{sum(r['recommendation'] == 'escalate' for r in honest)}/{len(honest)}",
         "cinstiti_loviti_detalii": [r["codes"] for r in honest if r["recommendation"] != "clear"],
         "falsuri_prinse": {k: f"{sum(bool(r['expected_caught']) for r in by_kind[k])}/{len(by_kind[k])}"
                            for k in EXPECTED if by_kind[k]},

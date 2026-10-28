@@ -4,14 +4,14 @@ Scris de Samuel pe 28.10, ~15:30, din feedback-ul a 8 „jurați” independenț
 Consens: **tehnic suntem peste medie; pierdem dacă povestea e „fraudă + multă tehnologie”**. Tema Raiffeisen e
 *eficiență operațională: muncă repetitivă cu documente, date, verificare* → asta e povestea.
 
-**Fraza de deschidere:** „ORB face verificarea repetitivă a dosarelor de credit în 20 de secunde în loc de X minute —
+**Fraza de deschidere:** „ORB face verificarea repetitivă a dosarelor de credit în 20 de secunde în loc de 20 de minute —
 fără ca datele clienților să iasă din bancă. Fraudele prinse sunt bonusul.”
 
 ## Video — 3:00 (ce se vede · ce se spune)
 
 | Timp | Pe ecran | Text (idee) |
 |---|---|---|
-| 0:00–0:20 | Un analist cu 3 documente (buletin, fluturaș, extras) + cronometru | „Azi, un analist citește actele, recalculează taxele, caută firma la ANAF, compară cu extrasul. **Am cronometrat: X minute pe dosar.**” |
+| 0:00–0:20 | Un analist cu 3 documente (buletin, fluturaș, extras) | „Azi, un analist citește actele, recalculează taxele, caută firma la ANAF, compară cu extrasul. **~20 de minute pe dosar** — testul nostru și estimarea pe pași (la ipotecare, industria vorbește de ore). Plus verificarea rețelei, pe care un om nu o face.” |
 | 0:20–0:40 | Dashboard → „Dosar nou” → încarcă un dosar **cinstit** → aprobat | „Un dosar normal: ORB verifică tot, analistul aprobă. 20 de secunde.” (eficiența = munca repetitivă scoasă) |
 | 0:40–1:40 | Dosarul Mariei, „Analizează din nou, live”: cei 6 agenți pornesc; dovezile apar pe document („Arată pe document”) | „Același flux pe Maria, 67 de ani: netul nu iese din brut (8.307 vs 8.500), firma e inactivă, soldul nu se adună, zona netului a fost editată.” |
 | 1:40–2:00 | Graful: Maria legată de alte 5 cereri prin același IBAN | „Ce nu vede un om dosar cu dosar: același cont în 6 cereri, pe 6 identități.” |
@@ -27,13 +27,11 @@ Excepție posibilă: 5–10 s de Arena la final („oricine poate încerca să-l
 
 | Ce | Valoare | Sursă / cum |
 |---|---|---|
-| Timp manual pe dosar | **X min** (de cronometrat: un coleg, 3 dosare) | cronometru; + cifra de la mentorii Raiffeisen |
+| Timp manual pe dosar | **~20 min** — test informal al echipei (miercuri dimineață) + estimare pe pași: buletin 1,5–2 · fluturaș cu recalcul taxe 4–6 · ANAF 2–3 · extras (sold + salariu) 5–8 · concluzie 1–2 = **14–21 min**; verificarea rețelei (IBAN/telefon în alte cereri) +5–10 min sau nu se face deloc | context: la ipotecare, studiile din industrie raportează ore per dosar (Cotality/CoreLogic, V7 — surse de vânzători) → 20 min e prudent |
 | Timp ORB pe dosar | **~13–20 s** cloud · **8–9 s** local (RTX 4060, Ollama — testat și pe linkul public) | dosarul Mariei; benchmark |
 | Cost AI pe dosar | **~0,005 $** (Haiku extrage, Sonnet rezumă) | `llm_usage` pe dosarul Mariei |
-| Date personale trimise la AI-ul din cloud | **0 din 40** (curat) · **0 din 20** (poze de telefon) | `scripts/benchmark_pipeline.py`, `data/benchmark/pipeline_results.json` |
-| Oameni cinstiți acuzați | **0 din 8** (curat) · pe poze proaste: trimiși la om, nu acuzați | idem |
-| Falsuri prinse (net umflat / sold / firmă inactivă) | 8/8 · 8/8 · 8/8 pe documente curate | idem |
-| Cu AI-ul real (Haiku/Bedrock), 20 dosare | **0 valori inventate** (filtrul n-a avut ce opri) · **198/200 câmpuri corecte** · 0 cinstiți acuzați · 12/12 falsuri prinse · ~13 s/dosar | `--llm bedrock`, cheia `clean_bedrock` |
+| **Cu AI-ul real (Haiku/Bedrock), 60 dosare** | **0 date personale trimise în cloud · 0 valori inventate · 0/12 cinstiți acuzați** (3/12 trimiși la om) · **36/36 falsuri prinse** · câmpuri corecte 56–60/60 · ~12 s/dosar | `scripts/benchmark_pipeline.py --n 60 --llm bedrock` → `clean_bedrock` |
+| Poze de telefon, AI real, 20 dosare | 0 date trimise în cloud · 0/4 cinstiți acuzați (3/4 la om) · 10/12 falsuri prinse; extragerea scade mult → ORB trimite la om | `--phone --llm bedrock` → `phone_bedrock` |
 
 **Spunem deschis:** date sintetice, falsuri create de noi → „test de corectitudine a lanțului, nu acuratețe pe fraude reale”.
 Ce NU prindem: falsul „perfect” (taxe refăcute corect) nu se vede din fluturaș — doar din extras/ANAF.

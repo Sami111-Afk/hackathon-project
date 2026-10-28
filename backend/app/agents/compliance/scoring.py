@@ -15,12 +15,14 @@ SOFT_SIGNALS = {"ELA_ANOMALY": 0.3, "AI_IMAGE_SUSPECTED": 0.3, "EXIF_EDITOR": 0.
 # MRZ_INVALID nu e override: pe o poză de telefon, OCR-ul strică ușor cifrele de control din MRZ
 # (benchmark: un buletin cinstit escaladat doar din asta). Rămâne dovadă „ridicată” → minim verificare umană.
 HARD_OVERRIDES = {"CNP_CHECKSUM_INVALID", "COMPANY_INACTIVE", "COMPANY_NOT_FOUND",
-                  "PROMPT_INJECTION_SUSPECTED", "PII_GATE_BLOCKED"}
+                  "PROMPT_INJECTION_SUSPECTED"}
 
 FORGERY_CODES = {"NET_MISMATCH", "ELA_ANOMALY", "PDF_EDITOR_PRODUCER", "PDF_INCREMENTAL_UPDATE",
                  "BALANCE_MISMATCH", "AI_IMAGE_SUSPECTED", "MRZ_INVALID", "CNP_CHECKSUM_INVALID"}
 RING_CODES = {"FRAUD_RING_SUSPECTED", "SHARED_IBAN"}
-REVIEW_OVERRIDES = {"OCR_LOW_QUALITY", "MRZ_INVALID"}  # nu acuză pe nimeni, dar un om trebuie să se uite
+# PII_GATE_BLOCKED: poarta și-a făcut treaba (n-a plecat nimic în cloud) — nu e o dovadă împotriva clientului,
+# dar AI-ul n-a putut citi tot → un om verifică (benchmark cu Bedrock: 2/12 cinstiți escaladați doar din asta).
+REVIEW_OVERRIDES = {"OCR_LOW_QUALITY", "MRZ_INVALID", "PII_GATE_BLOCKED"}  # nu acuză pe nimeni; un om se uită
 
 ESCALATE_AT = 0.70  # de recalibrat pe benchmark: 0 fals pozitive pe dosarele legitime
 REVIEW_AT = 0.35
