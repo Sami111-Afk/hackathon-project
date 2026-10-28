@@ -18,18 +18,18 @@ const SURFACE = '#ffffff'
 const LEGEND_ORDER = ['clear', 'review', 'escalate']
 
 const STATUS_LABEL: Record<CaseStatus, string> = {
-  received: 'Received', processing: 'In analysis', awaiting_review: 'Awaiting decision', cleared: 'Approved',
+  received: 'Received', processing: 'Under analysis', awaiting_review: 'Awaiting decision', cleared: 'Approved',
   rejected: 'Rejected', escalated: 'Under investigation', error: 'Error',
 }
 
 /** Cum citește un analist cererea: suma, nu codul intern (tipul creditului nu e cunoscut). */
 function describe(c: CaseSummary): string {
-  const amount = c.requested_amount_ron ? `${Math.round(c.requested_amount_ron).toLocaleString('ro-RO')} lei` : 'unknown amount'
+  const amount = c.requested_amount_ron ? `${Math.round(c.requested_amount_ron).toLocaleString('en-GB')} lei` : 'unknown amount'
   return `Loan application for ${amount}`
 }
 
-const ron = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`
-const num = (n: number) => n.toLocaleString('ro-RO')
+const ron = (n: number) => `${Math.round(n).toLocaleString('en-GB')} lei`
+const num = (n: number) => n.toLocaleString('en-GB')
 
 function useDashboard() {
   const mock = isMock()
@@ -139,7 +139,7 @@ export function DashboardPage() {
         {creating && <NewCaseForm onClose={() => setCreating(false)} />}
         <section aria-label="Indicators" className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
           <Kpi label="Applications checked" value={s ? num(s.cases_processed) : '—'}
-               note={s ? `AI cost: $${s.ai_cost_usd.toLocaleString('ro-RO', { minimumFractionDigits: 2 })} in total` : undefined} />
+               note={s ? `AI cost: $${s.ai_cost_usd.toLocaleString('en-GB', { minimumFractionDigits: 2 })} in total` : undefined} />
           <Kpi label="Working time saved" value={s ? num(s.hours_saved) : '—'} unit="hours"
                note={s ? `Equivalent to ${ron(s.money_saved_ron)} in staff cost` : undefined} />
           <Kpi label="Frauds stopped" value={s ? num(s.frauds_stopped) : '—'}
@@ -156,9 +156,9 @@ export function DashboardPage() {
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="name" width={220} tickLine={false} axisLine={false}
                          tick={{ fill: '#1F2328', fontSize: 18 }} />
-                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} formatter={(v) => [`${Number(v).toLocaleString('ro-RO')} hours`, 'Time']} />
+                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} formatter={(v) => [`${Number(v).toLocaleString('en-GB')} hours`, 'Time']} />
                   <Bar dataKey="hours" radius={[0, 3, 3, 0]} barSize={40} isAnimationActive={false}>
-                    <LabelList dataKey="hours" position="right" formatter={(v) => `${Number(v).toLocaleString('ro-RO')} h`}
+                    <LabelList dataKey="hours" position="right" formatter={(v) => `${Number(v).toLocaleString('en-GB')} h`}
                                style={{ fill: '#1F2328', fontSize: 20, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>

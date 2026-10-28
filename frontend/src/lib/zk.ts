@@ -48,7 +48,7 @@ export const EMPLOYERS: { cui: string; name: string }[] = [
   { cui: 'RO9341910290', name: 'Bitwave Software SRL' },
   { cui: 'RO9185472906', name: 'Tehnoserv Construct SRL' },
   { cui: 'RO9477321003', name: 'Nordic Consulting Grup SRL' },
-  { cui: 'RO9402119372', name: 'Agro Prahova Distribution SRL' },
+  { cui: 'RO9402119372', name: 'Agro Prahova Distribuție SRL' },
 ]
 
 export async function runZkDemo(body: ZkDemoRequest): Promise<ZkDemoResult> {
