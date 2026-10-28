@@ -164,3 +164,16 @@
     @apply font-sans;
     }
 }
+/* Trecerea între paginile băncii (doar la click în meniu, nu la prima încărcare): conținutul se estompează scurt,
+   bara de sus (view-transition-name: app-nav) stă pe loc. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

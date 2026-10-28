@@ -2,12 +2,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { lazy, Suspense, type ReactNode } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { getToken } from '@/lib/auth'
+import { loadCasePage, loadDashboardPage, loadZkPage } from '@/lib/bankPages'
 import { isMock } from '@/lib/config'
 
 // Fiecare pagină se încarcă separat: telefonul din Arena nu descarcă graficele băncii.
-const CasePage = lazy(() => import('@/pages/CasePage').then((m) => ({ default: m.CasePage })))
-const DashboardPage = lazy(() => import('@/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })))
-const ZkPage = lazy(() => import('@/pages/ZkPage').then((m) => ({ default: m.ZkPage })))
+const CasePage = lazy(() => loadCasePage().then((m) => ({ default: m.CasePage })))
+const DashboardPage = lazy(() => loadDashboardPage().then((m) => ({ default: m.DashboardPage })))
+const ZkPage = lazy(() => loadZkPage().then((m) => ({ default: m.ZkPage })))
 const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
 const ArenaStart = lazy(() => import('@/pages/arena/ArenaStart').then((m) => ({ default: m.ArenaStart })))
 const ArenaForge = lazy(() => import('@/pages/arena/ArenaForge').then((m) => ({ default: m.ArenaForge })))
