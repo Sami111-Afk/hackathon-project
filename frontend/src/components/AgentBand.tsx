@@ -21,7 +21,7 @@ export function AgentBand({ agents }: { agents: Record<AgentName, AgentLane> }) 
         const st = STATUS[lane.status]
         const risk = lane.result?.risk
         return (
-          <div key={name} className={cn('rounded-xl border-2 p-3 transition-all', st.cls)}>
+          <div key={name} className={cn('rounded-xl border-2 p-3', st.cls)}>
             <div className="flex items-center gap-2 text-lg font-semibold">
               <span className="text-2xl" aria-hidden>{info.icon}</span>
               {info.label}

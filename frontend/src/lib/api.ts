@@ -1,5 +1,6 @@
 import { getToken, logout } from './auth'
 import { apiUrl } from './config'
+import type { GraphData } from './graph'
 import type { Case, Decision, DecisionAction } from './types'
 
 export class ApiError extends Error {
@@ -47,4 +48,9 @@ export async function getDocumentImage(
     `/api/cases/${encodeURIComponent(caseId)}/documents/${encodeURIComponent(docId)}/image?view=${view}&page=${page}`,
   )
   return URL.createObjectURL(await res.blob())
+}
+
+export async function getGraph(caseId?: string): Promise<GraphData> {
+  const q = caseId ? `?case_id=${encodeURIComponent(caseId)}` : ''
+  return (await apiFetch(`/api/graph${q}`)).json()
 }

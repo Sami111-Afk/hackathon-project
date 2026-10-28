@@ -9,6 +9,7 @@ redă rezultatul din dosarul Mariei. Când e gata, înlocuiești aici linia ta:
 import logging
 
 from app.agents.compliance.agent import Compliance
+from app.agents.detectiv.agent import Detectiv
 from app.agents.functionar.agent import Functionar
 from app.agents.paznic.agent import Paznic
 from app.agents.paznic.ocr import ocr_available
@@ -29,6 +30,6 @@ AGENTS = {
     "functionar": Functionar(),                                                 # Stefan
     "verificator": Verificator(),                                               # Stefan
     "detector": StubAgent("detector", "Caut urme de editare", delay=2.5),       # Narcis
-    "detectiv": StubAgent("detectiv", "Compar cu alte dosare", delay=0.5),      # Erin
+    "detectiv": Detectiv(),                                                     # Erin
     "compliance": Compliance(),                                                 # Samuel
 }

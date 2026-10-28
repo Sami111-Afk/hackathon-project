@@ -1,5 +1,6 @@
 import type { AgentName, AgentResult, AgentStatus, Case, Decision, PipelineEvent, Verdict } from './types'
 import { AGENTS } from './types'
+import { emptyGraph, mergeGraph, type GraphData } from './graph'
 
 export interface AgentLane {
   status: AgentStatus
@@ -13,6 +14,7 @@ export interface CaseLiveState {
   feed: PipelineEvent[] // tot ce a „spus” biroul, în ordine
   verdict: Verdict | null
   decision: Decision | null
+  graph: GraphData // rețeaua Detectivului, construită live din agent_progress
 }
 
 export function initialCaseState(snapshot?: Case | null): CaseLiveState {
@@ -28,6 +30,7 @@ export function initialCaseState(snapshot?: Case | null): CaseLiveState {
     feed: [],
     verdict: snapshot?.verdict ?? null,
     decision: snapshot?.decision ?? null,
+    graph: emptyGraph,
   }
 }
 
@@ -35,10 +38,12 @@ export type CaseAction =
   | { type: 'event'; event: PipelineEvent }
   | { type: 'reset'; snapshot?: Case | null }
   | { type: 'decided'; decision: Decision }
+  | { type: 'graph'; graph: GraphData }
 
 export function caseReducer(state: CaseLiveState, action: CaseAction): CaseLiveState {
   if (action.type === 'reset') return initialCaseState(action.snapshot)
   if (action.type === 'decided') return { ...state, decision: action.decision }
+  if (action.type === 'graph') return { ...state, graph: mergeGraph(state.graph, action.graph) }
 
   const ev = action.event
   if (ev.seq <= state.lastSeq) return state // duplicat (replay după reconectare)
@@ -52,6 +57,7 @@ export function caseReducer(state: CaseLiveState, action: CaseAction): CaseLiveS
     case 'agent_started':
     case 'agent_progress':
       if (agent) next.agents = { ...state.agents, [agent]: { ...state.agents[agent], status: 'running', message: ev.message } }
+      if (ev.data && 'graph_delta' in ev.data) next.graph = mergeGraph(state.graph, ev.data.graph_delta as GraphData)
       break
     case 'agent_finished':
     case 'agent_error': {
