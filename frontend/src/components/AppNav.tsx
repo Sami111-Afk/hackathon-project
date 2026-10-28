@@ -39,7 +39,8 @@ export function AppNav() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   useLayoutEffect(pageDrawn, [pathname]) // pagina nouă e pe ecran: estomparea poate porni
-  // Linkul merge direct la ultima rulare a Mariei (fără ocolul prin /cases/case_maria); aceeași listă ca Dashboard-ul.
+  // Linkul trece prin /cases/case_maria (alias-ul din CasePage → ultima rulare): după „Re-run live” rularea veche e ștearsă.
+  // Lista e folosită doar ca să preîncărcăm dosarul.
   const cases = useQuery({ queryKey: ['cases', false], queryFn: listCases, enabled: !mock, staleTime: 5000 })
   const mariaId = cases.data ? latestMariaId(cases.data) : undefined
   usePrefetchBankPages(mariaId, mock)
@@ -47,7 +48,7 @@ export function AppNav() {
   const links = [
     { to: '/dashboard', label: 'Overview' },
     // Activ pe orice rulare a Mariei: /cases/case_maria_<id> nu se potrivește cu linkul /cases/case_maria.
-    { to: mariaId && !mock ? `/cases/${mariaId}` : MARIA, label: "Maria Ionescu's application", active: pathname.startsWith(MARIA) },
+    { to: MARIA, label: "Maria Ionescu's application", active: pathname.startsWith(MARIA) },
     { to: '/zk', label: 'Income proof (ZK)' },
   ]
   return (

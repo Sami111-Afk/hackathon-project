@@ -9,6 +9,7 @@ import { isMock } from '@/lib/config'
 const CasePage = lazy(() => loadCasePage().then((m) => ({ default: m.CasePage })))
 const DashboardPage = lazy(() => loadDashboardPage().then((m) => ({ default: m.DashboardPage })))
 const ZkPage = lazy(() => loadZkPage().then((m) => ({ default: m.ZkPage })))
+const LandingPage = lazy(() => import('@/pages/LandingPage').then((m) => ({ default: m.LandingPage })))
 const LoginPage = lazy(() => import('@/pages/LoginPage').then((m) => ({ default: m.LoginPage })))
 const ArenaStart = lazy(() => import('@/pages/arena/ArenaStart').then((m) => ({ default: m.ArenaStart })))
 const ArenaForge = lazy(() => import('@/pages/arena/ArenaForge').then((m) => ({ default: m.ArenaForge })))
@@ -29,6 +30,7 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<div className="p-8 text-lg text-slate-500">Loading…</div>}>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
             <Route path="/zk" element={<RequireAuth><ZkPage /></RequireAuth>} />
@@ -39,7 +41,7 @@ export default function App() {
             <Route path="/arena/r/:sid" element={<ArenaResult />} />
             <Route path="/arena/top" element={<ArenaTop />} />
             <Route path="/arena/live" element={<ArenaLive />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
