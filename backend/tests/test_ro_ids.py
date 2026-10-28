@@ -3,7 +3,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "data" / "generator"))
 
-from ro_ids import cnp, cnp_valid, cui_valid, iban, iban_valid, mrz_td2, mrz_td2_valid  # noqa: E402
+from ro_ids import SAFE_CUIS, cnp, cnp_valid, cui, cui_valid, iban, iban_valid, mrz_td2, mrz_td2_valid  # noqa: E402
 
 from app.arena.missions import COMPANIES  # noqa: E402
 
@@ -18,6 +18,12 @@ def test_generated_ids_are_valid():
 def test_arena_companies_have_valid_cui():
     for c in COMPANIES.values():
         assert cui_valid(c["cui"]), c["cui"]
+        assert c["cui"].removeprefix("RO") in SAFE_CUIS
+
+
+def test_generated_cui_uses_only_unallocated_values():
+    assert all(cui_valid(value) for value in SAFE_CUIS)
+    assert all(cui() in SAFE_CUIS for _ in range(20))
 
 
 def test_mrz_lines_are_36_chars():
