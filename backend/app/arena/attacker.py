@@ -47,18 +47,18 @@ def next_attempt(mission: dict, history: list[dict], rng: random.Random) -> tupl
 
     tricks, why = [], []
     if not history:
-        return {"net_salary": target + 500}, [], "Prima încercare: schimb doar netul și văd ce se întâmplă."
+        return {"net_salary": target + 500}, [], "First attempt: I only change the net salary and see what happens."
     tricks.append("recompute_taxes")
     if "NET_MISMATCH" in blocked:
-        why.append("netul nu se potrivea cu brutul → recalculez taxele")
+        why.append("net did not match gross → recomputing the taxes")
     min_gross = int(target / 0.585) + 50
 
     companies = [n for n, c in COMPANIES.items() if c["active"]]
     if blocked & {"COMPANY_INACTIVE", "COMPANY_NOT_FOUND"}:
-        why.append("firma era inactivă → aleg una activă")
+        why.append("the company was inactive → picking an active one")
     if "SALARY_IMPLAUSIBLE" in blocked:
         companies = [n for n in companies if COMPANIES[n]["employees"] >= 50] or companies
-        why.append("salariul era nerealist pentru o firmă mică → aleg o firmă mare")
+        why.append("the salary was unrealistic for a small company → picking a large company")
     learned = {c for c in blocked if c not in {"NET_MISMATCH", "COMPANY_INACTIVE", "COMPANY_NOT_FOUND",
                                                "SALARY_IMPLAUSIBLE", "DOC_BEFORE_COMPANY", "DOC_FUTURE_DATE"}}
     candidates = []
@@ -72,14 +72,15 @@ def next_attempt(mission: dict, history: list[dict], rng: random.Random) -> tupl
                 penalty = (gross / median) if learned else 0
                 candidates.append((penalty + rng.random() * 0.3, name, role, gross))
     if learned:
-        why.append(f"a apărut o regulă nouă ({', '.join(sorted(learned))}) → caut o funcție unde salariul pare normal")
+        why.append(f"a new rule appeared ({', '.join(sorted(learned))}) "
+                   "→ looking for a job title where the salary looks normal")
     if not candidates:
-        return {"gross_salary": min_gross}, tricks, "Am epuizat combinațiile."
+        return {"gross_salary": min_gross}, tricks, "I have run out of combinations."
     _, name, role, gross = min(candidates)
     company = COMPANIES[name]
     date_ok = max(company["founded"].isoformat(), "2026-09-30")
     edits = {"gross_salary": gross, "employer": name, "job_title": role, "issue_date": date_ok}
-    return edits, tricks, ("; ".join(why) or "încerc o combinație nouă") + f" → {role} la {name}, brut {gross}"
+    return edits, tricks, ("; ".join(why) or "trying a new combination") + f" → {role} at {name}, gross {gross}"
 
 
 async def run(mission_id: str, rounds: int, auto_approve: bool, seed: int | None) -> None:
@@ -101,7 +102,7 @@ async def run(mission_id: str, rounds: int, auto_approve: bool, seed: int | None
             state.rounds.append({"round": n, "edits": edits, "tricks": tricks, "thinking": thinking,
                                  "outcome": result["outcome"], "reasons": result["reasons"]})
             bus.publish(service.LIVE_CHANNEL, "agent_progress",
-                        message=f"😈 Runda {n}: {result['outcome']} — {thinking[:140]}",
+                        message=f"😈 Round {n}: {result['outcome']} — {thinking[:140]}",
                         data={"attacker": status()})
             if result["outcome"] == "passed" and result.get("id") and not result["duplicate"]:
                 sub = service._submissions[result["id"]]

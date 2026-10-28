@@ -24,7 +24,7 @@ def _fernet() -> Fernet:
 
 def _safe(part: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9_]{1,64}", part):
-        raise ValueError("id invalid")
+        raise ValueError("invalid id")
     return part
 
 
@@ -42,7 +42,7 @@ VIEWS = {"redacted", "ela"}
 def save_derived(case_id: str, doc_id: str, view: str, page: int, png: bytes) -> None:
     """Imagini produse de agenți (Paznic: view="redacted", Detector: view="ela"), salvate criptat."""
     if view not in VIEWS:
-        raise ValueError("vedere necunoscută")
+        raise ValueError("unknown view")
     folder = UPLOAD_DIR / _safe(case_id)
     folder.mkdir(parents=True, exist_ok=True)
     (folder / f"{_safe(doc_id)}.{view}.p{int(page)}.enc").write_bytes(_fernet().encrypt(png))

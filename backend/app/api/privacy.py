@@ -26,7 +26,7 @@ def _sample(blob: bytes) -> str:
 def privacy(case_id: str):
     case = store.get(case_id)
     if not case:
-        raise HTTPException(404, "dosar inexistent")
+        raise HTTPException(404, "application not found")
 
     # 1. în repaus: documentele și valorile personale stau criptate (Fernet: AES-128-CBC + HMAC-SHA256)
     docs = []
@@ -57,7 +57,8 @@ def privacy(case_id: str):
     for r in case.results or []:
         if "he_scheme" in r.artifacts:
             he = {**r.artifacts, "verifier_has_secret_key": False,
-                  "result_returned_to_bank": "doar diferența criptată; banca decriptează și compară cu toleranța"}
+                  "result_returned_to_bank": "only the encrypted difference; "
+                                          "the bank decrypts it and compares with the tolerance"}
 
     # 4. ZK: dovada de venit (dacă s-a cerut pentru acest dosar)
     zk = zk_bank.last_by_case.get(case.id)

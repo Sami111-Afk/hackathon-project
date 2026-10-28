@@ -25,26 +25,27 @@ from app.learning import engine
 log = logging.getLogger("orb.learning")
 
 FIELDS = {
-    "doc.gross_salary": "număr, salariu brut (lei)",
-    "doc.net_salary": "număr, salariu net (lei)",
+    "doc.gross_salary": "number, gross salary (lei)",
+    "doc.net_salary": "number, net salary (lei)",
     "doc.employer": "text, numele angajatorului",
-    "doc.job_title": "text, funcția",
-    "doc.issue_date": "dată ISO, data emiterii",
-    "company.active": "bool, firma e activă la ANAF",
-    "company.founded": "dată ISO, data înființării",
-    "company.employees": "număr de angajați declarați",
-    "company.median_gross": "salariul brut median din firmă (lei)",
-    "company.role_median": "brutul median din firmă pentru funcția din document (lei; lipsă = funcție inexistentă)",
+    "doc.job_title": "text, job title",
+    "doc.issue_date": "ISO date, issue date",
+    "company.active": "bool, company is active at ANAF",
+    "company.founded": "ISO date, founding date",
+    "company.employees": "number of declared employees",
+    "company.median_gross": "median gross salary in the company (lei)",
+    "company.role_median": "median gross at the company for the document job title (lei; missing = no such title)",
 }
 
 SYSTEM = (
-    "Ești analist antifraudă într-o bancă. Un fluturaș de salariu FALS a trecut de toate verificările. "
-    "Propui 1–3 reguli generale care l-ar fi prins, dar care NU prind fluturași legitimi. "
-    "Regulile sunt JSON într-un limbaj restrâns: condiții {left, op, right} combinate cu all/any/not. "
-    "`left` e un câmp din catalog; `right` e o valoare sau alt câmp din catalog, ori o listă [câmp, număr] "
-    "pentru abs_diff_gt / ratio_gt (ex. {\"left\":\"doc.gross_salary\",\"op\":\"ratio_gt\","
-    "\"right\":[\"company.median_gross\",2.0]} = brut > 2 × medianul). "
-    "Nu folosi praguri fixe pe sume dacă poți raporta la datele firmei. Mesajele în română, scurte."
+    "You are a fraud analyst at a bank. A FORGED payslip passed all checks. "
+    "Propose 1-3 general rules that would have caught it but do NOT catch legitimate payslips. "
+    "Rules are JSON in a restricted language: conditions {left, op, right} combined with all/any/not. "
+    "`left` is a field from the catalog; `right` is a value or another catalog field, or a list [field, number] "
+    "for abs_diff_gt / ratio_gt (e.g. {\"left\":\"doc.gross_salary\",\"op\":\"ratio_gt\","
+    "\"right\":[\"company.median_gross\",2.0]} = gross > 2 × the median). "
+    "Do not use fixed amount thresholds if you can compare against the company data. "
+    "Keep descriptions and messages in English, short."
 )
 
 
@@ -133,26 +134,26 @@ def vet(rule: dict, trigger_doc: dict, legit: list[dict]) -> tuple[bool, str, di
     try:
         return _vet(rule, trigger_doc, legit)
     except Exception as exc:  # noqa: BLE001 — o regulă stricată e respinsă, nu oprește restul
-        return False, f"regulă invalidă ({type(exc).__name__})", {}
+        return False, f"invalid rule ({type(exc).__name__})", {}
 
 
 def _vet(rule: dict, trigger_doc: dict, legit: list[dict]) -> tuple[bool, str, dict]:
     if not isinstance(rule.get("when"), dict) or not _valid_ops(rule["when"]):
-        return False, "operator sau structură invalidă", {}
+        return False, "invalid operator or structure", {}
     unknown = _fields_in(rule["when"]) - set(FIELDS)
     if unknown:
-        return False, f"câmpuri necunoscute: {sorted(unknown)}", {}
+        return False, f"unknown fields: {sorted(unknown)}", {}
     if _overfit(rule["when"], trigger_doc):
-        return False, "prea specifică (compară cu o valoare exactă din fals)", {}
+        return False, "too specific (compares with an exact value from the forgery)", {}
     probe = {**rule, "status": "approved"}
     catches_trigger = bool(engine.apply_rules(trigger_doc, [probe]))
     fps = sum(bool(engine.apply_rules(d, [probe])) for d in legit)
     bt = {"cases": len(legit) + 1, "true_positives": int(catches_trigger), "false_positives": fps,
           "fp_rate": round(fps / max(len(legit), 1), 4)}
     if not catches_trigger:
-        return False, "nu prinde falsul care a declanșat-o", bt
+        return False, "does not catch the forgery that triggered it", bt
     if fps:
-        return False, f"prinde {fps} fluturași legitimi", bt
+        return False, f"flags {fps} legitimate payslips", bt
     return True, "ok", bt
 
 
@@ -163,10 +164,11 @@ async def propose_for(submission_id: str, doc: dict) -> list[dict]:
     prompt = (
         f"Falsul care a trecut:\n{ {k: v for k, v in doc.items() if k != 'employee'} }\n"
         f"Datele firmei din registru: {company}\n"
-        f"Verificări existente (deja aplicate): netul se potrivește cu brutul; firma există și e activă; "
-        f"data e după înființare și nu e în viitor; brut > 2,5×median la firme sub 50 de angajați.\n"
-        f"Catalog de câmpuri: {FIELDS}\nOperatori: {sorted(engine.OPS)}\n"
-        f"Setul legitim are {len(legit)} fluturași, cu brut între 0,6× și 1,5× medianul funcției lor."
+        f"Existing checks (already applied): net matches gross; the company exists and is active; "
+        f"the date is after the founding and not in the future; gross > 2.5×median at companies under 50 employees.\n"
+        f"Field catalog: {FIELDS}\nOperators: {sorted(engine.OPS)}\n"
+        f"The legitimate set has {len(legit)} payslips, with gross between 0.6× and 1.5× "
+        f"the median for their job title."
     )
     r = await chat("learn", case_id=None, system=SYSTEM, prompt=prompt, json_schema=Proposal,
                    cache_key=f"learn|{doc['employer']}|{doc['gross_salary']}|{doc['issue_date']}", max_tokens=6000)
@@ -182,8 +184,8 @@ async def propose_for(submission_id: str, doc: dict) -> list[dict]:
         with _lock:
             PROPOSED.append(rule)
         bus.publish(arena.LIVE_CHANNEL, "rule_proposed",
-                    message=f"Regulă nouă propusă: {rule['description']}" if ok
-                    else f"Regulă respinsă automat ({why})", data=rule)
+                    message=f"New rule proposed: {rule['description']}" if ok
+                    else f"Rule automatically rejected ({why})", data=rule)
     return out
 
 
@@ -218,7 +220,7 @@ def decide(rule_id: str, approve: bool, decided_by: str) -> dict | None:
     if approve:
         engine.add_rule(rule)
         bus.publish(arena.LIVE_CHANNEL, "rule_approved",
-                    message=f"Regula #{len(engine.RULES)} intră în vigoare: {rule['description']}", data=rule)
+                    message=f"Rule #{len(engine.RULES)} takes effect: {rule['description']}", data=rule)
     return rule
 
 

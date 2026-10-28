@@ -11,4 +11,4 @@ def require_bank(authorization: str = Header(default="")) -> None:
     token = token.strip()
     if scheme != "Bearer" or not token or not settings.bank_ui_token or not secrets.compare_digest(
             token.encode(), settings.bank_ui_token.encode()):
-        raise HTTPException(status_code=401, detail="neautorizat")
+        raise HTTPException(status_code=401, detail="unauthorized")

@@ -26,17 +26,17 @@ DECISION_STATUS = {"clear": "cleared", "reject": "rejected", "escalate": "escala
 async def create_case(files: list[UploadFile] = File(...),
                       requested_amount_ron: float | None = Form(default=None)):
     if not 1 <= len(files) <= MAX_FILES:
-        raise HTTPException(400, f"între 1 și {MAX_FILES} fișiere")
+        raise HTTPException(400, f"between 1 and {MAX_FILES} files")
     case_id = f"case_{uuid.uuid4().hex[:8]}"
     max_bytes = settings.arena_max_file_mb * 1024 * 1024
     documents, originals = [], {}
     for i, f in enumerate(files, start=1):  # 1. validăm toate fișierele
         data = await f.read(max_bytes + 1)
         if len(data) > max_bytes:
-            raise HTTPException(413, f"fișier prea mare (max {settings.arena_max_file_mb} MB)")
+            raise HTTPException(413, f"file too large (max {settings.arena_max_file_mb} MB)")
         kind = sniff(data)
         if not kind:
-            raise HTTPException(415, "doar PNG, JPG sau PDF")
+            raise HTTPException(415, "PNG, JPG or PDF only")
         doc_id = f"doc_{i}"
         originals[doc_id] = data
         documents.append(Document(id=doc_id, filename=f"document_{i}.{kind[0]}"))
@@ -45,7 +45,7 @@ async def create_case(files: list[UploadFile] = File(...),
         save_encrypted(case_id, doc_id, data)
     case = Case(id=case_id, created_at=now_iso(), requested_amount_ron=requested_amount_ron, documents=documents)
     await store.save(case)
-    bus.publish(case_id, "case_created", message=f"Dosar nou: {len(documents)} documente")
+    bus.publish(case_id, "case_created", message=f"New application: {len(documents)} documents")
     start_pipeline(case, originals)
     return {"case_id": case_id}
 
@@ -63,7 +63,7 @@ def list_cases(status: str | None = None, source: str = "bank"):
 def get_case(case_id: str):
     case = store.get(case_id)
     if not case:
-        raise HTTPException(404, "dosar inexistent")
+        raise HTTPException(404, "application not found")
     return case.model_dump(exclude_none=True)
 
 
@@ -72,7 +72,7 @@ def case_report(case_id: str):
     """Raport de anchetă HTML (din browser: „Salvează ca PDF”)."""
     case = store.get(case_id)
     if not case:
-        raise HTTPException(404, "dosar inexistent")
+        raise HTTPException(404, "application not found")
     return HTMLResponse(report.render(case), headers={"Cache-Control": "no-store"})
 
 
@@ -81,22 +81,22 @@ async def get_image(case_id: str, doc_id: str, view: str = "original", page: int
     """view=original | redacted (Paznic) | ela (Detector). PDF-urile se întorc randate ca PNG, pagina `page`."""
     headers = {"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"}
     if not store.get(case_id):
-        raise HTTPException(404, "dosar inexistent")
+        raise HTTPException(404, "application not found")
     try:
         if view != "original":
             png = load_derived(case_id, doc_id, view, page)
             if not png:
-                raise HTTPException(404, f"vederea '{view}' nu există (încă) pentru acest document")
+                raise HTTPException(404, f"view '{view}' does not exist (yet) for this document")
             return Response(png, media_type="image/png", headers=headers)
         data = load_decrypted(case_id, doc_id)
     except ValueError:
         data = None
     if not data:
-        raise HTTPException(404, "document inexistent")
+        raise HTTPException(404, "document not found")
     if sniff(data)[0] == "pdf":
         pages = await asyncio.to_thread(render_pages, data)
         if not 1 <= page <= len(pages):
-            raise HTTPException(404, "pagină inexistentă")
+            raise HTTPException(404, "page not found")
         return Response(await asyncio.to_thread(to_png, pages[page - 1]), media_type="image/png", headers=headers)
     return Response(data, media_type=sniff(data)[1], headers=headers)
 
@@ -112,16 +112,16 @@ class DecisionIn(BaseModel):
 async def decide(case_id: str, body: DecisionIn):
     case = store.get(case_id)
     if not case:
-        raise HTTPException(404, "dosar inexistent")
+        raise HTTPException(404, "application not found")
     if case.status in ("received", "processing"):
-        raise HTTPException(409, "dosarul încă e în lucru")
+        raise HTTPException(409, "the application is still being processed")
     if body.action not in DECISION_STATUS:
-        raise HTTPException(400, "acțiune necunoscută")
+        raise HTTPException(400, "unknown action")
     if not body.decided_by.strip():
-        raise HTTPException(400, "decided_by e obligatoriu")
+        raise HTTPException(400, "decided_by is required")
     if body.action == "clear" and case.verdict and case.verdict.recommendation == "escalate" \
             and len(body.notes.strip()) < 10:
-        raise HTTPException(422, "aprobarea unui dosar marcat pentru investigație cere un motiv scris")
+        raise HTTPException(422, "approving an application flagged for investigation requires a written reason")
     case.decision = Decision(action=body.action, decided_by=body.decided_by.strip()[:60], notes=body.notes,
                              corrections=body.corrections, decided_at=now_iso())
     case.status = DECISION_STATUS[body.action]
@@ -158,7 +158,7 @@ def _sse(case_id: str | None, request: Request):
 @router.get("/cases/{case_id}/events")
 def case_events(case_id: str, request: Request):
     if not store.get(case_id):
-        raise HTTPException(404, "dosar inexistent")
+        raise HTTPException(404, "application not found")
     return _sse(case_id, request)
 
 
