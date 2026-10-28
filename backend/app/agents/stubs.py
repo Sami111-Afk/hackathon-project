@@ -1,7 +1,7 @@
-"""Agenți de probă: redau rezultatele din shared/fixtures/maria_case.json.
+"""Replay agents: return the results stored in shared/fixtures/maria_case.json.
 
-Așa pipeline-ul, SSE-ul și frontend-ul merg cap-coadă înainte ca agenții
-reali să fie gata. Un agent real îl înlocuiește în agents/registry.py.
+Used in the orchestration tests and as the Guard's fallback when Tesseract `ron` is missing
+(see agents/registry.py). / Agenți de redare, folosiți în teste și ca rezervă fără Tesseract `ron`.
 """
 import asyncio
 import json

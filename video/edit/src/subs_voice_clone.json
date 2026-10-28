@@ -1,0 +1,275 @@
+{
+ "s01": [
+  [
+   0.0,
+   2.74,
+   "This payslip says 8,500 lei, take-home."
+  ],
+  [
+   2.74,
+   5.06,
+   "Romanian payroll rules say 8,307."
+  ],
+  [
+   5.06,
+   8.16,
+   "Today a credit analyst catches that by hand:"
+  ],
+  [
+   8.16,
+   10.34,
+   "read, recalculate, cross-check."
+  ],
+  [
+   10.34,
+   13.65,
+   "About twenty minutes a file, by our own timing."
+  ]
+ ],
+ "s02": [
+  [
+   0.0,
+   3.12,
+   "We built ORB to help credit analysts check loan documents."
+  ],
+  [
+   3.12,
+   9.14,
+   "Today that's slow: every pay slip, statement and employer is checked by hand, and fraud rings hide across files."
+  ],
+  [
+   9.14,
+   10.81,
+   "ORB flags exactly what's wrong."
+  ]
+ ],
+ "s03": [
+  [
+   0.0,
+   2.02,
+   "Watch the names. Maria's application:"
+  ],
+  [
+   2.02,
+   3.71,
+   "three documents, all synthetic."
+  ],
+  [
+   3.71,
+   8.4,
+   "Before any AI sees them, the Guard swaps the names and ID numbers it finds for labels."
+  ]
+ ],
+ "s04": [
+  [
+   0.0,
+   4.26,
+   "There are six agents, one job each, and only two of them use AI."
+  ],
+  [
+   4.26,
+   6.26,
+   "The Clerk extracts the fields;"
+  ],
+  [
+   6.26,
+   10.26,
+   "any value it cannot point to in the document is thrown away."
+  ],
+  [
+   10.26,
+   13.52,
+   "Watch the box. The Verifier recalculates the tax:"
+  ],
+  [
+   13.52,
+   15.59,
+   "net should be 8,307, not 8,500."
+  ],
+  [
+   15.59,
+   17.92,
+   "The employer, in our demo registry:"
+  ],
+  [
+   17.92,
+   21.65,
+   "inactive. And the salary never arrives in her statement."
+  ]
+ ],
+ "s05": [
+  [
+   0.0,
+   2.09,
+   "The Detector marks the edited pixels."
+  ],
+  [
+   2.09,
+   6.56,
+   "The Detective finds the same bank account in six applications, under six names."
+  ]
+ ],
+ "s06": [
+  [
+   0.0,
+   3.83,
+   "Watch the button. The risk comes from fixed rules, every finding listed;"
+  ],
+  [
+   3.83,
+   8.45,
+   "the AI only writes the summary, and a summary quoting an unverified number is rejected."
+  ],
+  [
+   8.45,
+   10.63,
+   "Approve it? Not without a written reason."
+  ],
+  [
+   10.63,
+   14.72,
+   "The analyst sends it for investigation, and the decision goes into the audit."
+  ]
+ ],
+ "s07": [
+  [
+   0.0,
+   2.12,
+   "Different file now: blurry phone photos."
+  ],
+  [
+   2.12,
+   6.37,
+   "ORB can't guarantee it hid everything, so their text never goes to the cloud AI."
+  ],
+  [
+   6.37,
+   10.14,
+   "A person gets the file, and nobody is accused on a photo we can't read."
+  ]
+ ],
+ "s08": [
+  [
+   0.0,
+   4.6,
+   "Why this shape? Audits need identical steps, so the order is fixed in code."
+  ],
+  [
+   4.6,
+   6.38,
+   "AI only reads and summarises;"
+  ],
+  [
+   6.38,
+   8.1,
+   "the rest is rules and tools:"
+  ],
+  [
+   8.1,
+   11.17,
+   "tax tables, the company registry, image forensics."
+  ],
+  [
+   11.17,
+   14.23,
+   "If a step fails, the file is never shown as clean."
+  ]
+ ],
+ "s09": [
+  [
+   0.0,
+   4.33,
+   "Most files are honest: most come back clean in seconds and are approved in one click."
+  ],
+  [
+   4.33,
+   7.48,
+   "Twenty minutes becomes about a minute of review, our estimate."
+  ]
+ ],
+ "s10": [
+  [
+   0.0,
+   7.33,
+   "Built for a bank: the cloud AI sees only labels, and a second gate blocks any request that still carries a known personal value."
+  ],
+  [
+   7.33,
+   11.69,
+   "And in local mode, tested on our laptop, it takes about nine seconds a file."
+  ]
+ ],
+ "s11": [
+  [
+   0.0,
+   2.14,
+   "Sixty synthetic files, real cloud AI:"
+  ],
+  [
+   2.14,
+   4.17,
+   "no name or ID number left the bank."
+  ],
+  [
+   4.17,
+   7.12,
+   "None of twelve honest applicants flagged high-risk;"
+  ],
+  [
+   7.12,
+   13.09,
+   "three went to a human. All thirty-six simple fakes caught, and all twelve perfect ones sent to a human."
+  ],
+  [
+   13.09,
+   14.19,
+   "The fakes are ours."
+  ]
+ ],
+ "s12": [
+  [
+   0.0,
+   4.76,
+   "Limits: synthetic data and our own forgeries, so real-fraud accuracy is untested;"
+  ],
+  [
+   4.76,
+   7.63,
+   "a forger who also fakes the statement would pass."
+  ],
+  [
+   7.63,
+   10.45,
+   "Next: a pilot on a hundred real files, in-house."
+  ]
+ ],
+ "s13": [
+  [
+   0.0,
+   1.29,
+   "ORB does the checking..."
+  ],
+  [
+   1.29,
+   2.36,
+   "and your people decide."
+  ]
+ ],
+ "s14": [
+  [
+   0.0,
+   3.39,
+   "Think you can fool it? Anyone can try in our public Arena:"
+  ],
+  [
+   3.39,
+   5.67,
+   "most fakes get caught, with the reason."
+  ],
+  [
+   5.67,
+   11.4,
+   "When one slips through, the AI proposes a rule, tests it on honest files, and a human approves it."
+  ]
+ ]
+}

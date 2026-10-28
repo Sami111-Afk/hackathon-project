@@ -12,7 +12,7 @@ We built Orb to help credit analysts check loan documents. Today that's slow: ev
 Watch the names. Maria's application: three documents, all synthetic. Before any AI sees them, the Guard swaps the names and ID numbers it finds for labels.
 
 **s04 (~26 s)**
-Six agents, one job each, and only two of them use AI. The Clerk extracts the fields; any value it cannot point to in the document is thrown away. Watch the box. The Verifier recalculates the tax: net should be 8,307, not 8,500. The employer, in our demo registry: inactive. And the salary never arrives in her statement.
+There are six agents, one job each, and only two of them use AI. The Clerk extracts the fields; any value it cannot point to in the document is thrown away. Watch the box. The Verifier recalculates the tax: net should be 8,307, not 8,500. The employer, in our demo registry: inactive. And the salary never arrives in her statement.
 
 **s05 (~9 s)**
 The Detector marks the edited pixels. The Detective finds the same bank account in six applications, under six names.
@@ -30,7 +30,7 @@ Why this shape? Audits need identical steps, so the order is fixed in code. AI o
 Most files are honest: most come back clean in seconds and are approved in one click. Twenty minutes becomes about a minute of review, our estimate.
 
 **s10 (~12 s)**
-Built for a bank: the cloud AI sees only labels, and a second gate blocks any request that still carries a known personal value. Local mode, tested on our laptop: about nine seconds a file.
+Built for a bank: the cloud AI sees only labels, and a second gate blocks any request that still carries a known personal value. And in local mode, tested on our laptop, it takes about nine seconds a file.
 
 **s11 (~18 s)**
 Sixty synthetic files, real cloud AI: no name or ID number left the bank. None of twelve honest applicants flagged high-risk; three went to a human. All thirty-six simple fakes caught, and all twelve perfect ones sent to a human. The fakes are ours.

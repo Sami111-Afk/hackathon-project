@@ -141,7 +141,7 @@ def test_ocr_noise_and_names_outside_labels_are_redacted():
     card = ("CARTE DE IDENTITATE\nNume/Nom/Last name\nIONESCU\nPrenume/Prénom/First name\nMARIA\n"
             "Loc naștere/Lieu de naissance/Place of birth\nMun. Ploiești, Jud. PH\n"
             "IDROUIONESCU<<MARIA<< <<< <<< << << <<< <<\nPH481925<7ROU5903128F290312722900067")
-    other = "Beneficiar plată: Ionescu Maria\nCNP 259 031 229 0006, tel +40 722 318 405"
+    other = "Beneficiar plată: Ionescu Maria\nCNP 259 031 229 0006, tel +40 700 000 001"
     names = set()
     for text in (card, other):
         for sp in detect.find_all(text):
@@ -150,7 +150,7 @@ def test_ocr_noise_and_names_outside_labels_are_redacted():
     red = CaseRedactor(secret="t")
     out = [apply(t, red.label_spans(detect.find_all(t, names))) for t in (card, other)]
     joined = " ".join(out).lower()
-    for leak in ("ionescu", "maria", "ploie", "5903128", "2290006", "722 318", "259 031"):
+    for leak in ("ionescu", "maria", "ploie", "5903128", "2290006", "700 000", "259 031"):
         assert leak not in joined, (leak, out)
 
 

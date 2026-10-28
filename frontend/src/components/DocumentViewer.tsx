@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 type View = 'original' | 'redacted' | 'ela'
 const VIEWS: { id: View; label: string; hint: string }[] = [
-  { id: 'redacted', label: 'What the AI saw', hint: 'Personal data is covered' },
+  { id: 'redacted', label: 'Redacted view', hint: 'Personal data covered; ID cards and unreadable photos are never sent to the AI' },
   { id: 'original', label: 'Original', hint: 'The document as received' },
   { id: 'ela', label: 'Edit map', hint: 'Bright areas were modified' },
 ]

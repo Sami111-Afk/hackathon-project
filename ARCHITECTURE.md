@@ -1,3 +1,7 @@
+> **Note (English):** this is the design document written during the 24h hackathon, in Romanian. Where it differs from the
+> code, **the code and [README.md](README.md) are authoritative** — e.g. `MRZ_INVALID` sends a file to review (it does not
+> escalate); C2PA and AI-image detection were not implemented in the bank pipeline; GLiNER was not used.
+
 # ORB — Arhitectură tehnică
 
 Documentul de referință pentru toată echipa. Dacă ceva din cod contrazice acest document, ori repari codul, ori actualizezi documentul și anunți pe grup.

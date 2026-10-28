@@ -50,7 +50,7 @@ the unexpected, instead of guessing:
 | Situation | What ORB does | Where |
 |---|---|---|
 | Blurry photo / low OCR confidence, or an ID card | the document is **not sent to the cloud AI**; the file goes to a human | `agents/paznic/agent.py` (`OCR_LOW_QUALITY`) |
-| A personal value survived redaction | a second gate re-scans every outgoing AI request and **blocks** it; file to a human | `core/pii_gate.py`, `core/llm.py` (`PII_GATE_BLOCKED`) |
+| A personal value survived redaction | a second gate re-scans every outgoing AI request and **blocks** it; file to a human | `core/pii_gate.py`, `core/llm.py` (`PIIGateBlocked` → finding `PII_GATE_BLOCKED`) |
 | A sum doesn't add up, but OCR may have misread a digit | the amount is **re-read from the image** (several crops, vote) → "to check", not "forged" | `agents/verificator/agent.py` (`AMOUNT_UNCERTAIN`) |
 | An agent fails or times out | the others finish; dependent agents are marked `skipped`; the verdict is "incomplete" → never shown as clean | `core/pipeline.py`, `agents/compliance/scoring.py` |
 | The payslip's net pay never arrives in the bank statement (the only trace of a "perfect" forgery) | not an accusation, but always sent to a human | `agents/verificator/statement.py` (`SALARY_NOT_IN_STATEMENT`) |
@@ -69,7 +69,7 @@ the unexpected, instead of guessing:
 
 | What | Result | How to reproduce |
 |---|---|---|
-| Real AI (Claude Haiku on Bedrock), 60 applications | **0 personal values sent to the cloud · 0 values invented by the AI · 0/12 honest applicants accused** (3/12 sent to a human) · **36/36 simple forgeries caught** · **12/12 "perfect" forgeries (taxes recomputed correctly) sent to a human** — the only trace is that the payslip's net pay never arrives in the bank statement · 56–60/60 per field extracted correctly · ~9–12 s per application | `backend/.venv/bin/python scripts/benchmark_pipeline.py --n 60 --llm bedrock` |
+| Real AI (Claude Haiku on Bedrock), 60 applications | **0 personal values sent to the cloud · 0 values invented by the AI · 0/12 honest applicants accused** (3/12 sent to a human) · **36/36 simple forgeries caught** (12 of them via the demo company registry) · **12/12 "perfect" forgeries (taxes recomputed correctly) sent to a human** — the only trace is that the payslip's net pay never arrives in the bank statement · 56–60/60 per field extracted correctly · ~9–12 s per application | `backend/.venv/bin/python scripts/benchmark_pipeline.py --n 60 --llm bedrock` |
 | Phone photos (simulated: perspective, blur, shadows), real AI, 20 applications | 0 sent to the cloud · 0/4 honest accused (3/4 sent to a human) · simple forgeries 10/12 (one forged balance came back clear) · 4/4 perfect forgeries sent to a human · extraction drops a lot → ORB routes to a human instead of guessing | `... --n 20 --phone --llm bedrock` |
 | Cost | ~0.005 $ per application (Haiku extracts, Sonnet summarises); 0 in local mode | per-call usage in the audit |
 | Local mode (RTX 4060 laptop, Qwen 4B via Ollama) | ~8–9 s per application on Maria's demo file (manual runs, not in the benchmark file) | `LLM_MODE=local` |
@@ -85,6 +85,8 @@ Raw results: [`data/benchmark/pipeline_results.json`](data/benchmark/pipeline_re
   we designed, not that they generalise. A pilot on labelled real files is the real test.
 - **Self-learning** rules are back-tested on 290 synthetic payslips whose salaries sit between 0.6× and 1.5× the role median — a weak
   test (a rule above 1.5× cannot false-alarm on it). Approved rules apply in the Arena only, not yet in the bank pipeline.
+- **3/12 honest files went to a human:** 2 because our own PII gate blocked a request (the first redaction layer missed a value), 1 because of a misread balance row — reviews, not accusations.
+- **The Arena** judges the typed fields directly (no OCR): hidden-text and AI-photo tricks are scored from the trick the player picked, not detected in pixels. It is a game around the same tax rules, not the bank pipeline.
 - **Prompt injection:** the regex check exists, but our low-contrast hidden-text test was caught 0/5 times (OCR never read the text,
   so it never reached the AI either).
 - The demo's inactive employer comes from a **demo company registry** (real ANAF is queried for real companies).
@@ -116,8 +118,8 @@ cd backend && python3.11 -m venv .venv && source .venv/bin/activate && pip insta
 cp .env.example .env
 # the four required secrets (the app refuses to start without them): drop the empty lines, then generate them
 sed -i '/^\(HMAC_SECRET\|ARENA_HMAC_SECRET\|VAULT_KEY\|BANK_UI_TOKEN\)=$/d' .env
-python -c "import secrets;from cryptography.fernet import Fernet;print(f'HMAC_SECRET={secrets.token_hex(32)}\nARENA_HMAC_SECRET={secrets.token_hex(32)}\nVAULT_KEY={Fernet.generate_key().decode()}\nBANK_UI_TOKEN={secrets.token_urlsafe(24)}')" >> .env
-cd backend && uvicorn app.main:app --port 8000   # keep it running
+backend/.venv/bin/python -c "import secrets;from cryptography.fernet import Fernet;print(f'HMAC_SECRET={secrets.token_hex(32)}\nARENA_HMAC_SECRET={secrets.token_hex(32)}\nVAULT_KEY={Fernet.generate_key().decode()}\nBANK_UI_TOKEN={secrets.token_urlsafe(24)}')" >> .env
+cd backend && .venv/bin/uvicorn app.main:app --port 8000   # keep it running (port busy? use another --port and change the curl lines)
 # second terminal, from the repo root:
 cd frontend && npm install && npm run dev        # http://localhost:5173  (?mock=1 = demo without backend)
 ```
@@ -133,18 +135,19 @@ TOKEN=$(grep '^BANK_UI_TOKEN=.' .env | tail -1 | cut -d= -f2)
 curl -X POST -H "Authorization: Bearer $TOKEN" localhost:8000/api/admin/seed-demo
 curl -X POST -H "Authorization: Bearer $TOKEN" localhost:8000/api/admin/rerun-demo
 ```
-Maria's file takes ~1 minute in mock mode on a CPU (~10–20 s with the cloud AI). `scripts/start_bank.sh` is our demo-laptop script (Ollama + backend + ngrok tunnel; needs `NGROK_DOMAIN`).
+Smoke test: `curl localhost:8000/health` → `{"status":"ok"}` · `curl -H "Authorization: Bearer $TOKEN" localhost:8000/api/settings` → `{"llm_mode":"mock",…}`.
+Maria's file takes ~20 s in mock mode on a laptop CPU (~10–20 s with the cloud AI). `scripts/start_bank.sh` is our demo-laptop script (Ollama + backend + ngrok tunnel; needs `NGROK_DOMAIN`).
 
 ### Verify it in 5 minutes
 ```bash
 cd backend && .venv/bin/python -m pytest -q        # → ~265–275 passed (ZK / encryption tests skip without nargo, bb, TenSEAL;
                                                    #   6 slow OCR tests run with: pytest -m slow)
-cd .. && backend/.venv/bin/python scripts/benchmark_pipeline.py --n 12   # ~20 s, no API key (rules + template)
+cd .. && backend/.venv/bin/python scripts/benchmark_pipeline.py --n 12   # ~20–40 s, no API key (rules + template)
 ```
 The benchmark prints one line per file and a JSON summary with Romanian keys (`dosare_cu_scurgeri_spre_cloud` = files leaking to
 the cloud, `cinstiti_acuzati` = honest applicants accused, `cinstiti_trimisi_la_om` = sent to a human, `falsuri_prinse` = forgeries
 caught). "LLM indisponibil" warnings are expected in mock mode. It updates `data/benchmark/pipeline_results.json` — `git checkout data/`
-restores the committed results. The expected output for Maria's case is `shared/fixtures/maria_case.json`.
+restores the committed results (and `data/demo/maria/extras.pdf`, which `build_demo` regenerates). The expected output for Maria's case is `shared/fixtures/maria_case.json`.
 Details: [ARCHITECTURE.md](ARCHITECTURE.md) (in Romanian) · ZK: [zk/README.md](zk/README.md).
 
 ## Stack

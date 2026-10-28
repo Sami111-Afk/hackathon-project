@@ -7,7 +7,7 @@ PR #4 îmbinat. L-am testat pe pozele reale ale Mariei (cu Tesseract) și am rep
   compactată (fără spații, `«` → `<`), cu minimum un `<` și lungime ≥ 30.
 - **Nume fără eticheta „Nume”** („Beneficiar: IONESCU MARIA” în extras) → două faze: întâi citim toate
   documentele și strângem numele, apoi le ascundem oriunde apar (`detect.find_known_names`).
-- **CNP / telefon cu separatori** („259 031 229 0171”, „+40 722 318 405”) → prinse (CNP doar cu cifra de control validă).
+- **CNP / telefon cu separatori** („259 031 229 0171”, „+40 700 000 001”) → prinse (CNP doar cu cifra de control validă).
 - **Seria buletinului fără „SERIA”** → prinsă doar pe buletin (`looks_like_id_card`); „NR”/„RO” excluse.
 - **Locul nașterii** → tratat ca adresă.
 - Seiful se înregistrează în poarta anti-PII pe event loop, nu din thread (`vault.put(..., register=False)`).

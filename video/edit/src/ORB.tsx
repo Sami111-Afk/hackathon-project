@@ -4,6 +4,9 @@ import {
   AbsoluteFill, Audio, Easing, Img, interpolate, OffthreadVideo, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig,
 } from 'remotion'
 
+import SUBS_AI from './subs_voice.json'
+import SUBS_CLONE from './subs_voice_clone.json'
+
 export const FPS = 30
 const W = 1920, H = 1080
 const YELLOW = '#FFE600', INK = '#111418', DANGER = '#F97066', OK = '#47CD89'
@@ -46,16 +49,28 @@ const Caption: React.FC<{ text: string; from: number; to: number; tone?: 'info' 
   const y = interpolate(Math.min(1, (t - from) / 0.4), [0, 1], [24, 0], { easing: Easing.out(Easing.cubic) })
   const bar = tone === 'danger' ? DANGER : tone === 'ok' ? OK : YELLOW
   return (
-    <div style={{ position: 'absolute', left: 0, right: 0, ...(top ? { top: 96 } : { bottom: 84 }), display: 'flex', justifyContent: 'center', opacity: a, transform: `translateY(${y}px)` }}>
+    <div style={{ position: 'absolute', left: 0, right: 0, ...(top ? { top: 96 } : { bottom: 150 }), display: 'flex', justifyContent: 'center', opacity: a, transform: `translateY(${y}px)` }}>
       <div style={{ background: 'rgba(17,20,24,.9)', color: '#fff', fontFamily: 'Noto', fontWeight: 700, fontSize: 46, padding: '20px 40px 22px 34px',
         borderRadius: 14, borderLeft: `12px solid ${bar}`, maxWidth: 1600, textAlign: 'center', boxShadow: '0 12px 40px rgba(0,0,0,.35)' }}>{text}</div>
+    </div>
+  )
+}
+const SUBS: Record<string, [number, number, string][]> = (VDIR === 'voice' ? SUBS_AI : SUBS_CLONE) as never
+const Subtitle: React.FC<{ voice: string; at: number }> = ({ voice, at }) => {
+  const t = useCurrentFrame() / FPS - at
+  const cue = (SUBS[voice] || []).find(([a, b]) => t >= a && t < b)
+  if (!cue) return null
+  return (
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 34, display: 'flex', justifyContent: 'center' }}>
+      <div style={{ background: 'rgba(0,0,0,.72)', color: '#fff', fontFamily: 'Noto', fontSize: 34, lineHeight: 1.3, padding: '6px 18px',
+        borderRadius: 8, maxWidth: 1500, textAlign: 'center' }}>{cue[2]}</div>
     </div>
   )
 }
 const Badge: React.FC<{ text: string; corner: 'tl' | 'tr' | 'bl'; color?: string }> = ({ text, corner, color = YELLOW }) => {
   const f = useCurrentFrame()
   const a = Math.min(1, f / 12)
-  const pos: React.CSSProperties = corner === 'tl' ? { left: 28, top: 26 } : corner === 'tr' ? { right: 28, top: 26 } : { left: 28, bottom: 26 }
+  const pos: React.CSSProperties = corner === 'tl' ? { left: 28, top: 26 } : corner === 'tr' ? { right: 28, top: 26 } : { left: 28, top: 74 }
   return <div style={{ position: 'absolute', ...pos, opacity: a, background: 'rgba(17,20,24,.86)', color, fontFamily: 'Noto', fontWeight: 700,
     fontSize: 22, letterSpacing: 1.5, padding: '8px 14px', borderRadius: 8, border: `1.5px solid ${color}55` }}>{text}</div>
 }
@@ -228,50 +243,50 @@ const SCENES: Scene[] = [
   { id: 'hook', dur: 14.5, voice: 's01', voiceAt: 0.05, parts: [{ dur: 14.5, el: <Hook /> }],
     captions: [['~20 min per file · our timing, not bank data', 9.6, 14.2]], sfx: [['alert', 4.3, 0.5]] },
   { id: 'new', dur: 13, voice: 's02', parts: [{ dur: 13, el: <Clip src="v2_new.webm" from={1} keys={[Z(0, 1, 960, 540), Z(3, 1, 960, 540), Z(6, 1.18, 960, 520)]} /> }],
-    captions: [['User: credit analyst', 1, 5.6], ['Dashboard counters: demo, on synthetic data', 6.2, 12.6]], sfx: [['click', at(4.54, 1)]] },
+    captions: [['User: credit analyst', 1, 5.6], ['Dashboard counters: seeded demo data, not real costs or outcomes', 6.2, 12.6]], sfx: [['click', at(4.54, 1)]] },
   // 3 — ce a văzut AI-ul (Maria)
   { id: 'names', dur: 9, voice: 's03', parts: [{ dur: 9, el: <Clip src="v3_maria.webm" from={52.3} keys={[Z(0, 1, 960, 540), Z(1.6, 1.55, 760, 420), Z(7.2, 1.55, 760, 420), Z(9.2, 1.3, 760, 420)]} /> }],
     sfx: [['click', at(53.68, 52.3)], ['click', at(59.18, 52.3)]] },
   // 4 — agenții (2×) → dovezile pe document (1,5×)
   { id: 'agents', dur: 25, voice: 's04', parts: [
-    { dur: 14, el: <Clip src="v3_maria.webm" from={8} rate={2.2} keys={[Z(0, 1.35, 960, 330), Z(13, 1.35, 960, 330)]} /> },
-    { dur: 11, el: <Clip src="v3_maria.webm" from={63.7} rate={1.7} keys={[Z(0, 1, 960, 540), Z(0.9, 1.55, 860, 360), Z(4.4, 1.55, 860, 360), Z(5.2, 1.45, 1300, 400), Z(10, 1.45, 1300, 450)]} /> }],
-    captions: [['8,307 ≠ 8,500 lei', 15.8, 19.2, 'danger', true], ['Employer: inactive · DEMO REGISTRY (real ANAF API for real companies)', 19.6, 22.6, 'info', true], ['Salary never arrives in the statement', 22.9, 24.9, 'danger', true]],
-    badges: [['2× SPEED', 'tr'], ['ENCRYPTED-COMPUTE & ZK CARDS = PROTOTYPES', 'bl', '#C9CED6']], sfx: [['whoosh', 0.2, 0.6], ['click', 14 + at(64.52, 63.7, 1.7)], ['click', 14 + at(70.92, 63.7, 1.7)], ['click', 14 + at(77.35, 63.7, 1.7)]] },
+    { dur: 10, el: <Clip src="v3_maria.webm" from={8} rate={2.2} keys={[Z(0, 1.35, 960, 330), Z(9, 1.35, 960, 330)]} /> },
+    { dur: 15, el: <Clip src="v3_maria.webm" from={63.7} rate={1.27} keys={[Z(0, 1, 960, 540), Z(0.9, 1.55, 860, 470), Z(5.2, 1.55, 860, 470), Z(6.1, 1.45, 1300, 420), Z(15, 1.45, 1300, 470)]} /> }],
+    captions: [['8,307 ≠ 8,500 lei', 10.8, 15.8, 'danger', true], ['Employer: inactive · DEMO REGISTRY (real ANAF API for real companies)', 16.2, 20.2, 'info', true], ['Salary never arrives in the statement', 20.6, 24.8, 'danger', true]],
+    badges: [['2× SPEED', 'tr'], ['ENCRYPTED-COMPUTE & ZK CARDS = PROTOTYPES', 'bl', '#C9CED6']], sfx: [['whoosh', 0.2, 0.6], ['click', 10 + at(64.52, 63.7, 1.27)], ['click', 10 + at(70.92, 63.7, 1.27)], ['click', 10 + at(77.35, 63.7, 1.27)]] },
   // 5 — harta editării + graful
   { id: 'detect', dur: 8, voice: 's05', parts: [
-    { dur: 4, el: <Clip src="v3_maria.webm" from={EDIT_FROM} filter="brightness(2.4) contrast(1.25)" keys={[Z(0, 1.5, 760, 420), Z(4, 1.7, 760, 400)]} /> },
+    { dur: 4, el: <Clip src="v3_maria.webm" from={EDIT_FROM} filter="brightness(2.6) contrast(1.3)" keys={[Z(0, 1.5, 760, 560), Z(4, 1.7, 760, 600)]} /> },
     { dur: 4, el: <Clip src="v5_graph.webm" from={9.2} keys={[Z(0, 1.5, 700, 440), Z(2.5, 2.1, 690, 470)]} /> }],
     captions: [['Edit map: bright = area re-saved after the first save', 0.4, 3.8, 'danger', true], ['1 bank account · Maria + 5 other applications', 4.4, 7.8, 'danger']], sfx: [['click', 0.4]] },
   // 6 — decizia
   { id: 'decide', dur: 16, voice: 's06', parts: [{ dur: 16, el: <Clip src="v6_decision.webm" from={6.4} rate={1.35}
     keys={[Z(0, 1.5, 1600, 300), Z(at(9.94, 6.4, 1.35), 1.5, 1600, 560), Z(at(16.09, 6.4, 1.35), 1.7, 1680, 420), Z(at(24.2, 6.4, 1.35), 1.6, 1680, 420)]} /> }],
-    captions: [['A summary with an unverified number = rejected', 3.2, 7.2], ['The AI doesn\'t decide', 11.8, 15.8, 'ok']],
+    captions: [['Risk level = severity of the evidence, not an accusation', 0.4, 3.0], ['A summary with an unverified number = rejected', 3.2, 7.2], ['The AI doesn\'t decide', 11.8, 15.8, 'ok']],
     sfx: [['click', at(9.94, 6.4, 1.35)], ['ping', at(16.09, 6.4, 1.35) + 0.15, 0.7], ['click', at(24.53, 6.4, 1.35)]] },
   // 7 — al doilea dosar: poze neclare
   { id: 'blurry', dur: 13.5, voice: 's07', voiceAt: 1.4, parts: [
     { dur: 1.4, el: <Card title="Second file" sub="UNEXPECTED SITUATIONS" /> },
     { dur: 12.1, el: <Clip src="v7_blurry.webm" from={34.4} rate={1.05} keys={[Z(0, 1.4, 1600, 330), Z(4, 1.4, 1600, 330), Z(at(44.53, 34.4, 1.05), 1.65, 1660, 840), Z(12, 1.65, 1660, 840)]} /> }],
-    captions: [['simulated phone photos · no cloud call', 2, 7]] },
+    captions: [['Unreadable photo: redaction can\'t be trusted, so its text is never sent to the AI', 1.6, 9.4]] },
   { id: 'design', dur: 15, voice: 's08', parts: [{ dur: 15, el: <Design /> }] },
   // 9 — dosarul cinstit
-  { id: 'honest', dur: 9, voice: 's09', parts: [{ dur: 9, el: <Clip src="v9_honest.webm" from={31} rate={1.33} keys={[Z(0, 1.4, 1600, 330), Z(at(40.4, 31, 1.33), 1.4, 1600, 520), Z(9, 1.5, 1700, 700)]} /> }],
-    captions: [['~20 min → ~1 min review (estimate) · 1 in 4 honest files still goes to a human', 4.2, 8.8, 'ok']], sfx: [['click', at(40.7, 31, 1.33)]] },
+  { id: 'honest', dur: 8, voice: 's09', parts: [{ dur: 8, el: <Clip src="v9_honest.webm" from={31} rate={1.5} keys={[Z(0, 1.4, 1600, 330), Z(at(40.4, 31, 1.5), 1.4, 1600, 520), Z(8, 1.5, 1700, 700)]} /> }],
+    captions: [['~20 min → ~1 min review (estimate) · 1 in 4 honest files still goes to a human', 3.8, 7.8, 'ok']], sfx: [['click', at(40.7, 31, 1.5)]] },
   // 10 — confidențialitate + comutatorul
-  { id: 'privacy', dur: 11, voice: 's10', parts: [{ dur: 11, el: <Clip src="v10_privacy.webm" from={8.4} rate={1.15}
-    keys={[Z(0, 1.35, 700, 500), Z(5.1, 1.35, 700, 500), Z(5.9, 1.9, 1520, 60), Z(11, 1.9, 1520, 60)]} /> }],
-    captions: [['switch shown only · local run tested on our demo laptop, ~9 s/file · demo cloud: AWS us-west-2 · production: EU region or local only', 6, 10.8]],
+  { id: 'privacy', dur: 12, voice: 's10', voiceAt: 0.15, parts: [{ dur: 12, el: <Clip src="v10_privacy.webm" from={8.4} rate={1.05}
+    keys={[Z(0, 1.35, 700, 500), Z(6.0, 1.35, 700, 500), Z(6.9, 1.9, 1520, 60), Z(12, 1.9, 1520, 60)]} /> }],
+    captions: [['switch shown only · local run tested on our demo laptop, ~9 s/file · demo cloud: AWS us-west-2 · production: EU region or local only', 6.8, 11.8]],
     badges: [['ENCRYPTED-COMPUTE & ZK CARDS = PROTOTYPES', 'bl', '#C9CED6']],
-    sfx: [['click', at(9.15, 8.4, 1.15)], ['click', at(15.78, 8.4, 1.15)], ['click', at(20.09, 8.4, 1.15)]] },
+    sfx: [['click', at(9.15, 8.4, 1.05)], ['click', at(15.78, 8.4, 1.05)], ['click', at(20.09, 8.4, 1.05)]] },
   { id: 'numbers', dur: 15, voice: 's11', voiceAt: 0.4, parts: [{ dur: 15, el: <Numbers /> }] },
   // 11 — Arena: telefonul (prins + de ce) → proiectorul (regula propusă, testată, aprobată de om)
   { id: 'arena', dur: 12, voice: 's14', voiceAt: 0.2, parts: [
     { dur: 4.6, el: <Phone src="v11_phone.webm" from={PHONE_FROM} rate={1.15} /> },
     { dur: 2.4, el: <Clip src="v11_rule.webm" from={13} keys={[Z(0, 1.15, 640, 330), Z(2.4, 1.25, 640, 330)]} /> },
-    { dur: 5, el: <Clip src="v11_approve.webm" from={3.8} rate={1.05} keys={[Z(0, 1, 960, 540), Z(0.9, 2.6, 369, 900), Z(5, 2.6, 369, 900)]} /> }],
+    { dur: 5, el: <Clip src="v11_approve.webm" from={3.8} rate={0.95} keys={[Z(0, 1, 960, 540), Z(0.9, 2.6, 369, 900), Z(5, 2.6, 369, 900)]} /> }],
     captions: [['Try it: orb-raiffeisen.vercel.app/arena', 0.5, 4.4, 'info', false],
-      ['AI-proposed rule · back-tested on 291 synthetic payslips: 0 false alarms · a human approves', 7.3, 11.8, 'ok', true]],
-    sfx: [['whoosh', 4.5, 0.4], ['click', 7 + (8.44 - 3.8) / 1.05], ['ping', 7 + (8.44 - 3.8) / 1.05 + 0.15, 0.55]] },
+      ['AI-proposed rule · back-tested on synthetic payslips · a human approves', 7.3, 11.8, 'ok', true]],
+    sfx: [['whoosh', 4.5, 0.4], ['click', 7 + (8.44 - 3.8) / 0.95], ['ping', 7 + (8.44 - 3.8) / 0.95 + 0.15, 0.55]] },
   { id: 'limits', dur: 11, voice: 's12', voiceAt: 0.1, parts: [{ dur: 11, el: <Terminal /> }],
     captions: [['Limits: synthetic data · our own forgeries · a forger who also fakes the statement would pass', 1.2, 6.4, 'danger'], ['Shown: offline replay, no API key · the 60-file benchmark used the real cloud AI', 6.8, 10.8]] },
   { id: 'outro', dur: 4, voice: 's13', voiceAt: 0.6, parts: [{ dur: 4, el: <OffthreadVideo src={staticFile('orb_outro.mp4')} /> }] },
@@ -307,6 +322,7 @@ export const ORB: React.FC = () => {
             {(s.captions || []).map(([text, a, b, tone, top], j) => <Caption key={j} text={text} from={a} to={b} tone={tone} top={top} />)}
             {(s.captions || []).map(([, a], j) => <Sequence key={'pop' + j} from={Math.round(a * FPS)}><Audio src={staticFile('sfx/pop.wav')} volume={0.28} /></Sequence>)}
             {(s.badges || []).map(([text, corner, color], j) => <Badge key={j} text={text} corner={corner} color={color} />)}
+            {s.voice && s.id !== 'outro' && <Subtitle voice={s.voice} at={s.voiceAt ?? 0.3} />}
             {s.voice && <Sequence from={Math.round((s.voiceAt ?? 0.3) * FPS)}><Audio src={staticFile(`${VDIR}/${s.voice}.wav`)} /></Sequence>}
             {(s.sfx || []).map(([name, t, vol], j) => (
               <Sequence key={j} from={Math.max(0, Math.round(t * FPS))}><Audio src={staticFile(`sfx/${name}.wav`)} volume={vol ?? 0.35} /></Sequence>
