@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph2D, { type ForceGraphMethods, type NodeObject } from 'react-force-graph-2d'
 import type { GraphData, GraphNode } from '@/lib/graph'
 
-const FP_ICON: Record<string, string> = { phone: '📞', iban: '💳', email: '✉️', address: '🏠', cnp: '🪪', name: '👤', cui: '🏢' }
+// Amprentele se desenează ca etichete scurte, nu ca emoji.
+const FP_TAG: Record<string, string> = { phone: 'tel', iban: 'IBAN', email: 'email', address: 'adr', cnp: 'CNP', name: 'nume', cui: 'CUI' }
 const FP_LABEL: Record<string, string> = {
   phone: 'telefon', iban: 'cont', email: 'email', address: 'adresă', cnp: 'CNP', name: 'nume', cui: 'angajator',
 }
+const C = { focus: '#FFE600', ring: '#F04438', other: '#98A2B3', text: '#E4E7EC', linkStrong: 'rgba(240,68,56,0.75)', link: 'rgba(152,162,179,0.35)' }
 
 type N = NodeObject & GraphNode
 
@@ -39,16 +41,27 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
   }, [graph])
 
   useEffect(() => {
-    if (data.nodes.length) setTimeout(() => fg.current?.zoomToFit(400, 70), 600)
+    if (!data.nodes.length) return
+    // noduri mai depărtate, ca etichetele să nu se suprapună; aplicat după ce graful s-a montat
+    const t1 = setTimeout(() => {
+      const g = fg.current
+      if (!g) return
+      g.d3Force('charge')?.strength(-520)
+      const link = g.d3Force('link') as { distance?: (d: number) => unknown } | undefined
+      link?.distance?.(100)
+      g.d3ReheatSimulation()
+    }, 0)
+    const t2 = setTimeout(() => fg.current?.zoomToFit(400, 70), 1200)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [data.nodes.length])
 
   const ringSize = graph.nodes.filter((n) => n.type === 'case' && n.in_cluster).length
 
   return (
-    <div ref={wrap} className="relative w-full overflow-hidden rounded-lg border bg-slate-950">
+    <div ref={wrap} className="relative w-full overflow-hidden rounded-sm bg-[#161A20]">
       {graph.nodes.length === 0 ? (
-        <div className="flex items-center justify-center text-slate-400" style={{ height }}>
-          Detectivul încă nu a găsit legături.
+        <div className="flex items-center justify-center text-[#98A2B3]" style={{ height }}>
+          Nicio legătură găsită încă.
         </div>
       ) : (
         <ForceGraph2D<N>
@@ -58,34 +71,45 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
           graphData={data}
           cooldownTicks={120}
           linkColor={(l) => ((l as { kind: string }).kind === 'phone' || (l as { kind: string }).kind === 'iban'
-            ? 'rgba(248,113,113,0.8)' : 'rgba(148,163,184,0.4)')}
+            ? C.linkStrong : C.link)}
           linkWidth={(l) => ((l as { kind: string }).kind === 'phone' || (l as { kind: string }).kind === 'iban' ? 2.5 : 1)}
           nodeLabel={(n) => (n.type === 'case'
-            ? `${n.label} · ${n.case_id}${n.risk != null ? ` · risc ${Math.round(n.risk * 100)}` : ''}`
+            ? `${n.label.replace(/^\[PERSOANA_(\w+)\]$/, 'Persoana $1')}, dosarul ${n.case_id}${n.risk != null ? `, risc ${Math.round(n.risk * 100)}` : ''}`
             : `${FP_LABEL[n.kind ?? ''] ?? n.kind} comun la ${n.shared_by} dosare`)}
           nodeCanvasObject={(n, ctx, scale) => {
             const x = n.x ?? 0
             const y = n.y ?? 0
-            const font = (px: number) => `${px / scale}px sans-serif`
             if (n.type === 'case') {
               const r = (n.is_focus ? 13 : 9) / scale // dimensiune fixă pe ecran, indiferent de zoom
               ctx.beginPath()
               ctx.arc(x, y, r, 0, 2 * Math.PI)
-              ctx.fillStyle = n.is_focus ? '#facc15' : n.in_cluster ? '#ef4444' : '#64748b'
+              ctx.fillStyle = n.is_focus ? C.focus : n.in_cluster ? C.ring : C.other
               ctx.fill()
-              if (n.is_focus) { ctx.lineWidth = 3 / scale; ctx.strokeStyle = '#fff'; ctx.stroke() }
-              ctx.fillStyle = '#e2e8f0'
-              ctx.font = font(13)
-              ctx.textAlign = 'center'
-              ctx.textBaseline = 'top'
-              ctx.fillText(n.is_focus ? `${n.label} (acest dosar)` : n.label, x, y + r + 4 / scale)
+              if (n.is_focus) { ctx.lineWidth = 3 / scale; ctx.strokeStyle = '#161A20'; ctx.stroke() }
+              // o singură etichetă pe graf (dosarul curent); restul apar la hover, ca să nu se suprapună
+              if (n.is_focus) {
+                ctx.fillStyle = C.text
+                ctx.font = `600 ${13 / scale}px 'IBM Plex Sans', sans-serif`
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'top'
+                ctx.fillText('Acest dosar', x, y + r + 5 / scale)
+              }
             } else {
-              ctx.font = font(n.in_cluster ? 24 : 16)
+              const tag = FP_TAG[n.kind ?? ''] ?? '?'
+              ctx.font = `600 ${12 / scale}px 'IBM Plex Sans', sans-serif`
+              const w = ctx.measureText(tag).width + 10 / scale
+              const h = 18 / scale
+              ctx.fillStyle = n.in_cluster ? '#3A1C1A' : '#262B33'
+              ctx.strokeStyle = n.in_cluster ? C.ring : '#475467'
+              ctx.lineWidth = 1 / scale
+              ctx.beginPath()
+              ctx.rect(x - w / 2, y - h / 2, w, h)
+              ctx.fill()
+              ctx.stroke()
+              ctx.fillStyle = n.in_cluster ? '#FECDCA' : '#D0D5DD'
               ctx.textAlign = 'center'
               ctx.textBaseline = 'middle'
-              ctx.globalAlpha = n.in_cluster ? 1 : 0.5
-              ctx.fillText(FP_ICON[n.kind ?? ''] ?? '•', x, y)
-              ctx.globalAlpha = 1
+              ctx.fillText(tag, x, y + 0.5 / scale)
             }
           }}
           nodePointerAreaPaint={(n, color, ctx) => {
@@ -96,11 +120,11 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
           }}
         />
       )}
-      <div className="pointer-events-none absolute left-3 top-3 space-y-1 rounded-md bg-slate-900/80 px-3 py-2 text-sm text-slate-200">
-        <div><span className="mr-1 inline-block h-3 w-3 rounded-full bg-yellow-400 align-middle" /> acest dosar</div>
-        <div><span className="mr-1 inline-block h-3 w-3 rounded-full bg-red-500 align-middle" /> rețea suspectă ({Math.max(0, ringSize - 1)} dosare)</div>
-        <div><span className="mr-1 inline-block h-3 w-3 rounded-full bg-slate-500 align-middle" /> alte dosare</div>
-        <div>📞 telefon · 💳 cont · 🏠 adresă · 🪪 CNP · 👤 nume · 🏢 angajator</div>
+      <div className="pointer-events-none absolute bottom-3 left-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-[#D0D5DD]">
+        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-brand" />Acest dosar</span>
+        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#F04438]" />Rețea suspectă ({Math.max(0, ringSize - 1)} dosare)</span>
+        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#98A2B3]" />Alte dosare</span>
+        <span className="text-[#98A2B3]">Etichetele tel, IBAN, adr, CNP sunt date comune, păstrate ca amprente. Treci cu mouse-ul peste un dosar ca să-l vezi.</span>
       </div>
     </div>
   )

@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { getMissions, lei, savedNick, submitFake, type Mission } from '@/lib/arena'
+import { Check, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ArenaShell } from './ArenaShell'
 
@@ -12,23 +13,23 @@ function PayslipPreview({ doc, tricks }: { doc: Record<string, string | number>;
   const recompute = tricks.includes('recompute_taxes')
   const net = recompute ? Math.round(Number(doc.gross_salary) * 0.585) : doc.net_salary
   return (
-    <div className="relative rounded-lg bg-white p-4 font-mono text-[13px] leading-6 text-slate-900 shadow-lg">
-      <div className="text-center font-bold tracking-wide">FLUTURAȘ DE SALARIU</div>
-      <div className="text-center text-xs text-slate-500">luna {String(doc.issue_date).slice(0, 7)}</div>
-      <hr className="my-2 border-slate-300" />
+    <div className="relative rounded-sm bg-white p-5 text-[14px] leading-6 text-ink">
+      <div className="text-center font-bold">Fluturaș de salariu</div>
+      <div className="text-center text-xs text-ink-3">luna {String(doc.issue_date).slice(0, 7)}</div>
+      <hr className="my-2 border-line" />
       <div>Angajator: <b>{doc.employer}</b></div>
       <div>Angajat: {doc.employee}</div>
       <div>Funcția: {doc.job_title}</div>
-      <hr className="my-2 border-slate-300" />
+      <hr className="my-2 border-line" />
       <div className="flex justify-between"><span>Salariu brut</span><b>{n(doc.gross_salary)}</b></div>
       <div className="flex justify-between"><span>Salariu net</span><b>{recompute ? '≈ ' : ''}{n(net)}</b></div>
-      <div className="mt-2 text-xs text-slate-500">Emis la {doc.issue_date}</div>
+      <div className="mt-2 text-xs text-ink-3">Emis la {doc.issue_date}</div>
       {tricks.includes('ai_photo') && (
-        <div className="absolute bottom-3 right-3 flex h-14 w-14 rotate-[-12deg] items-center justify-center rounded-full border-2 border-blue-700 text-[9px] font-bold text-blue-700">
+        <div className="absolute bottom-3 right-3 flex h-14 w-14 rotate-[-12deg] items-center justify-center rounded-full border-2 border-info text-[9px] font-bold text-info">
           ȘTAMPILĂ<br />AI
         </div>
       )}
-      {tricks.includes('hide_injection') && <div className="text-[9px] text-slate-200">text ascuns pentru AI…</div>}
+      {tricks.includes('hide_injection') && <div className="text-[9px] text-[#EEF0F2]">text ascuns pentru AI</div>}
     </div>
   )
 }
@@ -62,19 +63,19 @@ function Forge({ mission }: { mission: Mission }) {
 
   return (
     <ArenaShell>
-      <h2 className="text-2xl font-bold">{mission.title}</h2>
-      <p className="mt-1 text-slate-300">{mission.brief}</p>
+      <h2 className="text-2xl font-semibold">{mission.title}</h2>
+      <p className="mt-1 text-night-mute">{mission.brief}</p>
 
       <div className="mt-4"><PayslipPreview doc={doc} tricks={tricks} /></div>
 
-      <h3 className="mt-6 text-lg font-bold">✏️ Modifică documentul</h3>
+      <h3 className="mt-8 text-lg font-semibold">Modifică documentul</h3>
       <div className="mt-2 space-y-4">
         {Object.entries(mission.editable).map(([key, spec]) => {
           const disabled = key === 'net_salary' && recompute
-          const cls = 'mt-1 h-14 w-full rounded-xl border border-slate-700 bg-slate-900 px-4 text-lg outline-none focus:border-amber-400 disabled:opacity-40'
+          const cls = 'mt-1 h-14 w-full rounded-md border border-night-line bg-night-2 px-4 text-lg outline-none focus:border-brand disabled:opacity-40'
           return (
             <label key={key} className="block">
-              <span className="text-base text-slate-300">{spec.label}{disabled && ' — se calculează din brut'}</span>
+              <span className="text-base text-night-mute">{spec.label}{disabled && ' — se calculează din brut'}</span>
               {spec.type === 'select' ? (
                 <select className={cls} value={String(doc[key])} onChange={(e) => set(key, e.target.value)}>
                   {spec.options?.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -96,28 +97,30 @@ function Forge({ mission }: { mission: Mission }) {
         })}
       </div>
 
-      <h3 className="mt-6 text-lg font-bold">🧪 Trucuri</h3>
+      <h3 className="mt-8 text-lg font-semibold">Trucuri</h3>
       <div className="mt-2 space-y-2">
         {Object.entries(mission.tricks).map(([key, label]) => {
           const on = tricks.includes(key)
           return (
             <button key={key} type="button" onClick={() => toggle(key)} aria-pressed={on}
-              className={cn('flex min-h-14 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left text-base',
-                on ? 'border-amber-400 bg-amber-400/10' : 'border-slate-700 bg-slate-900')}>
-              <span className="text-2xl">{on ? '✅' : '⬜'}</span>{label}
+              className={cn('flex min-h-14 w-full items-center gap-3 rounded-md border px-4 py-3 text-left text-base',
+                on ? 'border-brand bg-brand/10' : 'border-night-line bg-night-2')}>
+              <span className={cn('grid h-6 w-6 shrink-0 place-items-center rounded-sm border', on ? 'border-brand bg-brand text-ink' : 'border-night-mute')}>
+                {on && <Check className="h-4 w-4" aria-hidden />}
+              </span>{label}
             </button>
           )
         })}
       </div>
 
-      <div className="sticky bottom-20 mt-6 space-y-2 rounded-2xl bg-slate-950/90 py-3 backdrop-blur">
-        <p className={cn('text-center text-base', targetMet ? 'text-emerald-400' : 'text-amber-300')}>
-          {targetMet ? '🎯 Ținta e atinsă' : `🎯 Ținta: net ≥ ${lei(target.min)}`}
+      <div className="sticky bottom-20 mt-8 space-y-2 bg-night/95 py-3 backdrop-blur">
+        <p className={cn('text-center text-base', targetMet ? 'text-night-ok' : 'text-brand')}>
+          {targetMet ? 'Ținta e atinsă' : `Ținta: net de cel puțin ${lei(target.min)}`}
         </p>
-        {error && <p className="text-center text-red-400">{error}</p>}
+        {error && <p className="text-center text-night-danger">{error}</p>}
         <button type="button" onClick={send} disabled={busy}
-          className="h-16 w-full rounded-2xl bg-amber-400 text-xl font-black text-slate-950 active:scale-[0.99] disabled:opacity-60">
-          {busy ? 'Agenții verifică…' : '🚀 Trimite falsul'}
+          className="flex h-16 w-full items-center justify-center gap-2 rounded-md bg-brand text-xl font-bold text-ink active:scale-[0.99] disabled:opacity-60">
+          {busy ? 'Agenții verifică…' : <><Send className="h-5 w-5" aria-hidden /> Trimite falsul</>}
         </button>
       </div>
     </ArenaShell>
@@ -129,7 +132,7 @@ export function ArenaForge() {
   const missions = useQuery({ queryKey: ['arena-missions'], queryFn: getMissions, staleTime: 60_000 })
   if (!savedNick()) return <Navigate to="/arena" replace />
   const mission = missions.data?.find((m) => m.id === missionId)
-  if (missions.isLoading) return <ArenaShell><p className="text-slate-400">Se încarcă…</p></ArenaShell>
-  if (!mission) return <ArenaShell><p className="text-red-400">Misiunea nu există.</p></ArenaShell>
+  if (missions.isLoading) return <ArenaShell><p className="text-night-mute">Se încarcă misiunea.</p></ArenaShell>
+  if (!mission) return <ArenaShell><p className="text-night-danger">Misiunea nu există. Alege alta din listă.</p></ArenaShell>
   return <Forge key={mission.id} mission={mission} />
 }

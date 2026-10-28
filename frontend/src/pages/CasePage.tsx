@@ -1,33 +1,42 @@
+import { FileDown, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
-import { DecisionPanel } from '@/components/DecisionPanel'
 import { AppNav } from '@/components/AppNav'
+import { DecisionPanel } from '@/components/DecisionPanel'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { FindingsList } from '@/components/FindingsList'
 import { NetworkGraph } from '@/components/NetworkGraph'
+import { Panel } from '@/components/Panel'
 import { VerdictCard } from '@/components/VerdictCard'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCaseLive } from '@/hooks/useCaseLive'
 import { getGraph, openReport } from '@/lib/api'
-import { AGENT_INFO } from '@/lib/labels'
-import { AGENTS, type AgentName, type Finding } from '@/lib/types'
 import type { ConnectionState } from '@/lib/events'
+import { AGENT_INFO } from '@/lib/labels'
+import { AGENTS, type AgentName, type CaseStatus, type Finding } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
-const CONN: Record<ConnectionState, string> = {
-  connecting: '⏳ conectare…',
-  live: '🟢 live',
-  reconnecting: '🟠 reconectare…',
-  replay: '▶️ replay (mock)',
-  closed: '⚪ deconectat',
+const CONN: Record<ConnectionState, { label: string; dot: string }> = {
+  connecting: { label: 'Se conectează', dot: 'bg-ink-3' },
+  live: { label: 'Actualizare live', dot: 'bg-ok' },
+  reconnecting: { label: 'Se reconectează', dot: 'bg-warn' },
+  replay: { label: 'Reluare demo', dot: 'bg-info' },
+  closed: { label: 'Deconectat', dot: 'bg-ink-3' },
 }
+
+const STATUS: Record<CaseStatus, string> = {
+  received: 'Primit', processing: 'În analiză', awaiting_review: 'Așteaptă decizia ta', cleared: 'Aprobat',
+  rejected: 'Respins', escalated: 'La investigație', error: 'Eroare',
+}
+
+const lei = (n?: number | null) => (n ? `${n.toLocaleString('ro-RO')} lei` : '—')
 
 export function CasePage() {
   const { caseId = 'case_maria' } = useParams()
   const [replayKey, setReplayKey] = useState(0)
   const { snapshot, state, dispatch, conn, mock } = useCaseLive(caseId, replayKey)
   const [selected, setSelected] = useState<Finding | null>(null)
+  const [docId, setDocId] = useState('')
 
   const findings = useMemo(
     () => AGENTS.flatMap((a: AgentName) => (state.agents[a].result?.findings ?? []).map((finding) => ({ agent: a, finding }))),
@@ -36,7 +45,7 @@ export function CasePage() {
   const allFindings = findings.map((f) => f.finding)
   const lastDebate = [...state.feed].reverse().find((e) => e.type === 'debate')
 
-  // Dosar deschis după ce Detectivul a terminat → n-am prins graful live, îl cerem o dată.
+  // dosar deschis după ce Detectivul a terminat → graful nu a venit live, îl cerem o dată
   const detectivDone = state.agents.detectiv.status === 'done'
   const graphEmpty = state.graph.nodes.length === 0
   useEffect(() => {
@@ -44,79 +53,95 @@ export function CasePage() {
     getGraph(caseId).then((graph) => dispatch({ type: 'graph', graph })).catch(() => {})
   }, [mock, detectivDone, graphEmpty, caseId, dispatch])
 
-  if (snapshot.isLoading) return <div className="p-8 text-xl">Se încarcă dosarul…</div>
+  if (snapshot.isLoading) return <Shell><p className="p-8 text-lg text-ink-2">Se încarcă dosarul.</p></Shell>
   if (snapshot.isError || !snapshot.data) {
-    return <div className="p-8 text-xl text-red-700">Dosarul nu a putut fi încărcat. Verifică backend-ul sau deschide cu <code>?mock=1</code>.</div>
+    return (
+      <Shell>
+        <div className="m-8 max-w-xl rounded-md border border-line bg-surface p-6">
+          <h1 className="text-xl font-semibold text-ink">Dosarul nu s-a încărcat</h1>
+          <p className="mt-2 text-ink-2">Serverul nu răspunde sau dosarul nu există. Verifică backend-ul, sau deschide demo-ul fără backend.</p>
+          <Link to="/cases/case_maria?mock=1" className="mt-4 inline-block font-semibold text-info underline">Deschide demo-ul</Link>
+        </div>
+      </Shell>
+    )
   }
   const c = snapshot.data
-  // dacă un finding e selectat, arătăm documentul lui primul
-  const docs = selected?.evidence?.doc_id
-    ? [...c.documents].sort((a, b) => (a.id === selected.evidence!.doc_id ? -1 : b.id === selected.evidence!.doc_id ? 1 : 0))
-    : c.documents
+  const status = state.decision ? ({ clear: 'cleared', reject: 'rejected', escalate: 'escalated', flag_network: 'escalated', correct: 'awaiting_review' } as const)[state.decision.action] : c.status
+  const activeDoc = docId || c.documents[0]?.id || ''
+
+  function select(f: Finding) {
+    setSelected(f)
+    if (f.evidence?.doc_id) setDocId(f.evidence.doc_id)
+    document.getElementById('documente')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <AppNav />
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-white px-4 py-3 md:px-6">
-        <div>
-          <h1 className="text-2xl font-bold">🔒 ORB · Dosar {c.id}</h1>
-          <p className="text-slate-600">
-            Solicitant {c.applicant_token} · credit {c.requested_amount_ron?.toLocaleString('ro-RO')} lei · {c.documents.length} documente
-          </p>
+    <Shell>
+      <div className="border-b border-line bg-surface px-4 py-5 md:px-8">
+        <nav className="text-sm text-ink-3"><Link to="/dashboard" className="hover:text-ink">Dosare</Link> / <span className="text-ink-2">{c.id}</span></nav>
+        <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-ink">Cerere de credit de {lei(c.requested_amount_ron)}</h1>
+            <p className="mt-1 text-base text-ink-2">
+              {c.applicant_token?.startsWith('[') ? `Solicitant ${c.applicant_token}, ` : ''}
+              {c.documents.length} documente, depusă pe {new Date(c.created_at).toLocaleString('ro-RO', { dateStyle: 'long', timeStyle: 'short' })}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-sm border border-line px-2.5 py-1 text-sm font-medium text-ink">{STATUS[status]}</span>
+            <span className="flex items-center gap-2 text-sm text-ink-2"><span className={cn('h-2 w-2 rounded-full', CONN[conn].dot)} />{CONN[conn].label}</span>
+            {mock ? (
+              <button type="button" onClick={() => { setSelected(null); setReplayKey((k) => k + 1) }}
+                className="flex h-10 items-center gap-2 rounded-sm border border-line bg-surface px-4 text-[15px] font-medium text-ink hover:bg-canvas">
+                <RotateCcw className="h-4 w-4" aria-hidden /> Reia analiza
+              </button>
+            ) : (
+              <button type="button" disabled={!state.verdict} onClick={() => openReport(c.id).catch(() => alert('Raportul nu s-a generat: serverul nu a răspuns.'))}
+                className="flex h-10 items-center gap-2 rounded-sm border border-line bg-surface px-4 text-[15px] font-medium text-ink hover:bg-canvas disabled:opacity-40">
+                <FileDown className="h-4 w-4" aria-hidden /> Raport de anchetă
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-base">{CONN[conn]}</span>
-          {mock && <Button variant="outline" onClick={() => { setSelected(null); setReplayKey((k) => k + 1) }}>↻ Reia demo</Button>}
-          {!mock && (
-            <Button variant="outline" disabled={!state.verdict} title="Raport printabil (Salvează ca PDF)"
-                    onClick={() => openReport(c.id).catch(() => alert('Raportul nu a putut fi generat.'))}>
-              📄 Raport de anchetă
-            </Button>
-          )}
-        </div>
-      </header>
+      </div>
 
-      <main className="space-y-6 p-4 md:p-6">
-        <section>
+      <main className="space-y-6 px-4 py-6 md:px-8">
+        <section aria-label="Agenții">
           <AgentBand agents={state.agents} />
           {lastDebate && (
-            <p className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-base">
-              💬 <b>{lastDebate.agent ? AGENT_INFO[lastDebate.agent].label : 'Birou'}:</b> {lastDebate.message}
+            <p className="mt-3 border-l-2 border-ink pl-4 text-[15px] text-ink-2">
+              <span className="font-semibold text-ink">{lastDebate.agent ? AGENT_INFO[lastDebate.agent].label : 'Biroul'}:</span> {lastDebate.message}
             </p>
           )}
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
-          <section className="space-y-8">
-            <Card>
-              <CardHeader><CardTitle className="text-xl">🕵️ Rețeaua Detectivului</CardTitle></CardHeader>
-              <CardContent><NetworkGraph graph={state.graph} /></CardContent>
-            </Card>
-            {docs.map((d) => (
-              <Card key={d.id}>
-                <CardContent className="pt-6">
-                  <DocumentViewer caseId={c.id} doc={d} findings={allFindings} mock={mock} highlighted={selected} />
-                </CardContent>
-              </Card>
-            ))}
-          </section>
+        <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
+          <div className="space-y-6">
+            <Panel title="Legături cu alte cereri" bodyClassName="p-0">
+              <NetworkGraph graph={state.graph} height={400} />
+            </Panel>
+            <section id="documente" className="scroll-mt-4 rounded-md border border-line bg-surface">
+              <DocumentViewer caseId={c.id} docs={c.documents} findings={allFindings} mock={mock}
+                              highlighted={selected} docId={activeDoc} onDocChange={setDocId} />
+            </section>
+          </div>
 
-          <aside className="space-y-6 lg:sticky lg:top-4 lg:self-start">
-            <VerdictCard verdict={state.verdict} />
-            <DecisionPanel
-              caseId={c.id}
-              decision={state.decision}
-              mock={mock}
-              disabled={!state.verdict}
-              onDecided={(d) => dispatch({ type: 'decided', decision: d })}
-            />
-            <Card>
-              <CardHeader><CardTitle className="text-xl">Ce au găsit agenții</CardTitle></CardHeader>
-              <CardContent><FindingsList items={findings} onSelect={setSelected} selected={selected} /></CardContent>
-            </Card>
+          <aside className="space-y-6 xl:sticky xl:top-4">
+            <section className="overflow-hidden rounded-md border border-line bg-surface">
+              <VerdictCard verdict={state.verdict} />
+              <DecisionPanel caseId={c.id} decision={state.decision} mock={mock} disabled={!state.verdict}
+                             onDecided={(d) => dispatch({ type: 'decided', decision: d })} />
+            </section>
+            <Panel title="Dovezi" aside={<span className="text-sm text-ink-3">{findings.filter((f) => f.finding.severity !== 'info').length}</span>} bodyClassName="p-0">
+              <FindingsList items={findings} onSelect={select} selected={selected} />
+            </Panel>
           </aside>
         </div>
       </main>
-    </div>
+    </Shell>
   )
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+  return <div className="min-h-screen bg-canvas text-ink"><AppNav />{children}</div>
 }
