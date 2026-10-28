@@ -17,8 +17,8 @@ CASS_RATE = 0.10
 INCOME_TAX_RATE = 0.10
 NET_TOLERANCE_RON = 2.0
 
-# Salariul minim brut pe țară; de confirmat valoarea curentă înainte de demo.
-MIN_WAGE_RON = 4050
+# Salariul minim brut pe țară, 2026.
+MIN_WAGE_RON = 4325
 
 # Deducerea personală (tabelă simplificată): procent din salariul minim, după
 # numărul de persoane în întreținere, pentru brut ≤ salariul minim. Peste, scade

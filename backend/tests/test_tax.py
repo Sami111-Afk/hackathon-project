@@ -32,19 +32,19 @@ def test_tolerance_is_two_lei():
 
 
 def test_components_round_half_up():
-    t = compute_payslip(4050)  # CAS = 1012,5 → 1013
-    assert (t.cas, t.cass, t.deduction, t.income_tax, t.net) == (1013, 405, 810, 182, 2450)
+    t = compute_payslip(4326)  # CAS = 1081,5 → 1082
+    assert (t.cas, t.cass, t.deduction, t.income_tax, t.net) == (1082, 433, 843, 197, 2614)
 
 
 @pytest.mark.parametrize(
     ("gross", "dependents", "deduction"),
     [
-        (MIN_WAGE_RON, 0, 810),          # 20% din salariul minim
-        (MIN_WAGE_RON, 2, 1215),         # 30%
-        (MIN_WAGE_RON, 9, 1823),         # plafonat la 4+ persoane: 45%
-        (MIN_WAGE_RON + 1, 0, 790),      # primul pas de 50 lei: 19,5%
-        (MIN_WAGE_RON + 50, 0, 790),
-        (MIN_WAGE_RON + 51, 0, 770),
+        (MIN_WAGE_RON, 0, 865),          # 20% din salariul minim
+        (MIN_WAGE_RON, 2, 1298),         # 30%
+        (MIN_WAGE_RON, 9, 1946),         # plafonat la 4+ persoane: 45%
+        (MIN_WAGE_RON + 1, 0, 843),      # primul pas de 50 lei: 19,5%
+        (MIN_WAGE_RON + 50, 0, 843),
+        (MIN_WAGE_RON + 51, 0, 822),
         (MIN_WAGE_RON + 2000, 0, 0),     # capătul intervalului
         (MIN_WAGE_RON + 2001, 4, 0),     # peste interval nu mai există deducere
         (0, 0, 0),
