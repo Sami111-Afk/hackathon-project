@@ -53,7 +53,7 @@ export function DocumentViewer({
             <button key={d.id} role="tab" aria-selected={d.id === doc.id} type="button" onClick={() => onDocChange(d.id)}
               className={cn('flex items-center gap-2 border-b-2 py-3.5 text-[15px] font-medium',
                 d.id === doc.id ? 'border-ink text-ink' : 'border-transparent text-ink-2 hover:text-ink')}>
-              {DOC_LABEL[d.type]}
+              {d.type === 'unknown' ? `Document ${docs.indexOf(d) + 1}` : DOC_LABEL[d.type]}
               {flagged(d.id) && <span className="h-2 w-2 rounded-full bg-danger" aria-label="are dovezi" />}
             </button>
           ))}
