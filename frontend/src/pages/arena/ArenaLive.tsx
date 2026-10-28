@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { AlertOctagon, Brain, CircleHelp, ShieldCheck, Trophy } from 'lucide-react'
 import { AGENT_RO, getLeaderboard, subscribeArenaLive, type Submission } from '@/lib/arena'
 import { apiUrl } from '@/lib/config'
@@ -50,7 +50,6 @@ export function ArenaLive() {
   usePageMeta("Live attempts · ORB Arena", "Every attempt to fool the bank's AI agents, live, with the leaderboard.")
   const qc = useQueryClient()
   const board = useQuery({ queryKey: ['arena-top'], queryFn: getLeaderboard, refetchInterval: 15000 })
-  const [qr, setQr] = useState('')
   const [connected, setConnected] = useState(false)
   const [learning, setLearning] = useState<{ approved: boolean; message: string; at: number }[]>([])
   const [attacker, setAttacker] = useState<AttackerStatus | null>(null)
@@ -65,10 +64,6 @@ export function ArenaLive() {
   }, [current])
   const base = publicBase()
   const url = playUrl(base)
-
-  useEffect(() => {
-    QRCode.toDataURL(url, { width: 520, margin: 1, errorCorrectionLevel: 'M' }).then(setQr).catch(() => setQr(''))
-  }, [url])
 
   useEffect(() => {
     return subscribeArenaLive({
@@ -105,27 +100,12 @@ export function ArenaLive() {
   const passRate = st && st.valid ? Math.round((st.passed / st.valid) * 100) : 0
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-night text-night-ink">
+    <div className="flex min-h-dvh flex-col bg-night text-night-ink lg:h-dvh lg:overflow-hidden">
       <ArenaControls running={Boolean(attacker?.running)} />
       {current && <Spotlight key={current.id} s={current} waiting={show.length - 1} />}
       <div className="h-1.5 shrink-0 bg-brand" />
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,5fr)_minmax(0,7fr)_minmax(0,5fr)] gap-12 p-12">
-        <section className="flex flex-col justify-center">
-          <div className="flex items-center gap-4">
-            <span className="grid h-14 w-14 place-items-center rounded-sm bg-brand font-condensed text-3xl font-bold text-ink">O</span>
-            <h1 className="text-5xl font-bold tracking-tight">ORB Arena</h1>
-          </div>
-          <p className="mt-4 text-2xl leading-snug text-night-mute">Scan the code and try to fool the bank's agents with a fake payslip.</p>
-          {qr && <img src={qr} alt="QR code for the Arena" className="mt-8 w-[min(100%,24rem)] rounded-md bg-white p-3" />}
-          <p className="mt-5 break-all text-2xl font-semibold text-brand">{url.replace(/^https?:\/\//, '').split('?')[0]}</p>
-          {isLocal(base) && (
-            <p className="mt-3 rounded-sm border border-night-danger/60 bg-night-danger/10 px-3 py-2 text-lg text-night-danger">
-              Phones cannot open localhost. Open the page with ?base=https://public-address
-            </p>
-          )}
-          <p className="mt-4 text-xl text-night-mute">Demo game. Do not upload real documents.</p>
-        </section>
-
+      {/* QR-ul la mijloc, unde se uită sala; pe ecrane mici (telefon) coloanele stau una sub alta, QR-ul primul. */}
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-10 p-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)_minmax(0,1fr)] lg:gap-12 lg:p-12">
         <section className="flex min-h-0 flex-col">
           <h2 className="flex items-center gap-3 text-3xl font-semibold">
             Attempts in real time
@@ -150,6 +130,22 @@ export function ArenaLive() {
             })}
             {board.data && board.data.feed.length === 0 && <li className="py-4 text-2xl text-night-mute">Waiting for the first attempt.</li>}
           </ul>
+        </section>
+
+        <section className="flex flex-col items-center justify-center text-center order-first lg:order-none">
+          <div className="flex items-center justify-center gap-4">
+            <span className="grid h-14 w-14 place-items-center rounded-sm bg-brand font-condensed text-3xl font-bold text-ink">O</span>
+            <h1 className="text-5xl font-bold tracking-tight">ORB Arena</h1>
+          </div>
+          <p className="mt-4 text-2xl leading-snug text-night-mute">Scan the code and try to fool the bank's agents with a fake payslip.</p>
+          <QrCode text={url} className="mt-8 w-[min(100%,28rem)] rounded-md bg-white p-3" />
+          <p className="mt-5 break-all text-2xl font-semibold text-brand">{url.replace(/^https?:\/\//, '').split('?')[0]}</p>
+          {isLocal(base) && (
+            <p className="mt-3 rounded-sm border border-night-danger/60 bg-night-danger/10 px-3 py-2 text-lg text-night-danger">
+              Phones cannot open localhost. Open the page with ?base=https://public-address
+            </p>
+          )}
+          <p className="mt-4 text-xl text-night-mute">Demo game. Do not upload real documents.</p>
         </section>
 
         <section className="flex min-h-0 flex-col">
@@ -254,4 +250,23 @@ function AutoScroll({ children, className }: { children: ReactNode; className?: 
     return () => clearInterval(t)
   }, [])
   return <div ref={ref} className={cn('overflow-hidden', className)}>{children}</div>
+}
+
+/**
+ * QR-ul desenat direct (SVG), în prima randare: fără imagine generată după încărcare. Pe telefon e primul lucru
+ * mare de pe ecran, iar o imagine apărută târziu întârzia LCP-ul cu ~1 s.
+ */
+function QrCode({ text, className }: { text: string; className?: string }) {
+  const qr = useMemo(() => {
+    try { return QRCode.create(text, { errorCorrectionLevel: 'M' }) } catch { return null }
+  }, [text])
+  if (!qr) return null
+  const n = qr.modules.size
+  let d = ''
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (qr.modules.get(x, y)) d += `M${x} ${y}h1v1h-1z`
+  return (
+    <svg viewBox={`-1 -1 ${n + 2} ${n + 2}`} role="img" aria-label="QR code for the Arena" className={className} shapeRendering="crispEdges">
+      <path d={d} fill="#000" />
+    </svg>
+  )
 }
