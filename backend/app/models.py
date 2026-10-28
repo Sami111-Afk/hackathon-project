@@ -68,12 +68,22 @@ class Document(BaseModel):
     extracted: dict[str, ExtractedValue] | None = None
 
 
+class ScoreItem(BaseModel):
+    code: str
+    severity: Literal["info", "low", "medium", "high", "critical"]
+    weight: float          # ponderea folosită în noisy-OR (după plafonarea semnalelor slabe)
+    message: str
+    hard_override: bool = False
+
+
 class Verdict(BaseModel):
     risk: float
     label: Literal["clean", "suspicious", "forged", "identity_fraud", "fraud_ring"]
     summary: str
     recommendation: Literal["clear", "review", "escalate"]
     incomplete: bool = False
+    breakdown: list[ScoreItem] = Field(default_factory=list)  # „de ce acest scor”, în ordinea ponderii
+    summary_source: Literal["llm", "template", "template_after_check"] = "template"
 
 
 class Decision(BaseModel):

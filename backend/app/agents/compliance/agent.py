@@ -7,7 +7,7 @@ import logging
 
 from pydantic import BaseModel, Field
 
-from app.agents.compliance.scoring import score
+from app.agents.compliance.scoring import score, unsupported_claims
 from app.core.llm import chat
 from app.models import AgentResult, Finding
 
@@ -48,7 +48,15 @@ class Compliance:
                            cache_key=f"summary|{case.id}" if case.id.startswith("case_maria") else None,
                            prompt=f"Scor de risc: {verdict.risk:.2f}. Recomandare: {verdict.recommendation}. "
                                   f"Incomplet: {verdict.incomplete}.\nDovezi:\n{evidence}")
-            verdict.summary, usage = r.data.summary, r.usage
+            usage = r.usage
+            bad = unsupported_claims(r.data.summary, evidence, verdict.risk)
+            if bad:  # rezumatul conține cifre/etichete care nu sunt în dovezi → nu-l arătăm
+                log.warning("rezumat LLM respins: afirmații fără dovadă %s", bad)
+                verdict.summary_source = "template_after_check"
+                await ctx.emit("agent_progress",
+                               "Rezumatul AI conținea o cifră fără dovadă — folosesc rezumatul standard")
+            else:
+                verdict.summary, verdict.summary_source = r.data.summary, "llm"
         except Exception as exc:  # noqa: BLE001 — rezumatul din șablon rămâne
             log.info("rezumat din șablon (%s)", type(exc).__name__)
         case.verdict = verdict

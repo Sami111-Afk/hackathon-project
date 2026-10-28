@@ -57,12 +57,23 @@ export interface Document {
   extracted?: Record<string, ExtractedValue> | null
 }
 
+export interface ScoreItem {
+  code: string
+  severity: 'info' | 'low' | 'medium' | 'high' | 'critical'
+  weight: number
+  message: string
+  hard_override?: boolean
+}
+
 export interface Verdict {
   risk: number
   label: 'clean' | 'suspicious' | 'forged' | 'identity_fraud' | 'fraud_ring'
   summary: string
   recommendation: 'clear' | 'review' | 'escalate'
   incomplete: boolean
+  /** „De ce acest scor”: dovezile cu ponderea lor (noisy-OR). Lipsește în replay-urile vechi. */
+  breakdown?: ScoreItem[]
+  summary_source?: 'llm' | 'template' | 'template_after_check'
 }
 
 export type DecisionAction = 'clear' | 'reject' | 'escalate' | 'flag_network' | 'correct'
