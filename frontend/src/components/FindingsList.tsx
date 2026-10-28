@@ -16,7 +16,7 @@ export function FindingsList({
   const sorted = [...items]
     .filter(({ finding }) => finding.severity !== 'info')
     .sort((a, b) => ORDER.indexOf(a.finding.severity) - ORDER.indexOf(b.finding.severity))
-  if (!sorted.length) return <p className="px-6 py-5 text-ink-3">Nicio dovadă încă.</p>
+  if (!sorted.length) return <p className="px-6 py-5 text-ink-3">No evidence yet.</p>
   return (
     <ul className="divide-y divide-line">
       {sorted.map(({ agent, finding }, i) => {
@@ -35,7 +35,7 @@ export function FindingsList({
                   <span className={cn('font-semibold', sev.text)}>{sev.label}</span>
                   <span>{AGENT_INFO[agent].label}</span>
                   {locatable && (
-                    <span className="flex items-center gap-1 text-info"><Crosshair className="h-3.5 w-3.5" aria-hidden />Arată pe document</span>
+                    <span className="flex items-center gap-1 text-info"><Crosshair className="h-3.5 w-3.5" aria-hidden />Show on document</span>
                   )}
                 </span>
               </span>

@@ -9,7 +9,7 @@
     {
       "id": "doc_1",
       "type": "id_card",
-      "filename": "buletin.jpg",
+      "filename": "id_card.jpg",
       "pages": [
         {
           "page": 1,
@@ -17,7 +17,7 @@
           "height": 1010
         }
       ],
-      "redacted_text": "ROMÂNIA CARTE DE IDENTITATE SERIA [SERIE_1] NR [NR_1] CNP [CNP_1] Nume [PERSOANA_1] Domiciliu [ADRESA_1] [MRZ_1]",
+      "redacted_text": "ROMANIA IDENTITY CARD SERIES [SERIE_1] NO [NR_1] CNP [CNP_1] Name [PERSOANA_1] Address [ADRESA_1] [MRZ_1]",
       "extracted": {
         "birth_date": {
           "value": "1959-03-12",
@@ -32,7 +32,7 @@
     {
       "id": "doc_2",
       "type": "payslip",
-      "filename": "fluturas.jpg",
+      "filename": "payslip.jpg",
       "pages": [
         {
           "page": 1,
@@ -40,7 +40,7 @@
           "height": 2339
         }
       ],
-      "redacted_text": "FLUTURAȘ DE SALARIU Angajator [FIRMA_1] CUI [CUI_1] Angajat [PERSOANA_1] CNP [CNP_1] Funcția: Contabil Brut 14.200,00 Net 8.500,00",
+      "redacted_text": "PAYSLIP Employer [FIRMA_1] CUI [CUI_1] Employee [PERSOANA_1] CNP [CNP_1] Position: Accountant Gross 14.200,00 Net 8.500,00",
       "extracted": {
         "gross_salary": {
           "value": 14200,
@@ -59,7 +59,7 @@
     {
       "id": "doc_3",
       "type": "bank_statement",
-      "filename": "extras.pdf",
+      "filename": "bank_statement.pdf",
       "pages": [
         {
           "page": 1,
@@ -67,7 +67,7 @@
           "height": 2339
         }
       ],
-      "redacted_text": "EXTRAS DE CONT [IBAN_1] Titular [PERSOANA_1] Sold inițial 1.240,50 ... Sold final 26.480,00",
+      "redacted_text": "BANK STATEMENT [IBAN_1] Holder [PERSOANA_1] Opening balance 1.240,50 ... Closing balance 26.480,00",
       "extracted": {
         "closing_balance": {
           "value": 26480,
@@ -99,7 +99,7 @@
         {
           "code": "PII_REDACTED",
           "severity": "info",
-          "message": "23 de valori personale ascunse (nume, CNP, IBAN, adresă, MRZ, poză)"
+          "message": "23 personal values hidden (name, CNP, IBAN, address, MRZ, photo)"
         }
       ]
     },
@@ -118,7 +118,7 @@
         {
           "code": "DOCS_CLASSIFIED",
           "severity": "info",
-          "message": "3 documente: buletin, fluturaș, extras"
+          "message": "3 documents: ID card, payslip, statement"
         }
       ]
     },
@@ -131,7 +131,7 @@
         {
           "code": "NET_MISMATCH",
           "severity": "high",
-          "message": "Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)",
+          "message": "The computed net (8,307 lei) differs from the declared one (8,500 lei)",
           "evidence": {
             "doc_id": "doc_2",
             "page": 1,
@@ -147,12 +147,12 @@
         {
           "code": "COMPANY_INACTIVE",
           "severity": "critical",
-          "message": "Angajatorul [CUI_1] figurează inactiv la ANAF din 2024"
+          "message": "The employer [CUI_1] has been listed as inactive with ANAF (the tax authority) since 2024"
         },
         {
           "code": "AGE_EMPLOYMENT_MISMATCH",
           "severity": "medium",
-          "message": "Solicitant de 67 de ani declarat angajat activ cu normă întreagă"
+          "message": "67-year-old applicant declared as an active full-time employee"
         }
       ]
     },
@@ -168,7 +168,7 @@
         {
           "code": "ELA_ANOMALY",
           "severity": "medium",
-          "message": "Zona soldului final are un nivel de compresie diferit de restul paginii",
+          "message": "The final balance area has a different compression level from the rest of the page",
           "evidence": {
             "doc_id": "doc_3",
             "page": 1,
@@ -183,7 +183,7 @@
         {
           "code": "PDF_EDITOR_PRODUCER",
           "severity": "medium",
-          "message": "Documentul a fost produs de un editor de imagini, nu de sistemul unei bănci"
+          "message": "The document was produced by an image editor, not by a bank's system"
         }
       ]
     },
@@ -196,7 +196,7 @@
         {
           "code": "FRAUD_RING_SUSPECTED",
           "severity": "critical",
-          "message": "Telefonul din cerere apare în alte 5 cereri, pe 5 identități diferite, în ultimele 3 săptămâni"
+          "message": "The phone number in this application appears in 5 other applications, under 5 different identities, in the last 3 weeks"
         }
       ]
     },
@@ -216,7 +216,7 @@
         {
           "code": "IDENTITY_FRAUD_LIKELY",
           "severity": "critical",
-          "message": "Furt de identitate probabil, parte dintr-o rețea"
+          "message": "Identity theft likely, part of a ring"
         }
       ]
     }
@@ -226,7 +226,7 @@
     "label": "identity_fraud",
     "recommendation": "escalate",
     "incomplete": false,
-    "summary": "Fluturașul nu respectă calculul taxelor, angajatorul e inactiv, extrasul a fost editat, iar telefonul leagă cererea de alte 5 identități. Recomandare: respingere și investigație de fraudă."
+    "summary": "The payslip does not follow the tax calculation, the employer is inactive, the statement was edited, and the phone number links this application to 5 other identities. Recommendation: rejection and fraud investigation."
   },
   "decision": null
 }
