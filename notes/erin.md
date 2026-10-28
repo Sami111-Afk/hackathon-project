@@ -107,3 +107,9 @@ Copiază `frontend/` + `shared/` într-un folder temporar fără git și ruleaz�
    propusă + „Aprobă” (`components/ArenaControls.tsx`, vizibilă doar logat ca bancă). Butonul „Pornește atacatorul automat” e tot acolo.
 5. Bonus: card de rezultat de arătat altora („Am rezistat 2 runde contra ORB”).
 Fără schimbări mari în restul aplicației până după video — doar Arena. Redeploy cu `scripts/deploy_frontend.sh` (sau commit gol).
+
+## După traducerea în engleză (Samuel, ~16:10)
+Am trecut prin toată aplicația în browser (Dashboard, dosar, ZK, Arena pe 390px): totul merge și e în engleză. Un singur defect vizual:
+- **Arena pe telefon:** bara fixă de jos (Missions / Leaderboard) acoperă cardul cu statistici („ORB caught me 1 time…”) pe pagina de
+  rezultat când derulezi → `padding-bottom` pe conținut cât înălțimea barei (ex. `pb-24`) în `ArenaShell.tsx`.
+Redeploy după: `git pull && scripts/deploy_frontend.sh`.
