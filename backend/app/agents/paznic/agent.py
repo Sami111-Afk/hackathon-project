@@ -7,6 +7,7 @@ iar în ctx.scratch["paznic"][doc_id] cuvintele redactate cu bbox (pentru ground
 """
 import asyncio
 import logging
+import re
 from collections import Counter
 
 from app.agents.paznic import detect, images, ocr, redact
@@ -165,7 +166,16 @@ def redacted_words(doc_id: str, ext: ocr.Extraction, replacements: list[redact.R
         hidden |= idx
         ev = _evidence(doc_id, ext, r.span, r.label)
         if ev.bbox:
-            out.append({"text": r.label, "page": ev.page, "bbox": ev.bbox})
+            # OCR lipește uneori eticheta de valoare („CUIRO9402119372”): păstrăm ce nu e PII din acel cuvânt
+            a, b = r.span.start, r.span.end
+            while a > 0 and ext.char_word[a - 1] in idx:
+                a -= 1
+            while b < len(ext.char_word) and ext.char_word[b] in idx:
+                b += 1
+            prefix, suffix = ext.text[a:r.span.start], ext.text[r.span.end:b]
+            # doar etichete/punctuație („CUI”, „:”) — niciodată cifre (ar putea fi altă valoare lipită)
+            prefix, suffix = ("" if re.search(r"\d", x) else x for x in (prefix, suffix))
+            out.append({"text": f"{prefix}{r.label}{suffix}", "page": ev.page, "bbox": ev.bbox})
     out += [{"text": w.text, "page": w.page, "bbox": list(w.bbox)}
             for i, w in enumerate(ext.words) if i not in hidden]
     return sorted(out, key=lambda w: (w["page"], round(w["bbox"][1] / 10), w["bbox"][0]))
