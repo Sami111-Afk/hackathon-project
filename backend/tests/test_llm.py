@@ -79,3 +79,35 @@ def test_extract_json_recovers_object_without_opening_brace():
     assert llm._extract_json('```json\n{"gross": 1}\n```') == {"gross": 1}
     with pytest.raises(json.JSONDecodeError):
         llm._extract_json('"doar text, nu JSON"}')
+
+
+def _capture_openai_kwargs(monkeypatch) -> dict:
+    seen: dict = {}
+
+    class FakeCompletions:
+        async def create(self, **kwargs):
+            seen.update(kwargs)
+            msg = type("M", (), {"content": '{"gross": 1, "net": 1}'})
+            return type("R", (), {"choices": [type("C", (), {"message": msg})], "usage": None})
+
+    fake = type("Client", (), {"chat": type("Chat", (), {"completions": FakeCompletions()})})
+    monkeypatch.setattr(llm, "_openai", lambda mode: fake)
+    return seen
+
+
+def test_local_mode_sends_full_json_schema_to_ollama(monkeypatch):
+    # fără schema completă, Qwen 4B răspunde {"properties": {...}} și validarea pică
+    seen = _capture_openai_kwargs(monkeypatch)
+    run(llm._call_openai("local", "qwen3:4b-instruct", "sys", "p", [], 100, Payslip))
+    fmt = seen["response_format"]
+    assert fmt["type"] == "json_schema" and fmt["json_schema"]["name"] == "Payslip"
+    assert set(fmt["json_schema"]["schema"]["properties"]) == {"gross", "net"}
+
+
+def test_cloud_mode_keeps_json_object(monkeypatch):
+    seen = _capture_openai_kwargs(monkeypatch)
+    run(llm._call_openai("cloud", "deepseek", "sys", "p", [], 100, Payslip))
+    assert seen["response_format"] == {"type": "json_object"}
+    seen.clear()
+    run(llm._call_openai("local", "qwen3:4b-instruct", "sys", "p", [], 100, None))
+    assert "response_format" not in seen
