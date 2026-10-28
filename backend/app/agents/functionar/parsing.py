@@ -21,12 +21,14 @@ def parse_amount(text: str | None) -> float | None:
     """„14.200,00” → 14200.0. Punctul e separator de mii, virgula de zecimale.
 
     Fără virgulă, un punct urmat de 1–2 cifre e luat drept zecimale („8.5”, „2310.00”).
+    Într-un rând cu mai multe numere („CAS 25% -3.550,00”) contează ultima sumă cu zecimale.
     """
     if not text:
         return None
-    m = _AMOUNT.search(_LABEL.sub(" ", text).replace("\u00a0", " "))
-    if not m:
+    found = list(_AMOUNT.finditer(_LABEL.sub(" ", text).replace("\u00a0", " ")))
+    if not found:
         return None
+    m = next((m for m in reversed(found) if "," in m.group(2)), found[0])
     sign, body = m.group(1), re.sub(r"\s", "", m.group(2)).rstrip(".")
     if "," in body:
         whole, frac = body.rsplit(",", 1)
