@@ -35,3 +35,13 @@
 4. `lib/arena.ts` ~57: dacă `detail` e obiect (eroare 422 FastAPI), apare „[object Object]” →
    `typeof d === 'string' ? d : mesaj generic`.
 5. Previzualizarea din Forge arată netul vechi când e bifat „recalculează taxele”; motivele din rezultat sunt cheiate pe text (dubluri).
+
+## Deploy: Vercel (tu) + ngrok (Narcis) — pașii
+1. **Header obligatoriu pentru ngrok gratuit:** fiecare cerere către API trebuie să trimită `ngrok-skip-browser-warning: 1`
+   (`lib/api.ts`, `lib/arena.ts`, `lib/events.ts`). Altfel ngrok răspunde cu o pagină HTML în loc de JSON.
+   Dacă ecranul de proiector folosește `EventSource` simplu pentru `/api/arena/live`, mută-l pe `fetchEventSource`
+   (ca în `events.ts`) — `EventSource` nu poate trimite headere.
+2. Pe Vercel: `VITE_API_URL=https://<domeniul-ngrok-al-lui-Narcis>` și `VITE_PUBLIC_URL=https://<proiectul-tău>.vercel.app`
+   (QR-ul de pe proiector trebuie să ducă la Vercel, nu la `localhost`). Fără `BANK_UI_TOKEN` în variabilele `VITE_*`.
+3. Rewrites SPA (`vercel.json`) ca `/arena`, `/arena/live`, `/dashboard` să meargă la refresh.
+4. Test cu Narcis de pe telefon pe **date mobile**.

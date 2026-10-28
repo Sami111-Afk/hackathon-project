@@ -43,3 +43,13 @@ ngrok cu domeniu static gratuit → testat SSE de pe telefon (`/api/arena/live`)
 Implicit backend-ul acceptă doar `localhost:5173/4173` + `*.vercel.app` (`CORS_ORIGINS`, `CORS_ORIGIN_REGEX` în `.env`).
 Dacă Arena se servește de pe alt domeniu (ngrok, IP din rețea), adaugă-l în `CORS_ORIGINS`, altfel telefoanele primesc eroare.
 Testează la deploy: deschide Arena de pe un telefon pe date mobile (nu pe Wi-Fi-ul hackathonului).
+
+## 6. Deploy: ngrok (tu) + Vercel (Erin) — pașii
+1. Cont gratuit pe ngrok.com → ia **domeniul static gratuit** (URL fix, `ceva.ngrok-free.app`). Fix = Erin nu trebuie
+   să refacă deploy-ul pe Vercel la fiecare repornire.
+2. Pe laptopul tău: backend pornit (`ENV=demo`, fără `--reload`), apoi `ngrok http --url=<domeniul-tău> 8000`.
+3. **Dă-i lui Erin URL-ul** (pune-l și pe grup). Ea îl setează pe Vercel ca `VITE_API_URL`.
+4. `.env`: `CORS_ORIGINS` — domeniul Vercel e deja acoperit de `CORS_ORIGIN_REGEX=https://.*\.vercel\.app`;
+   adaugă în `CORS_ORIGINS` doar alte adrese (ex. `http://localhost:4173` pentru demo local).
+5. Test de pe telefon pe **date mobile**: pagina Arena de pe Vercel se încarcă, trimiterea merge, ecranul live primește evenimente.
+6. Laptopul în priză, fără sleep, actualizări oprite.
