@@ -31,7 +31,7 @@ from pydantic import BaseModel, ValidationError
 
 from app.config import REPO_ROOT, settings
 from app.core import audit
-from app.core.pii_gate import PIIGateBlocked, scan
+from app.core.pii_gate import PIIGateBlocked, known_values, scan
 from app.models import LLMUsage
 
 log = logging.getLogger("orb.llm")
@@ -266,7 +266,9 @@ async def _dispatch(mode, task, system, prompt, images, max_tokens, *, json_mode
         audit.record(kind="llm", destination=provider, case_id=case_id, outcome="sent",
                      detail={"task": task, "model": model, "payload_hash": audit.payload_hash(system + prompt),
                              "images": len(images), "ms": int((time.perf_counter() - t0) * 1000),
-                             "pii_detected": False})
+                             # re-scanăm payload-ul EXACT trimis (nu presupunem): dacă vreodată e True, e un bug
+                             "pii_detected": bool(scan(system + "\n" + prompt, case_id)),
+                             "pii_values_checked": known_values(case_id)})
     return text, usage
 
 

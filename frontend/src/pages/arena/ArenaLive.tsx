@@ -5,6 +5,7 @@ import { AlertOctagon, Brain, CircleHelp, ShieldCheck, Trophy } from 'lucide-rea
 import { AGENT_RO, getLeaderboard, subscribeArenaLive, type Submission } from '@/lib/arena'
 import { apiUrl } from '@/lib/config'
 import { cn } from '@/lib/utils'
+import { ArenaControls } from '@/components/ArenaControls'
 
 const BASE_KEY = 'orb.arena.base'
 
@@ -92,6 +93,7 @@ export function ArenaLive() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-night text-night-ink">
+      <ArenaControls running={Boolean(attacker?.running)} />
       <div className="h-1.5 shrink-0 bg-brand" />
       <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,5fr)_minmax(0,7fr)_minmax(0,5fr)] gap-12 p-12">
         <section className="flex flex-col justify-center">
@@ -149,7 +151,7 @@ export function ArenaLive() {
           </ol>
           {attacker && attacker.rounds.length > 0 ? (
             <div className="mt-auto rounded-md border border-night-line bg-night-2 p-5">
-              <div className="text-xl font-semibold">Atacatorul AI, pe runde{attacker.running ? ' (rulează)' : ''}</div>
+              <div className="text-xl font-semibold">Atacatorul automat, pe runde{attacker.running ? ' (rulează)' : ''}</div>
               <ol className="mt-4 flex flex-wrap gap-2" aria-label="Rundele atacatorului">
                 {attacker.rounds.map((r) => (
                   <li key={r.round} title={r.reasons.join('; ')}

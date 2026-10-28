@@ -17,7 +17,8 @@ SYSTEM = (
     "Ești ofițerul de conformitate al unei bănci. Primești DOAR lista de dovezi găsite de agenți "
     "(cod, gravitate, mesaj), scorul de risc și recomandarea — deja calculate. NU le schimbi. "
     "Scrii în română un rezumat de 2–3 propoziții pentru angajatul care decide: ce s-a găsit, de ce contează, "
-    "ce recomanzi. Fără date personale, fără speculații dincolo de dovezi. Etichetele [X_1] rămân etichete."
+    "ce recomanzi. Fără date personale, fără speculații dincolo de dovezi, fără scoruri sau procente. "
+    "Etichetele [X_1] rămân etichete. Nu menționa detalii tehnice despre sursa datelor (ex. „registru demo”)."
 )
 
 
@@ -33,6 +34,10 @@ LABEL_FINDING = {
 }
 
 
+def _band(risk: float) -> str:
+    return "foarte mare" if risk >= 0.85 else "mare" if risk >= 0.70 else "mediu" if risk >= 0.35 else "scăzut"
+
+
 class Compliance:
     name = "compliance"
     start_message = "Analizez dovezile"
@@ -46,7 +51,8 @@ class Compliance:
             evidence = "\n".join(f"- {f.code} [{f.severity}]: {f.message}" for f in top[:12]) or "- (nicio dovadă)"
             r = await chat("summary", case_id=case.id, system=SYSTEM, json_schema=Summary, max_tokens=1500,
                            cache_key=f"summary|{case.id}" if case.id.startswith("case_maria") else None,
-                           prompt=f"Scor de risc: {verdict.risk:.2f}. Recomandare: {verdict.recommendation}. "
+                           prompt=f"Nivel de risc: {_band(verdict.risk)} (nu da procente sau scoruri). "
+                                  f"Recomandare: {verdict.recommendation}. "
                                   f"Incomplet: {verdict.incomplete}.\nDovezi:\n{evidence}")
             usage = r.usage
             bad = unsupported_claims(r.data.summary, evidence, verdict.risk)

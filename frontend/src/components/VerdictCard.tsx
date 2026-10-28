@@ -18,17 +18,18 @@ export function VerdictCard({ verdict }: { verdict: Verdict | null }) {
   const pct = verdict.risk * 100
   const score = pct >= 99 && pct < 100 ? (Math.floor(pct * 10) / 10).toLocaleString('ro-RO') : Math.round(pct)
   const items = verdict.breakdown ?? []
+  const critical = items.filter((i) => i.severity === 'critical').length
   return (
     <div className="relative px-6 pb-6 pt-5">
       <span className={cn('absolute inset-y-0 left-0 w-1.5', lvl.bar)} aria-hidden />
-      <div className="text-sm font-medium text-ink-3">Scor de risc</div>
-      <div className="mt-1 flex items-end gap-3">
-        <span className={cn('font-condensed text-8xl font-bold leading-[0.85] tabular-nums', lvl.text)}>{score}</span>
-        <span className="pb-1 font-condensed text-2xl text-ink-3">/ 100</span>
+      <div className="text-sm font-medium text-ink-3">Nivel de risc</div>
+      <div className={cn('mt-1 flex items-center gap-3 font-condensed text-5xl font-bold leading-none', lvl.text)}>
+        <Icon className="h-9 w-9 shrink-0" aria-hidden /> {lvl.label.replace(/^Risc /, '')}
       </div>
-      <div className={cn('mt-3 flex items-center gap-2 text-lg font-semibold', lvl.text)}>
-        <Icon className="h-5 w-5" aria-hidden /> {lvl.label}: {VERDICT_LABEL[verdict.label].toLowerCase()}
-      </div>
+      <div className={cn('mt-3 text-lg font-semibold', lvl.text)}>{VERDICT_LABEL[verdict.label]}</div>
+      <p className="mt-1 text-sm text-ink-3 tabular-nums">
+        Scor {score} / 100 · {items.length} dovezi{critical ? `, din care ${critical} critice` : ''} · un scor de gravitate, nu o probabilitate
+      </p>
       <p className="mt-1 text-base text-ink-2">Recomandare: {RECOMMENDATION_LABEL[verdict.recommendation]}.</p>
       <p className="mt-4 border-t border-line pt-4 text-[15px] leading-relaxed text-ink">{verdict.summary}</p>
       {verdict.summary_source === 'llm' && <p className="mt-1 text-xs text-ink-3">Rezumat scris de AI doar din dovezi; fiecare cifră a fost verificată în dovezi.</p>}

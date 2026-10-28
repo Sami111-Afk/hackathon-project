@@ -1,6 +1,6 @@
 # Stare proiect + context pentru continuare (Samuel)
 
-Scris 2026-10-28 ~13:30, înainte de /compact. Hackathon Raiffeisen „Operational Efficiency”, 24h, început ~08:00.
+Scris 2026-10-28 ~13:30, înainte de /compact. **Notă (~15:00): o parte din tabelul „Ce lipsește” e învechită — Detectorul, ngrok header, ZK, pagina ZK sunt gata pe main.** Hackathon Raiffeisen „Operational Efficiency”, 24h, început ~08:00.
 Repo: https://github.com/Sami111-Afk/hackathon-project (privat). Local: `/home/sol/Projects/hackathon-project`.
 Echipa: Samuel (eu, backend/orchestrare), Narcis (simighost: Paznic, Detector, deploy/ngrok, Ollama),
 Stefan (Stefannasd: Funcționar, Verificator, ANAF, HE), Erin (erinlud: frontend, Detectiv), Lorena (Loricu: date, ZK).
@@ -45,7 +45,7 @@ Stefan (Stefannasd: Funcționar, Verificator, ANAF, HE), Erin (erinlud: frontend
 ## Ce lipsește / în lucru
 | Ce | Cine | Stare |
 |---|---|---|
-| **Detector real** (ELA, metadate PDF; `files.save_derived(..., "ela", page, png)`) | Narcis | încă stub (`registry.py`) |
+| **Detector real** (ELA, fantoma JPEG, metadate PDF, EXIF) | Narcis | ✅ pe main din PR #19 (28.10 ~13:15) |
 | **Header `ngrok-skip-browser-warning: 1`** în `lib/api.ts`, `lib/arena.ts`, `lib/events.ts` + proiectorul de pe `EventSource` pe `fetchEventSource` | Erin | lipsește — BLOCANT pentru deploy prin ngrok gratuit |
 | Deploy: ngrok domeniu static (Narcis) + Vercel cu `VITE_API_URL`/`VITE_PUBLIC_URL` (Erin) | Narcis + Erin | neînceput; pașii în `notes/narcis.md` §6 și `notes/erin.md` |
 | Mod local Ollama testat | Narcis | ? |
