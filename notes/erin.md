@@ -95,3 +95,15 @@ git pull && scripts/deploy_frontend.sh
 ```
 Copiază `frontend/` + `shared/` într-un folder temporar fără git și rulează `npx vercel --prod` de acolo. Caută singur
 `.vercel` în rădăcina repo-ului sau în `frontend/`. Joi, după ce facem repo-ul public, merge și `npx vercel --prod` direct.
+
+## Arena pentru finala live (Samuel, ~15:45) — în ordinea asta
+1. **Merge pe telefoanele juriului:** QR-ul de pe `/arena/live` → linkul Vercel (`VITE_PUBLIC_URL` în Vercel sau
+   `/arena/live?base=https://orb-raiffeisen.vercel.app`). Bug-uri văzute de jurați: pe desktop bara de jos acoperă misiunile;
+   ecranul e gol până la pseudonim. Test real: 5 telefoane deodată pe linkul public + proiectorul deschis.
+2. **Primele 10 secunde:** ecran de start cu o propoziție („Încearcă să păcălești ORB cu un fluturaș fals”) + „Începe”.
+3. **„De ce te-am prins”:** după încercare, ce agent l-a prins și de ce (vine deja din backend, `GET /api/arena/submissions/{id}`),
+   clar și puțin amuzant — partea pe care juriul o ține minte.
+4. **Proiectorul ca spectacol:** fiecare încercare apare animat (PRINS / A TRECUT); când trece un fals apare caseta mea cu regula
+   propusă + „Aprobă” (`components/ArenaControls.tsx`, vizibilă doar logat ca bancă). Butonul „Pornește atacatorul automat” e tot acolo.
+5. Bonus: card de rezultat de arătat altora („Am rezistat 2 runde contra ORB”).
+Fără schimbări mari în restul aplicației până după video — doar Arena. Redeploy cu `scripts/deploy_frontend.sh` (sau commit gol).
