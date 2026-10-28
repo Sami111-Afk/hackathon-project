@@ -130,7 +130,7 @@ def test_review_regressions():
         a = post(c, {**WIN, "nickname": "Dup1"}).json()
         b = post(c, {**WIN, "nickname": "Dup2", "tricks": ["recompute_taxes", "recompute_taxes"]}).json()
         assert a["points"] == 500 and b["duplicate"] and b["points"] == 0
-        assert post(c, {**WIN, "nickname": "AI-Atacator"}).status_code == 400
+        assert post(c, {**WIN, "nickname": "Auto-Attacker"}).status_code == 400
         futuristic = {**WIN, "nickname": "Futuristic", "edits": {**WIN["edits"], "gross_salary": 16100}}
         assert post(c, futuristic).status_code == 200
     broken = {"id": "r", "status": "approved", "then": {"code": "X", "severity": "high", "message": "x"},

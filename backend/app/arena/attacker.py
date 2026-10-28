@@ -19,7 +19,7 @@ from app.config import settings
 from app.core.events import bus
 
 log = logging.getLogger("orb.attacker")
-NICK = "AI-Atacator"
+NICK = "Auto-Attacker"  # algoritm, nu AI
 
 
 class State:
