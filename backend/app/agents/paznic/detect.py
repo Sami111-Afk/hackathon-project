@@ -20,7 +20,7 @@ class Span:
 
 # prioritate la suprapuneri: MRZ acoperă tot ce e pe liniile lui
 PRIORITY = {"MRZ": 0, "IBAN": 1, "CNP": 2, "CUI": 3, "SERIE": 4, "NR": 4, "EMAIL": 5, "TELEFON": 6,
-            "ADRESA": 7, "FIRMA": 8, "PERSOANA": 9}
+            "ADRESA": 7, "FIRMA": 8, "PERSOANA": 9, "CONT": 10}
 
 CNP_RX = re.compile(r"(?<!\d)[1-9]\d{12}(?!\d)")
 # CNP scris cu separatori („259 031 229 0006”) — acceptat doar dacă cifra de control e validă (altfel ar prinde sume)
@@ -79,7 +79,28 @@ def _ascii_fold(text: str) -> str:
     return text.translate(table)
 
 
+# Plase de siguranță pentru OCR stricat (poze de telefon): IBAN-ul citit strâmb nu mai trece de regula strictă.
+#  - tot ce urmează după eticheta „IBAN” pe același rând;
+#  - orice șir de ≥10 cifre (cont, CNP rupt) — o sumă de bani nu are niciodată 10 cifre consecutive.
+IBAN_LABEL_RX = re.compile(r"\bIBAN\b\s*[:.]?\s*([A-Z0-9][A-Z0-9 ]{12,40}[A-Z0-9])", re.I)
+LONG_DIGITS_RX = re.compile(r"(?<![\d.,])\d(?: ?\d){9,}(?![\d,])")
+
+
 def find_identifiers(text: str, id_card: bool = False) -> list[Span]:
+    spans = _find_identifiers(text, id_card)
+    # plasele de siguranță doar acolo unde regulile stricte n-au găsit nimic
+    taken = [(s.start, s.end) for s in spans]
+    free = lambda a, b: not any(a < e and s < b for s, e in taken)  # noqa: E731
+    for m in IBAN_LABEL_RX.finditer(text):
+        if free(m.start(1), m.end(1)):
+            spans.append(Span("IBAN", m.start(1), m.end(1), m.group(1), None))
+    for m in LONG_DIGITS_RX.finditer(text):
+        if free(m.start(), m.end()):
+            spans.append(Span("CONT", m.start(), m.end(), m.group(), None))
+    return spans
+
+
+def _find_identifiers(text: str, id_card: bool) -> list[Span]:
     spans = []
     for m in CNP_RX.finditer(text):
         spans.append(Span("CNP", m.start(), m.end(), m.group(), v.valid_cnp(m.group())))
