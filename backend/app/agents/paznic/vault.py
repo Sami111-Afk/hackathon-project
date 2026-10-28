@@ -48,6 +48,11 @@ class Vault:
         if register:
             pii_gate.register_vault_values(case_id, [v for vals in values.values() for v in vals])
 
+    def sealed(self, case_id: str) -> list[tuple[str, bytes]]:
+        """Ce e scris pe disc, NEdecriptat — pentru demonstrația „datele stau criptate”."""
+        with self._lock:
+            return self._connect().execute("SELECT label, value FROM vault WHERE case_id = ?", (case_id,)).fetchall()
+
     def get(self, case_id: str) -> dict[str, list[str]]:
         f = self._fernet()
         with self._lock:
