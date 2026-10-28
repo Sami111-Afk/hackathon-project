@@ -53,3 +53,12 @@ Testează la deploy: deschide Arena de pe un telefon pe date mobile (nu pe Wi-Fi
    adaugă în `CORS_ORIGINS` doar alte adrese (ex. `http://localhost:4173` pentru demo local).
 5. Test de pe telefon pe **date mobile**: pagina Arena de pe Vercel se încarcă, trimiterea merge, ecranul live primește evenimente.
 6. Laptopul în priză, fără sleep, actualizări oprite.
+
+## Review PR #19 (Detector) — 2026-10-28
+Mergeuit. 206 teste trec, ruff curat, fără conflicte cu main. Observații minore (nu blochează):
+- `artifacts.ela_image` nu are `page` (implicit 1; ok pentru JPEG, pentru PDF cu mai multe pagini arată doar pagina 1).
+- Calea `page` la `/documents/{id}/image` e 1-based; `page=0` dă 404 (corect, doar de știut).
+- `Image.open` + `getexif` pe JPEG rulează pe event loop (cost neglijabil, dar poate intra în `to_thread`).
+- PNG-urile nu sunt analizate (fără compresie JPEG); o fotografie/scan salvat ca PNG scapă de ELA.
+- Pe Maria, a doua zonă ELA (doc_2, bbox 832,1328-1136,1616) e `info` fără câmp asociat; probabil ștampila/semnătura, de verificat vizual.
+- O singură salvare JPEG sau recompresii oneste (75→90, 60→85, 70→80→90) nu dau fals pozitive în testele mele.
