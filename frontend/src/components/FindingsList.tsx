@@ -26,16 +26,19 @@ export function FindingsList({
         const active = selected === finding
         return (
           <li key={`${agent}-${finding.code}-${i}`}>
-            <button type="button" disabled={!locatable} onClick={() => onSelect?.(finding)}
-              className={cn('flex w-full gap-3 px-6 py-4 text-left', locatable && 'hover:bg-canvas/70', active && 'bg-[#F5F8FF]')}>
+            {/* bara din stânga = gravitatea, citibilă de la distanță (proiector) */}
+            <button type="button" disabled={!locatable} onClick={() => onSelect?.(finding)} aria-pressed={locatable ? active : undefined}
+              className={cn('relative flex w-full gap-3.5 py-5 pl-7 pr-6 text-left transition-colors', locatable && 'hover:bg-canvas/70',
+                active && 'bg-canvas ring-2 ring-inset ring-ink')}>
+              <span className={cn('absolute inset-y-0 left-0 w-1.5', sev.bar)} aria-hidden />
               <Icon className={cn('mt-0.5 h-5 w-5 shrink-0', sev.text)} aria-hidden />
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] leading-snug text-ink">{finding.message}</span>
-                <span className="mt-1 flex flex-wrap items-center gap-x-3 text-sm text-ink-3">
-                  <span className={cn('font-semibold', sev.text)}>{sev.label}</span>
+                <span className="block text-base leading-snug text-ink">{finding.message}</span>
+                <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-3">
+                  <span className={cn('rounded-sm px-1.5 py-0.5 text-xs font-bold uppercase tracking-wide', sev.bg, sev.text)}>{sev.label}</span>
                   <span>{AGENT_INFO[agent].label}</span>
                   {locatable && (
-                    <span className="flex items-center gap-1 text-info"><Crosshair className="h-3.5 w-3.5" aria-hidden />Show on document</span>
+                    <span className="flex items-center gap-1 font-medium text-info"><Crosshair className="h-3.5 w-3.5" aria-hidden />Show on document</span>
                   )}
                 </span>
               </span>
