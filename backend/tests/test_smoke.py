@@ -1,12 +1,23 @@
 import asyncio
 import io
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
 from tests.conftest import AUTH
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+
+
+@pytest.fixture(autouse=True)
+def stub_agents(monkeypatch):
+    """Aici testăm mecanica pipeline-ului, nu agenții: rulăm cu variantele de probă,
+    indiferent dacă pe laptop e instalat Tesseract (agenții reali au testele lor)."""
+    from app.agents import registry
+    from app.agents.stubs import StubAgent
+    for name in ("paznic", "functionar", "verificator", "detector", "detectiv"):
+        monkeypatch.setitem(registry.AGENTS, name, StubAgent(name, "", delay=0))
 
 
 def wait_for_review(client: TestClient, case_id: str) -> dict:

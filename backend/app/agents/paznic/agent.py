@@ -14,6 +14,7 @@ from app.agents.paznic.validators import mrz_matches_cnp, parse_mrz_td2_line2
 from app.agents.paznic.vault import vault
 from app.agents.stubs import StubAgent
 from app.config import settings
+from app.core import pii_gate
 from app.core.files import save_derived, sniff
 from app.models import AgentResult, Evidence, Finding, PageInfo
 
@@ -56,6 +57,9 @@ class Paznic:
         zones = 0
         scratch = ctx.scratch.setdefault("paznic", {})
 
+        # faza 1: citim toate documentele și aflăm numele persoanelor (din etichete, pe orice document)
+        extracted: list[tuple] = []
+        known_names: set[str] = set()
         for doc in case.documents:
             data = ctx.files.get(doc.id)
             kind = sniff(data) if data else None
@@ -70,8 +74,14 @@ class Paznic:
                 raise  # fără OCR nu putem garanta redactarea → agentul pică, Compliance marchează „incomplet”
             how = "strat text" if ext.source == "pdf_text" else "OCR"
             await ctx.emit("agent_progress", f"Citit {doc.filename} ({how})")
+            for s in detect.find_all(ext.text):
+                if s.kind == "PERSOANA":
+                    known_names |= redact.name_tokens(s.value)
+            extracted.append((doc, ext))
 
-            spans = detect.find_all(ext.text)
+        # faza 2: redactăm, ascunzând numele oriunde apar în dosar
+        for doc, ext in extracted:
+            spans = detect.find_all(ext.text, known_names)
             replacements = redactor.label_spans(spans)
             doc.redacted_text = redact.apply(ext.text, replacements)
             doc.pages = [PageInfo(page=p.page, width=p.image.width, height=p.image.height) for p in ext.pages]
@@ -97,7 +107,10 @@ class Paznic:
             scratch[doc.id] = {"source": ext.source, "is_id_card": id_card,
                                "words": redacted_words(doc.id, ext, replacements)}
 
-        await asyncio.to_thread(vault.put, case.id, dict(redactor.vault))
+        values = dict(redactor.vault)
+        await asyncio.to_thread(vault.put, case.id, values, False)
+        # poarta anti-PII se actualizează pe loop (nu din thread: scan() poate itera setul în paralel)
+        pii_gate.register_vault_values(case.id, [x for vals in values.values() for x in vals])
         case.fingerprints = redactor.finalize_fingerprints()
         case.applicant_token = (case.fingerprints.get("cnp") or case.fingerprints.get("name") or [None])[0]
 
