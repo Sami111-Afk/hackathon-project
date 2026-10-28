@@ -40,4 +40,4 @@ app.include_router(system.router)
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "llm_mode": settings.llm_mode}
+    return {"status": "ok"}

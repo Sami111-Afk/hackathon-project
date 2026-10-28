@@ -45,16 +45,16 @@ async def _run_agent(name: str, ctx: PipelineContext) -> AgentResult:
     try:
         result = await asyncio.wait_for(agent.run(ctx.case, agent_ctx), timeout=AGENT_TIMEOUT_S)
         result.duration_ms = result.duration_ms or int((time.perf_counter() - t0) * 1000)
-        bus.publish(ctx.case.id, "agent_finished", agent=name, message=_summarize(result),
-                    data=result.model_dump(exclude_none=True))
+        ok = True
     except Exception as exc:
         corr = uuid.uuid4().hex[:8]
         log.exception("agent %s a picat (corelare %s)", name, corr)
         kind = "timeout" if isinstance(exc, asyncio.TimeoutError) else "eroare internă"
         result = AgentResult(agent=name, status="error", error=f"{kind} (ref {corr})",
                              duration_ms=int((time.perf_counter() - t0) * 1000))
-        bus.publish(ctx.case.id, "agent_error", agent=name, message=result.error,
-                    data=result.model_dump(exclude_none=True))
+        ok = False
+    bus.publish(ctx.case.id, "agent_finished" if ok else "agent_error", agent=name,
+                message=_summarize(result) if ok else result.error, data=result.model_dump(exclude_none=True))
     ctx.results[name] = result
     ctx.case.results = [r for r in ctx.case.results if r.agent != name] + [result]
     await store.save(ctx.case)
@@ -68,7 +68,18 @@ def _summarize(result: AgentResult) -> str:
     return worst.message
 
 
+MAX_CONCURRENT_CASES = 3
+_case_sem: asyncio.Semaphore | None = None
+
+
 async def run_pipeline(case: Case, files: dict[str, bytes] | None = None) -> Case:
+    global _case_sem
+    _case_sem = _case_sem or asyncio.Semaphore(MAX_CONCURRENT_CASES)
+    async with _case_sem:
+        return await _run(case, files)
+
+
+async def _run(case: Case, files: dict[str, bytes] | None) -> Case:
     ctx = PipelineContext(case=case, files=files or {})
     case.status = "processing"
     await store.save(case)

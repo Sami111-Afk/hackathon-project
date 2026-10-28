@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from app.api.deps import require_bank
 from app.config import settings
+from app.core import audit
 from app.core.store import store
 
 router = APIRouter(prefix="/api", dependencies=[Depends(require_bank)])
@@ -23,19 +24,28 @@ def get_settings():
 @router.post("/settings")
 def set_settings(body: SettingsIn):
     """Butoanele din UI (ex. „mod 100% local”). Se schimbă live, fără restart."""
-    if body.llm_mode is not None:
+    if body.llm_mode is not None and body.llm_mode != settings.llm_mode:
+        audit.record(kind="settings", destination="llm_mode", case_id=None, outcome="changed",
+                     detail={"from": settings.llm_mode, "to": body.llm_mode})
         settings.llm_mode = body.llm_mode
     if body.he_enabled is not None:
         settings.he_enabled = body.he_enabled
     return get_settings()
 
 
+@router.get("/audit")
+def get_audit(limit: int = 200):
+    return audit.recent(min(limit, 1000))
+
+
 @router.get("/dashboard/stats")
 def dashboard_stats():
     cases = [c for c in store.list() if c.source == "bank"]
     done = [c for c in cases if c.verdict]
-    fraud = [c for c in done if c.verdict.label in {"identity_fraud", "fraud_ring", "forged"}]
+    fraud = [c for c in done if c.verdict.label in {"identity_fraud", "fraud_ring", "forged"}
+             or c.status in ("rejected", "escalated")]
     saved_min = len(done) * (settings.manual_minutes_per_case - settings.review_minutes_per_case)
+    pii_protected = sum(len(v) for c in cases for v in c.fingerprints.values())
     cost = sum(r.llm_usage.cost_usd for c in cases for r in c.results if r.llm_usage)
     return {
         "cases_processed": len(done),
@@ -44,6 +54,8 @@ def dashboard_stats():
         "frauds_stopped": len(fraud),
         "amount_stopped_ron": sum(c.requested_amount_ron or 0 for c in fraud),
         "ai_cost_usd": round(cost, 4),
+        "pii_values_protected": pii_protected,
+        "external_calls_with_pii": audit.external_calls_with_pii(),
         "assumptions": {"manual_minutes_per_case": settings.manual_minutes_per_case,
                         "review_minutes_per_case": settings.review_minutes_per_case,
                         "cost_per_hour_ron": settings.cost_per_hour_ron},
