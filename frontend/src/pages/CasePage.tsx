@@ -83,6 +83,15 @@ function CaseView({ caseId }: { caseId: string }) {
     placeholderData: (prev) => prev,
   })
 
+  // dosar deschis în timpul analizei: tipul documentelor și imaginea redactată apar abia după Paznic/Funcționar
+  // → reîncărcăm dosarul când termină Funcționarul și la verdict (altfel taburile rămân „Necunoscut”, vederea AI 404)
+  const functionarDone = state.agents.functionar.status === 'done'
+  const hasVerdict = Boolean(state.verdict)
+  const { refetch } = snapshot
+  useEffect(() => {
+    if (!mock && (functionarDone || hasVerdict)) refetch()
+  }, [mock, functionarDone, hasVerdict, refetch])
+
   // dosar deschis după ce Detectivul a terminat → graful nu a venit live, îl cerem o dată
   const detectivDone = state.agents.detectiv.status === 'done'
   const graphEmpty = state.graph.nodes.length === 0
