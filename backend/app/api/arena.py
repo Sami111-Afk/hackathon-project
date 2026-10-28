@@ -1,7 +1,7 @@
 """Rute PUBLICE ale Arenei (fără token). Nu ating niciodată dosarele băncii sau seiful."""
 import asyncio
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
@@ -27,8 +27,9 @@ def missions():
     return public_missions()
 
 
-@router.post("/submissions", dependencies=[Depends(limit)])
-async def submit(body: SubmissionIn):
+@router.post("/submissions")
+async def submit(body: SubmissionIn, request: Request):
+    limit(request, body.nickname)
     try:
         result = await asyncio.to_thread(service.submit, body.nickname, body.mission_id, body.edits, body.tricks)
     except service.ArenaError as exc:

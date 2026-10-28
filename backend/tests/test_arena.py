@@ -59,8 +59,15 @@ def test_clever_fake_passes_then_duplicate_gets_nothing():
 def test_bad_nickname_and_rate_limit():
     with TestClient(app) as c:
         assert post(c, {**WIN, "nickname": "x"}).status_code == 400
-        codes = [post(c, {**WIN, "nickname": f"P{i}"}).status_code for i in range(7)]
-        assert 429 in codes
+        codes = [post(c, {**WIN, "nickname": "Grabit"}).status_code for _ in range(7)]
+        assert 429 in codes  # același jucător, prea des
+
+
+def test_whole_room_behind_one_ip_can_play():
+    # la finală, toată sala iese pe internet prin același IP: limita e pe jucător, nu pe IP
+    with TestClient(app) as c:
+        codes = [post(c, {**WIN, "nickname": f"Jucator{i}"}).status_code for i in range(12)]
+        assert 429 not in codes
 
 
 def test_learned_rule_catches_the_trick_after_approval(monkeypatch):
