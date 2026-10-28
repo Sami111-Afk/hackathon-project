@@ -15,7 +15,13 @@ import logging
 from dataclasses import dataclass, field
 
 from app.agents.functionar.classify import classify_by_keywords
-from app.agents.functionar.grounding import Match, find_in_text, find_in_words, value_matches_source
+from app.agents.functionar.grounding import (
+    Match,
+    find_in_text,
+    find_in_words,
+    narrow_to_value,
+    value_matches_source,
+)
 from app.agents.functionar.labels import extract_by_labels
 from app.agents.functionar.layout import group_lines, ordered_words
 from app.agents.functionar.parsing import parse_amount, parse_date, parse_month
@@ -169,6 +175,7 @@ class Functionar:
                 raw, m, value = chosen
                 extracted[name] = ExtractedValue(value=value, source_text=raw.source_text)
                 if m.bbox:
+                    m = narrow_to_value(m, raw.value, words)
                     evidence[name] = {"page": m.page, "bbox": m.bbox}
             elif llm_raw and llm_raw.value:
                 findings.append(Finding(
