@@ -84,7 +84,7 @@ Maria nu va afla niciodată de la un executor că are o datorie de 45.000 lei.
                                      └───────────────┬──────────────────────────────┘
                                                      │ doar date pseudonimizate
                                                      ▼ (poarta anti-PII)
-                                            ☁️ FEATHERLESS (LLM cloud)
+                                ☁️ AWS BEDROCK — Claude  (rezervă: Featherless)
 
    🏢 Serviciul „angajatorului” (separat) ─► semnează venitul ─► 📱 clientul face dovada ZK
 ```
@@ -95,7 +95,8 @@ Maria nu va afla niciodată de la un executor că are o datorie de 45.000 lei.
 |---|---|---|
 | Backend | **Python 3.11** + FastAPI + SQLModel + SQLite (WAL) | 3.11 obligatoriu (TenSEAL, GLiNER, torch) |
 | Live | SSE + `fetch-event-source` în browser | polling ca fallback |
-| LLM cloud | Featherless, SDK `openai` | DeepSeek-V4-Flash (text), Qwen3.8-Flash-Next (imagini) — de confirmat numele în ora 1 |
+| LLM cloud (principal) | **Claude pe AWS Bedrock** — Haiku 5.5 / Sonnet 5.5 / Opus 5.5 | testat, merge; cheia expiră după 12h → cereți una nouă |
+| LLM cloud (rezervă) | Featherless, SDK `openai` | DeepSeek-V4-Flash, Qwen3.8-Flash-Next |
 | LLM local | Ollama | Qwen ~4B, `num_ctx 8192`, `temperature 0` |
 | OCR | Tesseract `ron` (`tessdata_best`) / stratul de text PDF | |
 | Date personale | regex + cifre de control + MRZ + GLiNER (CPU) + zone de șablon | |
@@ -159,7 +160,7 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 
 | Variabilă | Valori | Ce face |
 |---|---|---|
-| `LLM_MODE` | `cloud` / `local` / `mock` | Featherless / Ollama / răspunsuri salvate |
+| `LLM_MODE` | `bedrock` / `cloud` / `local` / `mock` | Claude pe Bedrock / Featherless / Ollama / răspunsuri salvate |
 | `DETECTOR_GPU` | `on` / `off` | AI-detector pe GPU sau doar ELA + PDF + metadate |
 | `HE_ENABLED` | `true` / `false` | verificare pe date criptate sau în clar |
 | `DEMO_CACHE` | `true` / `false` | redă răspunsurile LLM salvate (demo fără internet) |
@@ -226,7 +227,7 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 - „Identificatorii (CNP, IBAN, nume, MRZ, poza) nu părăsesc niciodată serverul băncii.”
 - „Ce ajunge la LLM e **pseudonimizat**; o poartă blochează orice payload în care apare o valoare din seif.”
 - „Pe benchmark: 0 scurgeri de date personale în N documente.” (doar dacă așa iese)
-- „În producție, LLM-ul rulează on-prem — butonul de mod local arată că se poate.”
+- „În producție: Claude pe Bedrock într-o regiune UE, sub contractul AWS al băncii, sau LLM complet on-prem — butonul de mod local arată că se poate.”
 - „Criptarea homomorfică permite unui verificator **terț** să ruleze verificări fără să vadă datele.”
 
 ❌ Nu spunem:
@@ -273,7 +274,8 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 | Risc | Plan B |
 |---|---|
 | Laptopul lui Narcis pică | Al doilea laptop cu `requirements-core.txt`, `LLM_MODE=cloud`, `DETECTOR_GPU=off` |
-| Pică internetul / Featherless | `LLM_MODE=local` sau `DEMO_CACHE=true`; demo-ul rulează cu frontend local |
+| Expiră cheia Bedrock (după 12h!) | cheie nouă de la organizatori; altfel `LLM_MODE=cloud` (Featherless) — clientul trece automat |
+| Pică internetul / cloud-ul | `LLM_MODE=local` sau `DEMO_CACHE=true`; demo-ul rulează cu frontend local |
 | Tunelul nu suportă SSE | ngrok static; frontend-ul trece pe polling |
 | Wi-Fi-ul blochează conexiunile | hotspot de pe telefon |
 | ZK / HE nu merg la timp | fallback-urile din ARCHITECTURE §6–7; P0 nu depinde de ele |

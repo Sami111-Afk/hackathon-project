@@ -30,7 +30,7 @@ class Finding(BaseModel):
 
 
 class LLMUsage(BaseModel):
-    provider: Literal["featherless", "ollama", "mock", "cache"]
+    provider: Literal["bedrock", "featherless", "ollama", "mock", "cache"]
     model: str
     input_tokens: int = 0
     output_tokens: int = 0

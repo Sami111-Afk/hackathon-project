@@ -12,8 +12,13 @@ class Settings(BaseSettings):
 
     env: Literal["dev", "demo", "test"] = "dev"
 
-    llm_mode: Literal["cloud", "local", "mock"] = "mock"
+    llm_mode: Literal["bedrock", "cloud", "local", "mock"] = "mock"
     featherless_api_key: str = ""
+    aws_bearer_token_bedrock: str = ""
+    aws_region: str = "us-west-2"
+    bedrock_model_extract: str = "us.anthropic.claude-haiku-5-5"
+    bedrock_model_reason: str = "us.anthropic.claude-sonnet-5-5"
+    bedrock_model_deep: str = "us.anthropic.claude-opus-5-5"
     ollama_url: str = "http://127.0.0.1:11434"
     model_extract: str = "deepseek-ai/DeepSeek-V4-Flash"
     model_reason: str = "deepseek-ai/DeepSeek-V4-Flash"

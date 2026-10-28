@@ -15,7 +15,7 @@ Documentul de referință pentru toată echipa. Dacă ceva din cod contrazice ac
 10. [Frontend](#10-frontend)
 11. [Dashboard și metrici](#11-dashboard-și-metrici)
 12. [API și autentificare](#12-api-și-autentificare)
-13. [Clientul LLM: cloud / local / mock](#13-clientul-llm-cloud--local--mock)
+13. [Clientul LLM: bedrock / cloud / local / mock](#13-clientul-llm-bedrock--cloud--local--mock)
 14. [Concurență, GPU și performanță](#14-concurență-gpu-și-performanță)
 15. [Deploy](#15-deploy)
 16. [Securitate](#16-securitate)
@@ -456,23 +456,45 @@ Valorile presupuse se afișează ca **presupuneri configurabile**, nu ca fapte.
 
 Serviciul angajatorului (`/employer/attest`) rulează **separat**, cu cheia lui.
 
-## 13. Clientul LLM: cloud / local / mock
+## 13. Clientul LLM: bedrock / cloud / local / mock
+
+### Cele patru moduri
+
+| Mod | Ce | Client | Când |
+|---|---|---|---|
+| `bedrock` | **Claude pe AWS Bedrock** (Haiku 5.5 / Sonnet 5.5 / Opus 5.5) | SDK-ul Anthropic pentru Bedrock sau Converse API cu bearer token | **implicit**, cât timp e valabilă cheia |
+| `cloud` | Featherless (DeepSeek, Qwen) | SDK `openai` cu `base_url` | după ce expiră cheia Bedrock; teste ieftine |
+| `local` | Ollama (Qwen ~4B) | SDK `openai` cu `base_url` local | butonul „mod 100% local” |
+| `mock` | răspunsuri salvate | — | frontend, CI, demo fără internet |
+
+**Bedrock — testat pe 2026-10-28:** cheia de la organizatori (`AWS_BEARER_TOKEN_BEDROCK`) merge în `us-west-2` cu profilurile `us.anthropic.claude-haiku-5-5`, `us.anthropic.claude-sonnet-5-5`, `us.anthropic.claude-opus-5-5` (apel Converse, `Authorization: Bearer <cheie>`, endpoint `https://bedrock-runtime.us-west-2.amazonaws.com/model/<id>/converse`). Pentru codul Python se folosește **SDK-ul oficial Anthropic cu clientul Bedrock** (`AnthropicBedrockMantle(aws_region=...)`, ID-uri `anthropic.claude-...`); în ora 1, Samuel verifică dacă acest client acceptă cheia bearer — dacă nu, calea testată e Converse API prin `httpx`.
+
+**⚠️ Cheia expiră după 12h** (emisă 2026-10-28 09:21 UTC → expiră ~21:21 UTC, adică ~23:21 ora României). Hackathonul durează 24h → **cereți o cheie nouă organizatorilor înainte de demo**; altfel `LLM_MODE=cloud`. Clientul trece automat pe Featherless la eroare 403 de la Bedrock și scrie asta în audit.
+
+**Ce model folosește fiecare agent (în modul `bedrock`):**
+
+| Agent / sarcină | Model | De ce |
+|---|---|---|
+| Funcționar (extragere text + imagini) | Haiku 5.5 | rapid, ieftin, bun la extragere și imagini |
+| Arena (volum mare) | Haiku 5.5 | multe cereri |
+| Compliance (rezumat din dovezi) | Sonnet 5.5 | raționament bun, latență mică |
+| Atacatorul | Sonnet 5.5 | creativ, multe runde |
+| Self-learning (propunere de reguli) | Opus 5.5 | puține apeluri, calitatea contează |
+
+**Notă pentru pitch:** cheia de demo e în regiunea SUA (`us-west-2`). În producție: Bedrock într-o regiune UE (ex. Frankfurt) sau complet on-prem — spunem asta explicit.
 
 ```python
-PROVIDERS = {
-    "cloud": dict(base_url="https://api.featherless.ai/v1", api_key=settings.featherless_api_key),
-    "local": dict(base_url=f"{settings.ollama_url}/v1", api_key="ollama"),
-}
 
 async def chat(messages, *, task: str, case_id: str, json_schema=None, images=None) -> LLMResponse:
-    # 1. mode = settings.llm_mode (schimbabil live)
+    # 1. mode = settings.llm_mode (schimbabil live): bedrock | cloud | local | mock
     # 2. mock / DEMO_CACHE → cache cheiat pe (sha256 fișier + task), nu pe hash(messages)
-    # 3. cloud → poarta anti-PII (regex + valorile din seif pentru case_id); blochează la match
+    # 3. bedrock / cloud → poarta anti-PII (regex + valorile din seif pentru case_id); blochează la match
     # 4. semafor global, timeout, 2 retry cu backoff
     # 5. audit_log + cost
     # 6. modul "record" salvează în cache (și OCR + ieșirea Paznicului)
 ```
-- Modele per task din config (`MODEL_EXTRACT`, `MODEL_REASON`, `MODEL_VISION`, `MODEL_LOCAL`). **Ora 1: confirmați numele exacte pe Featherless și că modelul vizual chiar acceptă imagini.**
+- Modele per task din config (`BEDROCK_MODEL_*`, `MODEL_EXTRACT`, `MODEL_REASON`, `MODEL_VISION`, `MODEL_LOCAL`). **Ora 1: confirmați numele exacte pe Featherless și că modelul vizual chiar acceptă imagini.**
+- Claude (Haiku/Sonnet/Opus 5.5) are gândirea adaptivă pornită; efortul se setează per sarcină (`low` pentru extragere, `medium`/`high` pentru Compliance și self-learning). Nu folosiți `temperature`/prefill — modelele noi le resping.
 - `LLM_MAX_CONCURRENCY` (implicit 2) — modelele mari Featherless costă 4 unități de concurență.
 - Structured output: cerem JSON + validare Pydantic; fallback „răspunde DOAR cu JSON” + extragere robustă.
 - **Ollama:** `num_ctx: 8192` (implicitul trunchiază silențios!), `temperature: 0`, `format` cu schema JSON, modul „thinking” al Qwen oprit. Prompturile se testează și pe `local`.
