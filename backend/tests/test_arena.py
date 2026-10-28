@@ -134,3 +134,19 @@ def test_review_regressions():
     ok, why, _ = proposer.vet({"when": {"left": "doc.issue_date", "op": "eq", "right": "2026-09-30"}}, doc,
                               proposer.legit_dataset())
     assert not ok and "too specific" in why
+
+
+def test_leaderboard_can_return_all_players():
+    """Pe proiector și pe telefon apar toți jucătorii, nu doar primii 10."""
+    from app.arena import service
+    service.reset()
+    for i in range(14):
+        with service._lock:
+            service._scores[f"jucator{i}"] = 10 + i
+            service._display[f"jucator{i}"] = f"Jucator{i}"
+    with TestClient(app) as c:
+        assert len(c.get("/api/arena/leaderboard").json()["top"]) == 10
+        top = c.get("/api/arena/leaderboard?limit=500").json()["top"]
+        assert len(top) == 14 and top[0]["nickname"] == "Jucator13" and top[-1]["rank"] == 14
+        assert c.get("/api/arena/leaderboard?limit=0").status_code == 422
+    service.reset()

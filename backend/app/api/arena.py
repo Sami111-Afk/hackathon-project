@@ -1,7 +1,7 @@
 """Rute PUBLICE ale Arenei (fără token). Nu ating niciodată dosarele băncii sau seiful."""
 import asyncio
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
@@ -56,8 +56,9 @@ def submission_image(sid: str):
 
 
 @router.get("/leaderboard")
-def leaderboard():
-    return {"top": service.leaderboard(), "feed": service.feed()[:15], "stats": service.stats()}
+def leaderboard(limit: int = Query(default=10, ge=1, le=500)):
+    """Clasamentul. Implicit primii 10; ?limit=500 pentru toți jucătorii (telefon, proiector)."""
+    return {"top": service.leaderboard(limit), "feed": service.feed()[:15], "stats": service.stats()}
 
 
 @router.get("/live")

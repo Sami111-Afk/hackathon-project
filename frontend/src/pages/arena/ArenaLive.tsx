@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AlertOctagon, Brain, CircleHelp, ShieldCheck, Trophy } from 'lucide-react'
 import { AGENT_RO, getLeaderboard, subscribeArenaLive, type Submission } from '@/lib/arena'
 import { apiUrl } from '@/lib/config'
@@ -151,18 +151,23 @@ export function ArenaLive() {
         </section>
 
         <section className="flex min-h-0 flex-col">
-          <h2 className="text-3xl font-semibold">Top 10</h2>
-          <ol className="mt-5 divide-y divide-night-line">
-            {board.data?.top.map((r) => (
-              <li key={r.rank} className="flex items-center gap-4 py-2.5 text-2xl">
-                <span className={cn('w-9 text-right font-condensed font-bold tabular-nums', r.rank <= 3 ? 'text-brand' : 'text-night-mute')}>{r.rank}</span>
-                <span className="flex-1 truncate">{r.nickname}</span>
-                <span className="font-semibold tabular-nums">{r.points.toLocaleString('ro-RO')}</span>
-              </li>
-            ))}
-          </ol>
+          <h2 className="flex items-baseline justify-between gap-3 text-3xl font-semibold">
+            All players
+            {board.data && board.data.top.length > 0 && <span className="text-xl font-normal text-night-mute">{board.data.top.length}</span>}
+          </h2>
+          <AutoScroll className="mt-5 min-h-0 flex-1">
+            <ol className="divide-y divide-night-line">
+              {board.data?.top.map((r) => (
+                <li key={r.rank} className="flex items-center gap-4 py-2.5 text-2xl">
+                  <span className={cn('w-12 text-right font-condensed font-bold tabular-nums', r.rank <= 3 ? 'text-brand' : 'text-night-mute')}>{r.rank}</span>
+                  <span className="flex-1 truncate">{r.nickname}</span>
+                  <span className="font-semibold tabular-nums">{r.points.toLocaleString('ro-RO')}</span>
+                </li>
+              ))}
+            </ol>
+          </AutoScroll>
           {attacker && attacker.rounds.length > 0 ? (
-            <div className="mt-auto rounded-md border border-night-line bg-night-2 p-5">
+            <div className="mt-6 shrink-0 rounded-md border border-night-line bg-night-2 p-5">
               <div className="text-xl font-semibold">The automatic attacker, round by round{attacker.running ? ' (running)' : ''}</div>
               <ol className="mt-4 flex flex-wrap gap-2" aria-label="Attacker rounds">
                 {attacker.rounds.map((r) => (
@@ -181,7 +186,7 @@ export function ArenaLive() {
               {attackerLine && <p className="mt-2 line-clamp-2 text-lg text-night-mute">{attackerLine.replace(/^\S+\s/, '').replace(/^Runda\b/, 'Round').replace(/: (passed|a trecut)\b/, ': got through').replace(/: (caught|prins)\b/, ': caught')}</p>}
             </div>
           ) : st && (
-            <div className="mt-auto rounded-md border border-night-line bg-night-2 p-5">
+            <div className="mt-6 shrink-0 rounded-md border border-night-line bg-night-2 p-5">
               <div className="text-xl font-semibold">Players against the agents</div>
               <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-night-line" role="img" aria-label={`${st.caught} caught, ${st.passed} got through`}>
                 <div className="bg-night-ok" style={{ width: `${100 - passRate}%` }} />
@@ -222,4 +227,29 @@ function Spotlight({ s, waiting }: { s: Submission; waiting: number }) {
       </div>
     </div>
   )
+}
+
+/**
+ * Listă care se derulează singură, încet, când nu încape pe ecran (proiector: nimeni nu dă scroll).
+ * Jos face o pauză, apoi revine sus.
+ */
+function AutoScroll({ children, className }: { children: ReactNode; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let pauseUntil = Date.now() + 3000
+    const t = setInterval(() => {
+      if (el.scrollHeight <= el.clientHeight + 2 || Date.now() < pauseUntil) return
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 1) {
+        pauseUntil = Date.now() + 3000
+        setTimeout(() => { el.scrollTop = 0 }, 2500)
+        return
+      }
+      el.scrollTop += 1
+    }, 40)
+    return () => clearInterval(t)
+  }, [])
+  return <div ref={ref} className={cn('overflow-hidden', className)}>{children}</div>
 }
