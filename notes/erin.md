@@ -85,3 +85,5 @@ Linkul din meniu `/cases/case_maria` dădea „Dosarul nu s-a încărcat” — 
    (upload, `POST /api/cases` multipart, vezi `backend/app/api/cases.py`).
 6. Mici: gol mare deasupra scorului de risc în coloana din dreapta; descrierile agenților tăiate („Ascunde datele perso…”);
    link spre Arena în meniu.
+
+- (14:55) Am pus eu panoul „Confidențialitate” (punctul 1 de mai sus): `components/PrivacyPanel.tsx`, montat în `CasePage` sub banda agenților, doar în afara modului mock. Ajustează-l liber la stilul tău.
