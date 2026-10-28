@@ -45,7 +45,10 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${apiUrl()}/api/arena${path}`, init)
   if (!res.ok) {
     let msg = `Eroare ${res.status}`
-    try { msg = (await res.json()).detail ?? msg } catch { /* nu e JSON */ }
+    try {
+      const d = (await res.json()).detail
+      msg = typeof d === 'string' ? d : 'Câmpuri invalide. Verifică valorile și încearcă din nou.'
+    } catch { /* nu e JSON */ }
     if (res.status === 429) msg = 'Prea multe încercări. Mai așteaptă un minut.'
     throw new Error(msg)
   }
