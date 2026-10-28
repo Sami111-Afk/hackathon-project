@@ -23,3 +23,17 @@ Format: înregistrare de ecran a aplicației (OBS, 1080p, zoom 125–150%) + voc
 - backend la Narcis: `git pull && scripts/start_bank.sh --stop && scripts/start_bank.sh`, apoi seed-demo;
 - dosarul Mariei rulat o dată înainte; un dosar cinstit pregătit pentru „New application”
   (`backend/.venv/bin/python scripts/benchmark_pipeline.py --n 3 --save data/generated/bench --generate-only` → un „honest”).
+
+## Cum îl facem (ordinea contează: vocea → imaginea → montajul)
+1. **Pregătire (15 min):** redeploy Erin + `git pull` și repornire Narcis; seed-demo + rerun-demo o dată; browser curat, ecran complet,
+   zoom 125%; dosarul cinstit din `data/demo/honest/` pregătit pentru „New application”; telefonul pentru Arena (înregistrare nativă).
+2. **Vocea întâi (20 min):** Samuel citește textul de mai sus, **scenă cu scenă, fișiere separate**; telefon la 20 cm, cameră mică.
+3. **Clipurile de ecran (Erin, Mac, Screen Studio sau Cap — zoom automat pe click):**
+   A Dashboard → New application → aprobat · B Maria → Re-run live (lasă până la verdict) · C dovezi → chenar pe fluturaș → Edit map
+   (2 s pe fiecare) · D graful · E Very high → Why this score? → Approve fără motiv (cere motiv) · F Privacy → What the AI saw → Local
+   · G telefon: Arena, fals prins, „Math does not lie”.
+4. **Montaj (CapCut desktop):** voce · clipuri pe voce (+ zoom keyframes) · 4–5 texte mari · sunete (click, whoosh la agenți, alertă
+   la dovada roșie) · muzică −25 dB · subtitrări automate verificate (CNP, ANAF). Agenții accelerați 2x cu „real time: 20 s”.
+   Nicio scenă statică > 4–5 s. Final 5 s: logo + link + „Shadow-mode pilot”.
+5. **Export:** 1080p, 30 fps, MP4, **sub 3:00**. Vizionat o dată fără sunet și o dată pe telefon. YouTube „Unlisted” / Drive cu link
+   public — verificat din incognito.
