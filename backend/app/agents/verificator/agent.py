@@ -103,7 +103,10 @@ class Verificator:
                     findings.append(f)
 
         if slip:
-            findings += apply_rules(self._rule_doc(slip, company))
+            # firmă găsită la ANAF real (nu în registrul demo) → regulile compară cu datele ei reale
+            real = ({"active": company.active, "founded": company.founded}
+                    if company and company.source != "demo" else None)
+            findings += apply_rules(self._rule_doc(slip, company), company=real)
 
         keep = 1.0
         for f in findings:
