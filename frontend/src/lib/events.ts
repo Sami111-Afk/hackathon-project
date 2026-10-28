@@ -1,6 +1,6 @@
 import { fetchEventSource, EventStreamContentType } from '@microsoft/fetch-event-source'
 import { getToken } from './auth'
-import { apiUrl } from './config'
+import { API_HEADERS, apiUrl } from './config'
 import type { PipelineEvent } from './types'
 import mariaEventsRaw from '@shared/fixtures/maria_events.jsonl?raw'
 
@@ -26,7 +26,7 @@ export function subscribeCaseEvents(caseId: string, { onEvent, onState }: Handle
   const run = async () => {
     while (!ctrl.signal.aborted) {
       onState?.(attempt === 0 ? 'connecting' : 'reconnecting')
-      const headers: Record<string, string> = {}
+      const headers: Record<string, string> = { ...API_HEADERS }
       const token = getToken()
       if (token) headers.Authorization = `Bearer ${token}`
       if (lastSeq >= 0) headers['Last-Event-ID'] = String(lastSeq)

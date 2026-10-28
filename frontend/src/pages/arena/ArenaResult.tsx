@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { AlertOctagon, Check, CircleHelp, Loader2, RotateCcw, Siren, Trophy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { getSubmission, submissionImageUrl, type Submission } from '@/lib/arena'
+import { getSubmission, getSubmissionImage, type Submission } from '@/lib/arena'
 import { AGENT_INFO } from '@/lib/labels'
 import type { AgentName } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -85,13 +85,13 @@ export function ArenaResult() {
           )}
           {s.duplicate && <p className="mt-3 text-center text-sm text-night-mute">Cineva a trimis deja exact același fals, așa că nu primești puncte.</p>}
 
-          <img src={submissionImageUrl(s.id)} alt="Falsul tău, așa cum l-au primit agenții" className="mt-6 w-full rounded-sm border border-night-line" />
+          <SubmissionImage id={s.id} />
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <Link to={`/arena/m/${s.mission_id}`} className="flex h-14 items-center justify-center gap-2 rounded-md bg-brand text-lg font-bold text-ink">
+            <Link to={`/arena/m/${s.mission_id}`} className="flex h-14 items-center justify-center gap-2 whitespace-nowrap rounded-md bg-brand text-base font-bold text-ink">
               <RotateCcw className="h-5 w-5" aria-hidden /> Încearcă din nou
             </Link>
-            <Link to="/arena/top" className="flex h-14 items-center justify-center gap-2 rounded-md border border-night-line text-lg font-semibold">
+            <Link to="/arena/top" className="flex h-14 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-night-line text-base font-semibold">
               <Trophy className="h-5 w-5" aria-hidden /> Clasament
             </Link>
           </div>
@@ -99,4 +99,13 @@ export function ArenaResult() {
       )}
     </ArenaShell>
   )
+}
+
+/** Imaginea falsului: cerută cu fetch (headerul pentru ngrok), apoi afișată din memorie. */
+function SubmissionImage({ id }: { id: string }) {
+  const q = useQuery({ queryKey: ['arena-img', id], queryFn: () => getSubmissionImage(id), staleTime: Infinity, gcTime: 60_000 })
+  useEffect(() => () => { if (q.data) URL.revokeObjectURL(q.data) }, [q.data])
+  if (q.isError) return <p className="mt-6 text-sm text-night-mute">Imaginea falsului nu s-a încărcat.</p>
+  if (!q.data) return <div className="mt-6 aspect-[1654/2339] w-full animate-pulse rounded-sm bg-night-2" />
+  return <img src={q.data} alt="Falsul tău, așa cum l-au primit agenții" className="mt-6 w-full rounded-sm border border-night-line" />
 }
