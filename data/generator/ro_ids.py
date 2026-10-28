@@ -76,3 +76,24 @@ def mrz_td2(surname: str, given: str, series: str, number: str, birth: str, sex:
     core = f"{doc}{_mrz_cd(doc)}ROU{b}{_mrz_cd(b)}{sex}{e}{_mrz_cd(e)}{optional}"
     composite = _mrz_cd(f"{doc}{_mrz_cd(doc)}{b}{_mrz_cd(b)}{e}{_mrz_cd(e)}{optional}")
     return line1, (core + composite)[:36].ljust(36, "<")
+
+
+def mrz_td2_valid(lines: tuple[str, str]) -> bool:
+    line1, line2 = lines
+    if len(line1) != 36 or len(line2) != 36:
+        return False
+    allowed = set(string.ascii_uppercase + string.digits + "<")
+    if any(ch not in allowed for ch in line1 + line2):
+        return False
+
+    document = line2[:9]
+    birth = line2[13:19]
+    expiry = line2[21:27]
+    optional = line2[28:35]
+    document_check, birth_check, expiry_check = line2[9], line2[19], line2[27]
+    if document_check != _mrz_cd(document):
+        return False
+    if birth_check != _mrz_cd(birth) or expiry_check != _mrz_cd(expiry):
+        return False
+    composite = document + document_check + birth + birth_check + expiry + expiry_check + optional
+    return line2[35] == _mrz_cd(composite)
