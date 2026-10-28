@@ -1,4 +1,62 @@
-# Video 3:00 — VARIANTA 3 (după 2 runde de jurați, 28.10 seara) — DE LUCRU
+# Video 3:00 — VARIANTA 4 (după 3 runde de jurați; runda 3 cu Fable, care au verificat și codul) — DE LUCRU
+
+> Variantele 3, 2 și 1 sunt mai jos, doar ca istoric. **De confirmat după workshopul de la 20:00.**
+
+## Runda 3 (4 jurați Fable: șef operațiuni credite, tehnic, coach de pitch, avocatul diavolului)
+Pe varianta 3: 7 · 8 (tehnic) · 7 · 7 din 10, top 3 ~35–45%. Cu reparațiile lor: **8–8,5 din 10, ~55–65%**.
+Juratul tehnic a verificat în cod fiecare afirmație din video: **toate sunt acoperite** de cod și de cifre, cu două formulări prea tari.
+1. **Deschiderea e cea pe care o va avea orice echipă** („repetitive work, 20 minutes”) → începem cu dovada:
+   „Fluturașul ăsta spune 8.500. Ar trebui 8.307.” — și ne întoarcem la el la Maria.
+2. **Riscul cel mai mare:** juriul găsește în cod `manual_minutes_per_case = 20` și crede că cifra e inventată → o spunem
+   de fiecare dată ca estimare, iar cronometrul din scena 3 e singura cifră de timp măsurată; pilotul măsoară restul.
+3. **O contradicție:** „20 s + un minut de verificare” (scena 2) vs „sub un minut” (scena 3) → scena 3 spune timpul real de pe cronometru.
+4. **Omisiunea din scena 8:** 3/12 cinstiți merg la om. Scrie în README, deci juriul o va vedea → o spunem în video.
+5. **„Never leave the bank”** contrazice cloud-ul → „never go to the cloud” (doar buletinele și pozele neclare).
+6. Ce face sistemul mai bine decât spunea videoul: **ce citește AI-ul trebuie găsit în document, altfel e aruncat**, iar
+   **o a doua barieră re-scanează fiecare cerere** înainte să plece spre cloud. Le spunem.
+7. **Scena 9:** pe ecran trebuie să apară un fals care TRECE (vocea spune „gets through”), nu unul prins.
+8. Pentru banca reală (șeful de operațiuni): ofițerul de protecția datelor nu lasă date în afara UE → pilotul rulează **pe mașina băncii**,
+   lângă sistemul actual, pe o copie a dosarului. O spunem la final.
+
+## Structura (180 s, ~400 de cuvinte, ~2,2–2,5 cuvinte/s)
+
+| # | Timp | Durată | Pe ecran | Vocea (engleză) | Text mare |
+|---|---|---|---|---|---|
+| 0 | 0:00–0:03 | 3 s | Titlul ORB | — (muzică) | — |
+| 1 | 0:03–0:17 | 14 s | Zoom pe fluturașul Mariei, pe netul 8.500 → apoi buletinul și extrasul | "This payslip says 8,500 lei take-home. It should say 8,307. An analyst finds that by hand — by our own timing, about twenty minutes of reading, recalculating and cross-checking. Every file. Even the honest ones." | „~20 min per file (our timing)” |
+| 2 | 0:17–0:29 | 12 s | Dashboard: bara cu orele | "ORB runs those checks in twenty seconds; the analyst reviews the evidence, not the paperwork. Our estimate for these twenty-one files: seven hours, down to about twenty minutes." | „7 h → ~20 min (estimate)” |
+| 3 | 0:29–0:59 | 30 s | „New application” + cronometru → dosarul cinstit → agenții → nimic grav → click pe o valoare = sursa ei pe document → Approve → cronometrul se oprește | "Most applications are honest — that's where the hours go. So here's an honest one, with a real stopwatch. Six steps, one job each. Two use AI, to read and to summarise — and anything the AI reads must be found in the document, or it's discarded. The four that check and score are plain code: no hidden text can change the score. Every value linked to its source. The analyst approves. Upload to decision: **[timpul de pe cronometru]**." | cronometrul |
+| 4 | 0:59–1:31 | 32 s | Maria → „Re-run live” (agenții la 2x) → dovezile → click = chenar pe fluturaș → zonele editate | "Now Maria — the payslip from the start. Someone applied in her name for forty-five thousand lei. Her bank statement shows a pension, but the payslip says she's employed. ORB recalculates it: 8,307, not 8,500. The employer comes back inactive in the registry. And pixel analysis shows where the payslip was edited — every finding drawn as a box on the document." | „20 s real time, shown at 2×” · „8,307 ≠ 8,500 lei” |
+| 5 | 1:31–1:41 | 10 s | Graful: Maria + 5 cereri | "And what no one sees one file at a time: one bank account, six applications, six different names. ORB links them." | „1 account · 6 names” |
+| 6 | 1:41–1:59 | 18 s | Risc „Very high” → „Why this score?” → Approve fără motiv → cere motiv | "Risk: very high. But the AI doesn't decide. The score is computed by code from the evidence, every line explained. The analyst decides — and approving a flagged file takes a written reason." | „The AI doesn't decide” |
+| 7 | 1:59–2:17 | 18 s | Privacy: textul exact văzut de AI ([PERSOANA_1]) → butonul „100% local” | "Before any cloud AI sees a document, names and ID numbers become stand-ins like 'Person 1' — and a second gate re-scans every request before it leaves. ID cards and unclear photos never go to the cloud. Or, one switch, and it all runs in-house." | „0 names or ID numbers to the cloud” |
+| 8 | 2:17–2:37 | 20 s | Cardul cu cifrele (nou) | "Sixty test applications, real cloud AI. Zero names or ID numbers reached the cloud. Twelve honest applicants: none flagged high-risk, three sent to a human for a second look. Thirty-six simple forgeries: all caught. Forgeries where every number is correct: three of twelve — that's why we want real files next." | (cardul plin) |
+| 9 | 2:37–2:47 | 10 s | Proiectorul Arenei: un fals care **trece** → regula propusă → Approve | "And when a forgery does get through? Anyone can try in our public Arena. Each win becomes a proposed rule — and a human approves it." | — |
+| 10 | 2:47–3:00 | 13 s | Cardul de final: cererea + link + Arena | "Our ask: a hundred real files, beside one of your analysts, on your own machine. Count the hours saved and the forgeries caught. ORB does the checking. Your people decide." | „Pilot: 100 real files · on your machine” |
+
+### De făcut înainte de filmare
+- **Cardurile** (`scripts/make_video_cards.py`):
+  - titlul fără „without customer data leaving the bank”;
+  - „~20 min per file (our timing)”, „7 h → ~20 min (estimate)”, „20 s real time, shown at 2×”, „1 account · 6 names”, „0 names or ID numbers to the cloud”;
+  - cardul de cifre: 0 · 0/12 high-risk (3/12 la om) · 36/36 simple · 3/12 perfect;
+  - cardul de final cu pilotul.
+- **Scena 3:** filmăm dosarul cinstit cap-coadă în timp real, iar fraza finală spune timpul de pe cronometru.
+- **Scena 9:** pornim Auto-Attacker până trece un fals, apoi filmăm regula propusă.
+- Dashboard curat (fără Error/unknown), cu 21 de dosare procesate (sau schimbăm cifra din voce).
+- Dovezile cu pensia și firma inactivă să se vadă în listă când le spunem.
+
+## Întrebări grele la finală (de la juratul tehnic) — răspunsuri oneste
+1. *Falsurile sunt făcute de voi; cât prindeți din cele reale?* — Nu știm încă. Arena aduce falsuri făcute de alții, iar pilotul pe 100 de dosare e răspunsul.
+2. *Pseudonimizarea nu e anonimizare (GDPR).* — Corect: etichetele + salariul tot date personale sunt. De asta cheia seifului nu pleacă,
+   folosim o regiune UE sau modul local, iar Bedrock e un împuternicit (persoană împuternicită) în analiza de impact (DPIA).
+3. *De ce 3 cinstiți la om?* — Bariera a blocat 2 trimiteri, iar la 1 s-a citit greșit un rând din extras. E o verificare, nu o respingere: costă minute, nu o decizie greșită.
+4. *Prompt injection?* — Detector pe textul OCR, extragerea trebuie găsită în document, rezumatul e verificat cifră cu cifră, scorul e cod.
+   (Testul cu text slab vizibil: OCR-ul nu l-a citit deloc, deci nu a ajuns la AI.)
+5. *AI Act: creditarea e risc ridicat.* — ORB produce dovezi, nu decizii. Scorul e determinist, cu detaliere completă, iar decizia omului e înregistrată cu motiv.
+
+---
+
+# Varianta 3 (istoric)
 
 > Varianta 2 și varianta 1 sunt mai jos, doar ca istoric. **De confirmat după workshopul de la 20:00.**
 
