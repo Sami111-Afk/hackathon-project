@@ -13,6 +13,7 @@ import { VerdictCard } from '@/components/VerdictCard'
 import { WhenVisible } from '@/components/WhenVisible'
 import { useCaseLive } from '@/hooks/useCaseLive'
 import { getCase, getGraph, listCases, openReport, rerunDemo } from '@/lib/api'
+import { latestMariaId } from '@/lib/bankPages'
 import { isMock } from '@/lib/config'
 import type { ConnectionState } from '@/lib/events'
 import { AGENT_INFO } from '@/lib/labels'
@@ -40,18 +41,10 @@ const lei = (n?: number | null) => (n ? `${n.toLocaleString('en-GB')} lei` : '�
 /** `/cases/case_maria` (linkul din meniu) → cel mai recent dosar al Mariei; fiecare rulare a demo-ului are id nou. */
 export function CasePage() {
   const { caseId = 'case_maria' } = useParams()
-  const [latest, setLatest] = useState<string | null>(null)
   const alias = caseId === 'case_maria' && !isMock()
-  useEffect(() => {
-    if (!alias) return
-    listCases()
-      .then((cases) => {
-        const maria = cases.filter((c) => c.id.startsWith('case_maria_'))
-          .sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
-        setLatest(maria?.id ?? caseId)
-      })
-      .catch(() => setLatest(caseId))
-  }, [alias, caseId])
+  // Aceeași listă ca meniul și Dashboard-ul (cache comun), deci de obicei e deja aici.
+  const cases = useQuery({ queryKey: ['cases', false], queryFn: listCases, enabled: alias })
+  const latest = cases.data ? (latestMariaId(cases.data) ?? caseId) : cases.isError ? caseId : null
   if (!alias) return <CaseView caseId={caseId} />
   if (latest === null) return <Shell><p className="p-8 text-lg text-ink-2">Loading the application.</p></Shell>
   if (latest !== caseId) return <Navigate to={`/cases/${latest}`} replace />

@@ -172,6 +172,19 @@
     @apply font-sans;
     }
 }
+/* Trecerea între paginile băncii (doar la click în meniu, nu la prima încărcare): conținutul se estompează scurt,
+   bara de sus (view-transition-name: app-nav) stă pe loc. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
 
 /* Landing: secțiunile de sub primul ecran apar ușor la scroll. Doar CSS (fără JS); nimic pentru
    „reduce motion” sau în browserele fără animation-timeline. Nu se pune pe hero: ar întârzia LCP-ul. */
