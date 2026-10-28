@@ -1,0 +1,6 @@
+[package]
+name = "commitment"
+type = "bin"
+authors = ["ORB"]
+
+[dependencies]

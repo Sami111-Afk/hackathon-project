@@ -65,7 +65,7 @@ Maria nu va afla niciodată de la un executor că are o datorie de 45.000 lei.
 | ⚖️ Compliance | Scor din dovezi + verdict + rezumat | noisy-OR + LLM (doar pentru explicație) |
 | 🧠 Self-learning | Reguli noi din greșeli, testate, aprobate de om | LLM + motor de reguli JSON |
 | 🎮 Arena | Joc: păcălește agenții din telefon („Forge Studio”), clasament live | același pipeline |
-| 🔐 ZK | Clientul dovedește „venit ≥ prag” fără să-l arate | Noir + noir_js + bb.js |
+| 🔐 ZK | Clientul dovedește „venit ≥ prag” fără să-l arate | Noir + Barretenberg (UltraHonk) |
 | 📊 Dashboard | Dosare, ore/bani economisiți, fraude, date protejate, cost AI | React + Recharts |
 
 ## 3. Arhitectura într-o imagine
@@ -101,7 +101,7 @@ Maria nu va afla niciodată de la un executor că are o datorie de 45.000 lei.
 | OCR | Tesseract `ron` (`tessdata_best`) / stratul de text PDF | |
 | Date personale | regex + cifre de control + MRZ + GLiNER (CPU) + zone de șablon | |
 | Criptare homomorfică | TenSEAL (CKKS) | |
-| Zero-knowledge | Noir + `noir_js` + `bb.js` | versiuni fixate în `zk/README.md` |
+| Zero-knowledge | Noir (`nargo` 1.0.0-beta.13) + Barretenberg (`bb` 1.2.0, UltraHonk) | versiuni fixate în `zk/README.md` |
 | Frontend | React + Vite + TS + Tailwind + shadcn/ui + TanStack Query + Recharts + react-force-graph | |
 | Deploy | Vercel (Arena) + ngrok static (backend) + frontend local pentru demo | |
 
@@ -171,11 +171,13 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 
 | Cine | Foldere | P0 (ora 0–8) | P1 (ora 8–16) | P2 |
 |---|---|---|---|---|
-| **Samuel** | `backend/app/core`, `api`, `models.py`, `agents/compliance`, `arena`, `learning`, `data/attacker` | modele + orchestrator + SSE + client LLM (cloud/local/mock + poarta anti-PII) + Compliance + fixture-uri | **bucla AI contra AI:** Arena (Forge Studio, scor, coadă) + **self-learning** (propunere → backtest → aprobare) + ecranul `/arena/live` | **Atacatorul** (falsuri tot mai bune pe runde) + raport PDF |
+| **Samuel** | `backend/app/core`, `api`, `models.py`, `agents/compliance`, `arena`, `learning`, `data/attacker`, **`zk/`, `backend/app/zk`** | modele + orchestrator + SSE + client LLM (cloud/local/mock + poarta anti-PII) + Compliance + fixture-uri | **bucla AI contra AI:** Arena (Forge Studio, scor, coadă) + **self-learning** (propunere → backtest → aprobare) + ecranul `/arena/live` | **Atacatorul** (falsuri tot mai bune pe runde) + raport PDF |
 | **Narcis** | `agents/paznic`, `agents/detector`, deploy | Paznic (OCR, regex, MRZ, zone, normalizare, HMAC, seif) + Ollama + **tunel testat cu SSE** | Detector (ELA z-score, structură PDF, metadate, C2PA) | AI-detector pe GPU |
 | **Stefan** | `agents/functionar`, `agents/verificator` | Funcționar (grounding, parsare extrase) + Verificator (taxe, extras, verificări românești) | criptare homomorfică + ANAF | motorul de reguli în Verificator (rulează regulile aprobate) |
 | **Erin** | `frontend/`, `backend/app/agents/detectiv` | motorul de live (SSE, reconectare, replay după `seq`) + pagina Dosar (3 vederi + bbox + banda agenților) pe replay-ul Mariei, login | **Detectivul cap-coadă:** graf networkx pe amprente, detectarea rețelelor, scor de cluster, `/api/graph` + **graful live** (react-force-graph) · Dashboard + Arena pe mobil cu componente gata (shadcn, Recharts) | Birou animat, hartă |
-| **Lorena** | `data/`, `zk/`, `employer/`, `backend/app/zk`, pagina ZK | generator (CNP/IBAN/CUI/MRZ valide) + **documentele Mariei, brut, până la ora 2** | ZK cap-coadă (circuit, angajator, browser, verificare) | degradări realiste ale documentelor (poze de telefon) pentru benchmark |
+| **Lorena** | `data/`, pagina ZK din `frontend/` | generator (CNP/IBAN/CUI/MRZ valide) + **documentele Mariei, brut, până la ora 2** | **set de benchmark cu degradări realiste** (poze de telefon: rotație, blur, JPEG, umbre) + tipurile de fals din ARCHITECTURE §18 · **pagina ZK** (UI peste `/api/zk/demo`, deja gata în backend) | prezentarea (slide-uri + scenariul demo) |
+
+> **Schimbare 28.10, ~14:00:** ZK (circuit Noir, angajatorul care semnează, verificarea la bancă) l-a preluat **Samuel** — e gata în backend. Lorena rămâne pe date + benchmark + pagina ZK. Detalii: `notes/lorena.md`.
 
 **Ora 18–24: toți** — bugfix, video de rezervă, pitch. Fiecare poate explica tehnic partea lui în 30 de secunde.
 
@@ -185,7 +187,7 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 - **Narcis:** Python 3.11 + torch CUDA + Tesseract `ron` + Ollama · pornește ngrok (domeniu static) și **testează SSE de pe un telefon** · GLiNER pe un text românesc · postează URL-ul pe grup.
 - **Stefan:** schemele Funcționarului per tip de document · `tax.py` cu teste (net = 0,585·G + 0,1·D) · `import tenseal` funcționează · numele exacte ale modelelor pe Featherless + model vizual testat.
 - **Erin:** `npm create vite@latest frontend -- --template react-ts` + Tailwind + shadcn · proiect Vercel · client SSE (`fetch-event-source`) + override `?api=` + replay din `maria_events.jsonl` · venv mic de Python cu `requirements-core.txt` (fără torch) pentru Detectiv.
-- **Lorena:** generatoare CNP/IBAN/CUI/MRZ cu teste · prima versiune a documentelor Mariei (JPEG) · versiunile `nargo` / `noir_js` / `bb.js` fixate în `zk/README.md` + „hello world” care face o dovadă în browser.
+- **Lorena:** generatoare CNP/IBAN/CUI/MRZ cu teste · prima versiune a documentelor Mariei (JPEG). (ZK: preluat de Samuel, vezi `zk/README.md`.)
 
 ## 9. Priorități (P0 / P1 / P2)
 

@@ -246,3 +246,17 @@ def test_slightly_rotated_scan_keeps_rows_together():
     texts = [line.text for line in group_lines(words)]
     assert "Sold final 26.480,00" in texts
     assert len(parse_statement(group_lines(words)).rows) == 4
+
+
+def test_evidence_is_the_value_even_when_llm_quotes_the_whole_line(monkeypatch):
+    async def fake_chat(task, *, json_schema=None, **k):
+        data = json_schema()
+        if json_schema is PayslipFields:
+            data = PayslipFields(net_salary=RawField(value="8.500,00", source_text="NET DE PLATĂ 8.500,00"))
+        return LLMResponse(text="{}", data=data, usage=None)
+
+    monkeypatch.setattr(functionar_agent, "chat", fake_chat)
+    ctx = Ctx(paznic_scratch())
+    run_agent(maria_case(), ctx)
+    bbox = ctx.scratch["functionar"]["doc_2"]["fields"]["net_salary"]["bbox"]
+    assert bbox[0] == 1050  # doar suma, nu și eticheta „NET DE PLATĂ” de la x=80

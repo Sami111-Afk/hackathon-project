@@ -165,6 +165,12 @@ def _extract_json(text: str) -> Any:
     try:
         return json.loads(text)
     except json.JSONDecodeError:
+        # Featherless (DeepSeek-V4-Flash) întoarce obiectul fără „{” de început: ‹"camp": {...}, ...}›
+        if text.startswith('"') and text.endswith("}"):
+            try:
+                return json.loads("{" + text)
+            except json.JSONDecodeError:
+                pass
         m = re.search(r"[\{\[].*[\}\]]", text, flags=re.S)
         if not m:
             raise

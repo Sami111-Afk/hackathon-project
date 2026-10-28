@@ -19,6 +19,7 @@ data/llm_cache/*
 !data/llm_cache/.gitkeep
 data/generated/
 data/anaf_cache/
+data/zk/
 uploads/
 
 # modele
