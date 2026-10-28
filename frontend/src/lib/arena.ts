@@ -1,5 +1,6 @@
 // Arena: rute PUBLICE (fără token). Nu trimitem niciodată tokenul băncii aici.
-import { apiUrl } from './config'
+import { fetchEventSource, EventStreamContentType } from '@microsoft/fetch-event-source'
+import { API_HEADERS, apiUrl } from './config'
 
 export interface FieldSpec {
   type: 'number' | 'select' | 'date' | 'text'
@@ -42,7 +43,9 @@ export interface ArenaStats { submissions: number; valid: number; passed: number
 export interface Leaderboard { top: LeaderRow[]; feed: Submission[]; stats: ArenaStats }
 
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${apiUrl()}/api/arena${path}`, init)
+  const headers = new Headers(init?.headers)
+  for (const [k, v] of Object.entries(API_HEADERS)) headers.set(k, v)
+  const res = await fetch(`${apiUrl()}/api/arena${path}`, { ...init, headers })
   if (!res.ok) {
     let msg = `Eroare ${res.status}`
     try {
@@ -58,8 +61,59 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 export const getMissions = () => call<Mission[]>('/missions')
 export const getSubmission = (id: string) => call<Submission>(`/submissions/${encodeURIComponent(id)}`)
 export const getLeaderboard = () => call<Leaderboard>('/leaderboard')
-export const submissionImageUrl = (id: string) => `${apiUrl()}/api/arena/submissions/${encodeURIComponent(id)}/image`
-export const liveUrl = () => `${apiUrl()}/api/arena/live`
+/** Imaginea falsului, cerută cu headerele noastre (un <img src> simplu nu le poate trimite prin ngrok). */
+export async function getSubmissionImage(id: string): Promise<string> {
+  const res = await fetch(`${apiUrl()}/api/arena/submissions/${encodeURIComponent(id)}/image`, { headers: API_HEADERS })
+  if (!res.ok) throw new Error(`Eroare ${res.status}`)
+  return URL.createObjectURL(await res.blob())
+}
+
+export interface LiveMessage { event: string; data: { message: string; data?: Record<string, unknown> | null } }
+
+/**
+ * Fluxul live al Arenei (pentru proiector). fetchEventSource în loc de EventSource,
+ * ca să putem trimite headerul cerut de ngrok; reconectare cu pauză crescătoare.
+ */
+export function subscribeArenaLive(handlers: {
+  onMessage: (m: LiveMessage) => void
+  onOpen?: () => void
+  onDown?: () => void
+}): () => void {
+  const ctrl = new AbortController()
+  let attempt = 0
+  const run = async () => {
+    while (!ctrl.signal.aborted) {
+      try {
+        await fetchEventSource(`${apiUrl()}/api/arena/live`, {
+          signal: ctrl.signal,
+          headers: API_HEADERS,
+          openWhenHidden: true, // proiectorul poate sta în fundal
+          async onopen(res) {
+            if (res.ok && res.headers.get('content-type')?.startsWith(EventStreamContentType)) {
+              attempt = 0
+              handlers.onOpen?.()
+              return
+            }
+            throw new Error(`SSE ${res.status}`)
+          },
+          onmessage(msg) {
+            if (!msg.data || !msg.event || msg.event === 'ping') return
+            try { handlers.onMessage({ event: msg.event, data: JSON.parse(msg.data) }) } catch { /* mesaj stricat */ }
+          },
+          onclose() { throw new Error('closed') },
+          onerror(err) { throw err },
+        })
+      } catch {
+        if (ctrl.signal.aborted) break
+      }
+      handlers.onDown?.()
+      attempt++
+      await new Promise((r) => setTimeout(r, Math.min(1000 * 2 ** Math.min(attempt, 4), 10000)))
+    }
+  }
+  run()
+  return () => ctrl.abort()
+}
 
 export function submitFake(body: { nickname: string; mission_id: string; edits: Record<string, unknown>; tricks: string[] }) {
   return call<Submission>('/submissions', {

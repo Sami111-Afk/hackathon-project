@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
 import { AlertOctagon, Brain, CircleHelp, ShieldCheck, Trophy } from 'lucide-react'
-import { AGENT_RO, getLeaderboard, liveUrl, type Submission } from '@/lib/arena'
+import { AGENT_RO, getLeaderboard, subscribeArenaLive, type Submission } from '@/lib/arena'
 import { apiUrl } from '@/lib/config'
 import { cn } from '@/lib/utils'
 
@@ -31,7 +31,6 @@ const isLocal = (u: string) => /\/\/(localhost|127\.|0\.0\.0\.0)/.test(u)
 
 interface AttackerRound { round: number; outcome: 'passed' | 'caught' | 'invalid'; reasons: string[] }
 interface AttackerStatus { running: boolean; rounds: AttackerRound[]; passed: number; caught: number }
-interface LiveEvent { type: string; message: string; data?: Record<string, unknown> | null }
 
 const agentName = (a: string) => AGENT_RO[a] ?? a
 
@@ -62,27 +61,23 @@ export function ArenaLive() {
   }, [url])
 
   useEffect(() => {
-    // public, fără headere → EventSource nativ (se reconectează singur)
-    const es = new EventSource(liveUrl())
-    const parse = (e: MessageEvent): LiveEvent | null => { try { return JSON.parse(e.data) } catch { return null } }
-    es.onopen = () => {
-      setConnected(true)
-      qc.invalidateQueries({ queryKey: ['arena-top'] }) // după o reconectare am putut pierde trimiteri
-    }
-    es.onerror = () => setConnected(false)
-    es.addEventListener('arena_scored', () => qc.invalidateQueries({ queryKey: ['arena-top'] }))
-    const onRule = (approved: boolean) => (e: MessageEvent) => {
-      const ev = parse(e)
-      if (ev) setLearning((l) => [{ approved, message: ev.message, at: Date.now() }, ...l].slice(0, 3))
-    }
-    es.addEventListener('rule_proposed', onRule(false))
-    es.addEventListener('rule_approved', onRule(true))
-    es.addEventListener('agent_progress', (e) => { // rundele Atacatorului
-      const ev = parse(e)
-      const st = ev?.data?.attacker as AttackerStatus | undefined
-      if (st) { setAttacker(st); setAttackerLine(ev?.message ?? '') }
+    return subscribeArenaLive({
+      onOpen: () => {
+        setConnected(true)
+        qc.invalidateQueries({ queryKey: ['arena-top'] }) // după o reconectare am putut pierde încercări
+      },
+      onDown: () => setConnected(false),
+      onMessage: ({ event, data }) => {
+        if (event === 'arena_scored') qc.invalidateQueries({ queryKey: ['arena-top'] })
+        if (event === 'rule_proposed' || event === 'rule_approved') {
+          setLearning((l) => [{ approved: event === 'rule_approved', message: data.message, at: Date.now() }, ...l].slice(0, 3))
+        }
+        if (event === 'agent_progress') { // rundele Atacatorului
+          const st = data.data?.attacker as AttackerStatus | undefined
+          if (st) { setAttacker(st); setAttackerLine(data.message ?? '') }
+        }
+      },
     })
-    return () => es.close()
   }, [qc])
 
   // ceas pentru evidențierea regulii noi (strălucește ~15 s)
