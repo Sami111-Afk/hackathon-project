@@ -4,11 +4,13 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMissions, lei, saveNick, savedNick } from '@/lib/arena'
 import { ArenaShell } from './ArenaShell'
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 type Step = 'intro' | 'nick' | 'missions'
 
 /** Start: o propoziție + „Începe” → pseudonim → misiuni. Cine a mai jucat sare direct la misiuni. */
 export function ArenaStart() {
+  usePageMeta("ORB Arena: can you fool the bank with a fake payslip?", "Can you fool the bank's AI agents with a fake payslip? A one-minute game from ORB, no account needed.")
   const nav = useNavigate()
   const [nick, setNick] = useState(savedNick())
   const [step, setStep] = useState<Step>(savedNick() ? 'missions' : 'intro')
