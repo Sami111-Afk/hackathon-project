@@ -30,3 +30,9 @@ PR-ul e îmbinat (233 teste trec, fără conflicte cu main, fără fișiere bina
 - `--extra-fakes` clean: bad_cnp, mrz_mismatch, doc_before_company prinse 1/1 fiecare.
 - Ruff trece cu configul din `backend/`; rulat din rădăcină, `benchmark_pipeline.py` dă I001 (ordinea importurilor), nu blochează.
 - Rezultatele nu sunt comise în PR; `data/benchmark/pipeline_results.json` trebuie regenerat dacă vrem cifrele phone în repo.
+
+## Review PR #35 (slide-uri) — Samuel, ~16:30
+Merge făcut. Varianta **EN** (cea pe care o predăm) e aliniată cu `notes/pitch.md` — bravo. Varianta lungă **RO** are câteva
+lucruri vechi, de corectat doar dacă o folosim: „scor de risc 96” (acum arătăm *nivelul* de risc), „AI contra AI” (atacatorul e
+un algoritm automat, nu AI), cost „~0,0006 $” (acum ~0,005 $/dosar cu Bedrock), „~15 secunde” / „240 de documente” (acum: ~12–20 s;
+benchmark cu AI real pe 60 de dosare, vezi `notes/pitch.md`).
