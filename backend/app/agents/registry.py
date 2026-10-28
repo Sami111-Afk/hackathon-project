@@ -23,7 +23,7 @@ def _paznic():
     if ocr_available():
         return Paznic()
     logging.getLogger("orb.registry").warning("Tesseract `ron` lipsește: Paznic rulează în varianta de probă")
-    return StubAgent("paznic", "Ascund datele personale", delay=1.5)
+    return StubAgent("paznic", "Hiding personal data", delay=1.5)
 
 
 AGENTS = {

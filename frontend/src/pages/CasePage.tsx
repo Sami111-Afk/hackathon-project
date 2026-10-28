@@ -28,11 +28,11 @@ const CONN: Record<ConnectionState, { label: string; dot: string }> = {
 }
 
 const STATUS: Record<CaseStatus, string> = {
-  received: 'Received', processing: 'In analysis', awaiting_review: 'Awaiting your decision', cleared: 'Approved',
+  received: 'Received', processing: 'Under analysis', awaiting_review: 'Awaiting your decision', cleared: 'Approved',
   rejected: 'Rejected', escalated: 'Under investigation', error: 'Error',
 }
 
-const lei = (n?: number | null) => (n ? `${n.toLocaleString('ro-RO')} lei` : '—')
+const lei = (n?: number | null) => (n ? `${n.toLocaleString('en-GB')} lei` : '—')
 
 /** `/cases/case_maria` (linkul din meniu) → cel mai recent dosar al Mariei; fiecare rulare a demo-ului are id nou. */
 export function CasePage() {
