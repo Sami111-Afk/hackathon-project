@@ -82,15 +82,15 @@ def repair_iban(raw: str) -> str | None:
         iban = "RO" + iban[2:]
     if not iban.startswith("RO") or len(iban) not in (23, 24, 25):
         return None
-    head = iban[:8]  # RO + cifre de control + codul băncii (litere)
-    head = head[:2] + head[2:4].translate(_OCR_DIGITS) + head[4:8]
-    account = iban[8:]
-    candidates = [head + account, head + account.translate(_OCR_DIGITS)]
-    if len(account) == 17:
-        for i in range(len(account)):
-            if account[i] in "0O" and (i and account[i - 1] in "0O" or i + 1 < len(account) and account[i + 1] in "0O"):
-                dropped = account[:i] + account[i + 1:]
-                candidates += [head + dropped, head + dropped.translate(_OCR_DIGITS)]
+    bases = [iban]
+    if len(iban) == 25:  # un caracter în plus: OCR dublează des „0”/„O” (și lângă „RO”: „ROO09…”)
+        for i in range(2, len(iban)):
+            if iban[i] in "0O" and (iban[i - 1] in "0O" or i + 1 < len(iban) and iban[i + 1] in "0O"):
+                bases.append(iban[:i] + iban[i + 1:])
+    candidates = []
+    for b in bases:
+        head = b[:2] + b[2:4].translate(_OCR_DIGITS) + b[4:8]  # RO + cifre de control + codul băncii
+        candidates += [head + b[8:], head + b[8:].translate(_OCR_DIGITS)]
     seen = set()
     for c in candidates:
         if c not in seen and len(c) == 24 and valid_iban(c):
