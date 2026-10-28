@@ -60,3 +60,6 @@ Info: există acum API-ul ZK gata (`POST /api/zk/demo`, vezi `zk/README.md`). Lo
 Linkul din meniu `/cases/case_maria` dădea „Dosarul nu s-a încărcat” — fiecare `rerun-demo` creează un id nou (`case_maria_xxxxxx`).
 În `pages/CasePage.tsx` am pus un wrapper: `case_maria` (în afara modului mock) → caută cel mai recent `case_maria_*` din `/api/cases`
 și redirecționează; restul paginii e neschimbat (acum e `CaseView`). Dacă refaci pagina, păstrează comportamentul.
+- (13:55) Am adăugat în `CasePage` butonul **„Analizează din nou, live”** (doar pe dosarele Mariei, nu în mock): `POST /api/admin/rerun-demo`
+  → navighează la dosarul nou, iar agenții apar live prin SSE. Funcția e `rerunDemo()` în `lib/api.ts`. Rămâne la tine: butonul **„Dosar nou”**
+  cu încărcare de documente (`POST /api/cases`, multipart — vezi `backend/app/api/cases.py`).

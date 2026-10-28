@@ -101,6 +101,12 @@ export async function setLlmMode(llm_mode: LlmMode): Promise<ServerSettings> {
   return res.json()
 }
 
+/** Demo live: dosarul Mariei e procesat din nou de la zero de toți agenții; întoarce id-ul dosarului nou. */
+export async function rerunDemo(): Promise<string> {
+  const res = await apiFetch('/api/admin/rerun-demo', { method: 'POST' })
+  return (await res.json()).case_id
+}
+
 /**
  * Raportul de anchetă (HTML printabil). Cere token, deci îl luăm ca blob.
  * Fereastra se deschide sincron, din click (altfel browserul o blochează ca pop-up).
