@@ -1,21 +1,22 @@
 import { useQuery } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
-import { useState } from 'react'
+import { lazy, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AppNav } from '@/components/AppNav'
 import { NewCaseForm } from '@/components/NewCaseForm'
 import { Panel } from '@/components/Panel'
+import { WhenVisible } from '@/components/WhenVisible'
 import { getStats, listCases, type CaseSummary, type DashboardStats } from '@/lib/api'
 import { isMock } from '@/lib/config'
 import { riskLevel } from '@/lib/labels'
 import { mockCases, mockStats } from '@/lib/mockDashboard'
 import type { CaseStatus } from '@/lib/types'
 
-// Culori de stare (fixe, din ghidul de grafice) — mereu împreună cu iconiță + etichetă.
-const C = { good: '#0ca30c', warning: '#fab219', critical: '#d03b3b', manual: '#98A2B3', orb: '#1F2328' }
-const SURFACE = '#ffffff'
-const LEGEND_ORDER = ['clear', 'review', 'escalate']
+// recharts vine separat, după ce restul paginii e deja pe ecran (pe telefon câștigă ~1 s).
+const TimeChart = lazy(() => import('@/components/DashboardCharts').then((m) => ({ default: m.TimeChart })))
+const PerDayChart = lazy(() => import('@/components/DashboardCharts').then((m) => ({ default: m.PerDayChart })))
+
+const C = { manual: '#98A2B3', orb: '#1F2328' }
 
 const STATUS_LABEL: Record<CaseStatus, string> = {
   received: 'Received', processing: 'Under analysis', awaiting_review: 'Awaiting decision', cleared: 'Approved',
@@ -54,7 +55,7 @@ function Kpi({ label, value, unit, note }: { label: string; value: string; unit?
         <span className="font-condensed text-6xl font-bold leading-none tabular-nums text-ink">{value}</span>
         {unit && <span className="text-xl font-medium text-ink-2">{unit}</span>}
       </div>
-      {note && <div className="mt-2 text-[15px] text-ink-3">{note}</div>}
+      <div className="mt-2 text-[15px] text-ink-3">{note ?? '\u00a0'}</div>
     </div>
   )
 }
@@ -150,20 +151,7 @@ export function DashboardPage() {
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <Panel title={`Working hours for ${s ? num(s.cases_processed) : '…'} applications`}>
-            <div className="h-60">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={timeData} layout="vertical" margin={{ left: 8, right: 72 }}>
-                  <XAxis type="number" hide />
-                  <YAxis type="category" dataKey="name" width={220} tickLine={false} axisLine={false}
-                         tick={{ fill: '#1F2328', fontSize: 18 }} />
-                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} formatter={(v) => [`${Number(v).toLocaleString('en-GB')} hours`, 'Time']} />
-                  <Bar dataKey="hours" radius={[0, 3, 3, 0]} barSize={40} isAnimationActive={false}>
-                    <LabelList dataKey="hours" position="right" formatter={(v) => `${Number(v).toLocaleString('en-GB')} h`}
-                               style={{ fill: '#1F2328', fontSize: 20, fontWeight: 600 }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <WhenVisible className="h-60"><TimeChart data={timeData} /></WhenVisible>
             {a && (
               <p className="mt-2 text-[15px] text-ink-3">
                 Assumptions, to be confirmed with Raiffeisen: {a.manual_minutes_per_case} minutes of manual checking per application,
@@ -173,23 +161,7 @@ export function DashboardPage() {
           </Panel>
 
           <Panel title="Applications per day, by ORB recommendation">
-            <div className="h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={perDay(list)} margin={{ left: -16, right: 8 }}>
-                  <CartesianGrid vertical={false} stroke="#E4E7EC" />
-                  <XAxis dataKey="day" tickLine={false} axisLine={{ stroke: '#D5D9DF' }} tick={{ fill: '#4E5764', fontSize: 15 }}
-                         interval="preserveStartEnd" minTickGap={32} />
-                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: '#4E5764', fontSize: 15 }} />
-                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} />
-                  <Legend wrapperStyle={{ fontSize: 16 }} itemSorter={(i) => LEGEND_ORDER.indexOf(String(i.dataKey))}
-                          formatter={(v) => <span style={{ color: '#1F2328' }}>{v}</span>} />
-                  <Bar dataKey="clear" name="Auto-approved" stackId="d" fill={C.good} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
-                  <Bar dataKey="review" name="Manual review" stackId="d" fill={C.warning} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
-                  <Bar dataKey="escalate" name="Investigation" stackId="d" fill={C.critical} stroke={SURFACE} strokeWidth={2}
-                       radius={[3, 3, 0, 0]} isAnimationActive={false} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <WhenVisible className="h-72"><PerDayChart data={perDay(list)} /></WhenVisible>
           </Panel>
         </section>
 
