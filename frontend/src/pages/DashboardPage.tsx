@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AppNav } from '@/components/AppNav'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Panel } from '@/components/Panel'
 import { getStats, listCases, type CaseSummary, type DashboardStats } from '@/lib/api'
 import { isMock } from '@/lib/config'
 import { riskLevel } from '@/lib/labels'
@@ -10,13 +10,13 @@ import { mockCases, mockStats } from '@/lib/mockDashboard'
 import type { CaseStatus } from '@/lib/types'
 
 // Culori de stare (fixe, din ghidul de grafice) — mereu împreună cu iconiță + etichetă.
-const C = { good: '#0ca30c', warning: '#fab219', critical: '#d03b3b', manual: '#94a3b8', orb: '#2a78d6' }
+const C = { good: '#0ca30c', warning: '#fab219', critical: '#d03b3b', manual: '#98A2B3', orb: '#1F2328' }
 const SURFACE = '#ffffff'
 const LEGEND_ORDER = ['clear', 'review', 'escalate']
 
 const STATUS_LABEL: Record<CaseStatus, string> = {
-  received: 'primit', processing: 'în lucru', awaiting_review: 'de revizuit', cleared: 'aprobat',
-  rejected: 'respins', escalated: 'investigație', error: 'eroare',
+  received: 'Primit', processing: 'În analiză', awaiting_review: 'Așteaptă decizia', cleared: 'Aprobat',
+  rejected: 'Respins', escalated: 'La investigație', error: 'Eroare',
 }
 
 const ron = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`
@@ -37,15 +37,16 @@ function useDashboard() {
   return { cases, stats, mock }
 }
 
-function Kpi({ icon, label, value, sub }: { icon: string; label: string; value: string; sub?: string }) {
+function Kpi({ label, value, unit, note }: { label: string; value: string; unit?: string; note?: string }) {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="text-xl text-slate-700">{icon} {label}</div>
-        <div className="mt-1 text-6xl font-bold tabular-nums tracking-tight text-slate-900">{value}</div>
-        {sub && <div className="mt-2 text-lg text-slate-600">{sub}</div>}
-      </CardContent>
-    </Card>
+    <div className="bg-surface px-6 py-5">
+      <div className="text-[15px] font-medium text-ink-2">{label}</div>
+      <div className="mt-2 flex items-baseline gap-2">
+        <span className="font-condensed text-6xl font-bold leading-none tabular-nums text-ink">{value}</span>
+        {unit && <span className="text-xl font-medium text-ink-2">{unit}</span>}
+      </div>
+      {note && <div className="mt-2 text-[15px] text-ink-3">{note}</div>}
+    </div>
   )
 }
 
@@ -80,9 +81,9 @@ export function DashboardPage() {
 
   if (stats.isError || cases.isError) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-canvas">
         <AppNav />
-        <p className="p-8 text-xl text-red-700">Cifrele nu au putut fi încărcate. Verifică backend-ul sau deschide cu <code>?mock=1</code>.</p>
+        <p className="p-8 text-lg text-danger">Cifrele nu s-au încărcat: serverul nu răspunde. Verifică backend-ul sau deschide demo-ul cu ?mock=1.</p>
       </div>
     )
   }
@@ -92,114 +93,119 @@ export function DashboardPage() {
   const orbH = s && a ? (s.cases_processed * a.review_minutes_per_case) / 60 : 0
   const timeData = [
     { name: 'Verificare manuală', hours: Math.round(manualH), fill: C.manual },
-    { name: 'Cu ORB (doar revizuire)', hours: Math.round(orbH * 10) / 10, fill: C.orb },
+    { name: 'Cu ORB, doar revizuire', hours: Math.round(orbH * 10) / 10, fill: C.orb },
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-canvas text-ink">
       <AppNav />
-      <main className="space-y-6 p-4 md:p-6">
-        {mock && (
-          <div className="rounded-xl border-2 border-amber-500 bg-amber-100 px-5 py-3 text-xl font-bold text-amber-950">
-            ⚠️ DATE DE DEMO: cifrele de mai jos sunt inventate, nu vin de la backend.
-          </div>
-        )}
+      <div className="border-b border-line bg-surface px-4 py-5 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <h1 className="text-4xl font-bold">Dashboard</h1>
-          {!mock && <span className="text-lg text-slate-500">se actualizează la 5 secunde</span>}
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight">Privire de ansamblu</h1>
+            <p className="mt-1 text-base text-ink-2">Toate cererile de credit verificate de ORB, din ultimele 21 de zile.</p>
+          </div>
+          {!mock && <span className="flex items-center gap-2 text-sm text-ink-2"><span className="h-2 w-2 rounded-full bg-ok" />Actualizare la 5 secunde</span>}
         </div>
+        {mock && (
+          <p className="mt-4 rounded-sm border border-warn bg-warn-bg px-4 py-3 text-base font-semibold text-warn">
+            Date de demo: cifrele de pe această pagină sunt inventate și nu vin de la backend.
+          </p>
+        )}
+      </div>
 
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Kpi icon="📁" label="Dosare procesate" value={s ? num(s.cases_processed) : '—'}
-               sub={s ? `cost AI total: $${s.ai_cost_usd.toFixed(2)}` : undefined} />
-          <Kpi icon="⏱️" label="Timp economisit" value={s ? `${num(s.hours_saved)} ore` : '—'}
-               sub={s ? `≈ ${ron(s.money_saved_ron)} cost de personal` : undefined} />
-          <Kpi icon="⛔" label="Fraude oprite" value={s ? num(s.frauds_stopped) : '—'}
-               sub={s ? `${ron(s.amount_stopped_ron)} credite blocate` : undefined} />
-          <Kpi icon="🛡️" label="Date personale protejate" value={s ? num(s.pii_values_protected) : '—'}
-               sub={s ? `${s.external_calls_with_pii === 0 ? '✅' : '⚠️'} ${s.external_calls_with_pii} trimise către AI-ul din cloud` : undefined} />
+      <main className="space-y-6 px-4 py-6 md:px-8">
+        <section aria-label="Indicatori" className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
+          <Kpi label="Dosare verificate" value={s ? num(s.cases_processed) : '—'}
+               note={s ? `Cost AI: ${s.ai_cost_usd.toLocaleString('ro-RO', { minimumFractionDigits: 2 })} $ în total` : undefined} />
+          <Kpi label="Timp de lucru economisit" value={s ? num(s.hours_saved) : '—'} unit="ore"
+               note={s ? `Echivalentul a ${ron(s.money_saved_ron)} cost de personal` : undefined} />
+          <Kpi label="Fraude oprite" value={s ? num(s.frauds_stopped) : '—'}
+               note={s ? `${ron(s.amount_stopped_ron)} în credite blocate` : undefined} />
+          <Kpi label="Date personale protejate" value={s ? num(s.pii_values_protected) : '—'}
+               note={s ? (s.external_calls_with_pii === 0 ? 'Niciuna trimisă către AI-ul din cloud' : `${s.external_calls_with_pii} trimise către cloud`) : undefined} />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Ore de muncă pentru {s ? num(s.cases_processed) : '…'} dosare</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={timeData} layout="vertical" margin={{ left: 8, right: 64 }}>
-                    <XAxis type="number" hide />
-                    <YAxis type="category" dataKey="name" width={240} tickLine={false} axisLine={false}
-                           tick={{ fill: '#334155', fontSize: 20 }} />
-                    <Tooltip cursor={{ fill: 'rgba(15,23,42,0.04)' }} formatter={(v) => [`${Number(v).toLocaleString('ro-RO')} ore`, 'Timp']} />
-                    <Bar dataKey="hours" radius={[0, 4, 4, 0]} barSize={44} isAnimationActive={false}>
-                      <LabelList dataKey="hours" position="right" formatter={(v) => `${Number(v).toLocaleString('ro-RO')} h`}
-                                 style={{ fill: '#0f172a', fontSize: 22, fontWeight: 700 }} />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              {a && (
-                <p className="text-base text-slate-600">
-                  Presupuneri configurabile: {a.manual_minutes_per_case} min manual / dosar, {a.review_minutes_per_case} min
-                  revizuire cu ORB, {a.cost_per_hour_ron} lei / oră. De confirmat cu mentorii Raiffeisen.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <Panel title={`Ore de lucru pentru ${s ? num(s.cases_processed) : '…'} dosare`}>
+            <div className="h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={timeData} layout="vertical" margin={{ left: 8, right: 72 }}>
+                  <XAxis type="number" hide />
+                  <YAxis type="category" dataKey="name" width={220} tickLine={false} axisLine={false}
+                         tick={{ fill: '#1F2328', fontSize: 18 }} />
+                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} formatter={(v) => [`${Number(v).toLocaleString('ro-RO')} ore`, 'Timp']} />
+                  <Bar dataKey="hours" radius={[0, 3, 3, 0]} barSize={40} isAnimationActive={false}>
+                    <LabelList dataKey="hours" position="right" formatter={(v) => `${Number(v).toLocaleString('ro-RO')} h`}
+                               style={{ fill: '#1F2328', fontSize: 20, fontWeight: 600 }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {a && (
+              <p className="mt-2 text-[15px] text-ink-3">
+                Presupuneri, de confirmat cu Raiffeisen: {a.manual_minutes_per_case} minute de verificare manuală pe dosar,
+                {' '}{a.review_minutes_per_case} minut de revizuire cu ORB, {a.cost_per_hour_ron} lei pe oră.
+              </p>
+            )}
+          </Panel>
 
-          <Card>
-            <CardHeader><CardTitle className="text-2xl">Dosare pe zi, după recomandarea ORB</CardTitle></CardHeader>
-            <CardContent>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={perDay(list)} margin={{ left: -16, right: 8 }}>
-                    <CartesianGrid vertical={false} stroke="#e2e8f0" />
-                    <XAxis dataKey="day" tickLine={false} axisLine={{ stroke: '#cbd5e1' }} tick={{ fill: '#475569', fontSize: 16 }}
-                           interval="preserveStartEnd" minTickGap={32} />
-                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: '#475569', fontSize: 16 }} />
-                    <Tooltip cursor={{ fill: 'rgba(15,23,42,0.04)' }} />
-                    <Legend wrapperStyle={{ fontSize: 18 }} itemSorter={(i) => LEGEND_ORDER.indexOf(String(i.dataKey))}
-                            formatter={(v) => <span style={{ color: '#334155' }}>{v}</span>} />
-                    <Bar dataKey="clear" name="✅ Aprobat automat" stackId="d" fill={C.good} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
-                    <Bar dataKey="review" name="⚠️ Verificare manuală" stackId="d" fill={C.warning} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
-                    <Bar dataKey="escalate" name="⛔ Investigație" stackId="d" fill={C.critical} stroke={SURFACE} strokeWidth={2}
-                         radius={[4, 4, 0, 0]} isAnimationActive={false} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          <Panel title="Dosare pe zi, după recomandarea ORB">
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={perDay(list)} margin={{ left: -16, right: 8 }}>
+                  <CartesianGrid vertical={false} stroke="#E4E7EC" />
+                  <XAxis dataKey="day" tickLine={false} axisLine={{ stroke: '#D5D9DF' }} tick={{ fill: '#4E5764', fontSize: 15 }}
+                         interval="preserveStartEnd" minTickGap={32} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: '#4E5764', fontSize: 15 }} />
+                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} />
+                  <Legend wrapperStyle={{ fontSize: 16 }} itemSorter={(i) => LEGEND_ORDER.indexOf(String(i.dataKey))}
+                          formatter={(v) => <span style={{ color: '#1F2328' }}>{v}</span>} />
+                  <Bar dataKey="clear" name="Aprobat automat" stackId="d" fill={C.good} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
+                  <Bar dataKey="review" name="Verificare manuală" stackId="d" fill={C.warning} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
+                  <Bar dataKey="escalate" name="Investigație" stackId="d" fill={C.critical} stroke={SURFACE} strokeWidth={2}
+                       radius={[3, 3, 0, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
         </section>
 
-        <Card>
-          <CardHeader><CardTitle className="text-2xl">Dosare recente</CardTitle></CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-xl">
-              <thead className="border-b text-base text-slate-500">
-                <tr><th className="py-2">Dosar</th><th>Data</th><th>Suma</th><th>Risc</th><th>Stare</th></tr>
-              </thead>
-              <tbody>
-                {list.slice(0, 10).map((c) => {
-                  const lvl = c.risk != null ? riskLevel(c.risk) : null
-                  const openable = !mock || c.id === 'case_maria'
-                  return (
-                    <tr key={c.id} className="border-b last:border-0">
-                      <td className="py-3 font-mono text-lg">
-                        {openable ? <Link to={`/cases/${c.id}`} className="text-blue-700 underline">{c.id}</Link> : c.id}
-                      </td>
-                      <td>{new Date(c.created_at).toLocaleDateString('ro-RO')}</td>
-                      <td className="tabular-nums">{c.requested_amount_ron ? ron(c.requested_amount_ron) : '—'}</td>
-                      <td className={lvl?.cls}>{lvl ? `${lvl.icon} ${Math.round(c.risk! * 100)}` : '…'}</td>
-                      <td>{STATUS_LABEL[c.status]}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
+        <Panel title="Cereri recente" bodyClassName="p-0 overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left text-base">
+            <thead className="bg-canvas/60 text-sm text-ink-2">
+              <tr className="border-b border-line">
+                <th className="px-6 py-3 font-medium">Dosar</th><th className="px-4 font-medium">Depus</th>
+                <th className="px-4 text-right font-medium">Suma</th><th className="px-4 font-medium">Risc</th><th className="px-6 font-medium">Stare</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.slice(0, 10).map((c) => {
+                const lvl = c.risk != null ? riskLevel(c.risk) : null
+                const Icon = lvl?.icon
+                const openable = !mock || c.id === 'case_maria'
+                return (
+                  <tr key={c.id} className="border-b border-line last:border-0 hover:bg-canvas/50">
+                    <td className="px-6 py-3.5">
+                      {openable ? <Link to={`/cases/${c.id}`} className="font-medium text-info hover:underline">{c.id}</Link> : <span className="text-ink-2">{c.id}</span>}
+                    </td>
+                    <td className="px-4 text-ink-2">{new Date(c.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}</td>
+                    <td className="px-4 text-right tabular-nums">{c.requested_amount_ron ? ron(c.requested_amount_ron) : '—'}</td>
+                    <td className="px-4">
+                      {lvl && Icon ? (
+                        <span className={`flex items-center gap-2 font-semibold tabular-nums ${lvl.text}`}>
+                          <Icon className="h-4 w-4" aria-hidden />{Math.round(c.risk! * 100)}
+                          <span className="font-normal text-ink-3">{lvl.label.replace('Risc ', '')}</span>
+                        </span>
+                      ) : '—'}
+                    </td>
+                    <td className="px-6 text-ink-2">{STATUS_LABEL[c.status]}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </Panel>
       </main>
     </div>
   )

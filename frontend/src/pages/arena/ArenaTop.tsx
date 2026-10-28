@@ -3,29 +3,26 @@ import { getLeaderboard, savedNick } from '@/lib/arena'
 import { cn } from '@/lib/utils'
 import { ArenaShell } from './ArenaShell'
 
-const MEDAL = ['🥇', '🥈', '🥉']
-
 export function ArenaTop() {
   const q = useQuery({ queryKey: ['arena-top'], queryFn: getLeaderboard, refetchInterval: 5000 })
   const me = savedNick().toLowerCase()
   return (
     <ArenaShell>
-      <h2 className="text-2xl font-bold">🏆 Clasament</h2>
-      {q.isError && <p className="mt-3 text-red-400">Serverul nu răspunde.</p>}
-      <ol className="mt-4 space-y-2">
+      <h2 className="text-2xl font-semibold">Clasament</h2>
+      {q.isError && <p className="mt-3 text-night-danger">Serverul nu răspunde.</p>}
+      <ol className="mt-4 divide-y divide-night-line overflow-hidden rounded-md border border-night-line">
         {q.data?.top.map((r) => (
-          <li key={r.rank} className={cn('flex items-center gap-3 rounded-xl border p-4 text-lg',
-            r.nickname.toLowerCase() === me ? 'border-amber-400 bg-amber-400/10' : 'border-slate-800 bg-slate-900')}>
-            <span className="w-9 text-center text-2xl">{MEDAL[r.rank - 1] ?? r.rank}</span>
-            <span className="flex-1 truncate font-semibold">{r.nickname}</span>
-            <span className="tabular-nums font-bold">{r.points.toLocaleString('ro-RO')}</span>
+          <li key={r.rank} className={cn('flex items-center gap-4 px-4 py-4 text-lg', r.nickname.toLowerCase() === me ? 'bg-brand/10' : 'bg-night-2')}>
+            <span className={cn('w-8 text-right font-condensed text-2xl font-bold tabular-nums', r.rank <= 3 ? 'text-brand' : 'text-night-mute')}>{r.rank}</span>
+            <span className="flex-1 truncate font-medium">{r.nickname}{r.nickname.toLowerCase() === me && <span className="ml-2 text-sm text-brand">tu</span>}</span>
+            <span className="font-semibold tabular-nums">{r.points.toLocaleString('ro-RO')}</span>
           </li>
         ))}
-        {q.data && q.data.top.length === 0 && <p className="text-slate-400">Nimeni încă. Fii primul!</p>}
       </ol>
+      {q.data && q.data.top.length === 0 && <p className="mt-4 text-night-mute">Nimeni nu a jucat încă. Fii primul.</p>}
       {q.data && (
-        <p className="mt-6 text-center text-base text-slate-400">
-          {q.data.stats.players} jucători · {q.data.stats.caught} falsuri prinse · {q.data.stats.passed} au trecut
+        <p className="mt-6 text-center text-base text-night-mute">
+          {q.data.stats.players} jucători, {q.data.stats.caught} falsuri prinse, {q.data.stats.passed} au trecut
         </p>
       )}
     </ArenaShell>

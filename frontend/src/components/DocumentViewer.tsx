@@ -1,100 +1,108 @@
+import { ImageOff, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getDocumentImage } from '@/lib/api'
 import { DOC_LABEL, SEVERITY } from '@/lib/labels'
-import { cn } from '@/lib/utils'
 import type { Document, Finding } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 type View = 'original' | 'redacted' | 'ela'
-const VIEWS: { id: View; label: string }[] = [
-  { id: 'original', label: 'Original' },
-  { id: 'redacted', label: 'Ce a văzut AI-ul' },
-  { id: 'ela', label: 'Harta de editare (ELA)' },
+const VIEWS: { id: View; label: string; hint: string }[] = [
+  { id: 'redacted', label: 'Ce a văzut AI-ul', hint: 'Datele personale sunt acoperite' },
+  { id: 'original', label: 'Original', hint: 'Documentul primit' },
+  { id: 'ela', label: 'Harta de editare', hint: 'Zonele luminoase au fost modificate' },
 ]
 
-/** Un document cu cele 3 vederi și chenarele (bbox) problemelor găsite pe el. */
+/** Actele din dosar: un tab pe document, trei vederi, chenare peste dovezi. */
 export function DocumentViewer({
-  caseId, doc, findings, mock, highlighted,
+  caseId, docs, findings, mock, highlighted, docId, onDocChange,
 }: {
   caseId: string
-  doc: Document
+  docs: Document[]
   findings: Finding[]
   mock: boolean
   highlighted?: Finding | null
+  docId: string
+  onDocChange: (id: string) => void
 }) {
   const [view, setView] = useState<View>('redacted')
-  const [src, setSrc] = useState<string | null>(null)
-  const [failed, setFailed] = useState(false)
-  const page = doc.pages[0] ?? { page: 1, width: 1654, height: 2339 }
+  const [img, setImg] = useState<{ key: string; src: string | null; failed: boolean }>({ key: '', src: null, failed: false })
+  const doc = docs.find((d) => d.id === docId) ?? docs[0]
+  const page = doc?.pages[0] ?? { page: 1, width: 1654, height: 2339 }
+  const key = `${doc?.id}|${view}`
 
   useEffect(() => {
-    setSrc(null)
-    setFailed(false)
-    if (mock) return
+    if (mock || !doc) return
     let url: string | null = null
     let cancelled = false
     getDocumentImage(caseId, doc.id, view, page.page)
-      .then((u) => { url = u; if (!cancelled) setSrc(u) })
-      .catch(() => { if (!cancelled) setFailed(true) })
+      .then((u) => { url = u; if (!cancelled) setImg({ key, src: u, failed: false }) })
+      .catch(() => { if (!cancelled) setImg({ key, src: null, failed: true }) })
     return () => { cancelled = true; if (url) URL.revokeObjectURL(url) }
-  }, [caseId, doc.id, view, page.page, mock])
+  }, [caseId, doc, view, page.page, mock, key])
 
-  const boxes = findings.filter(
-    (f) => f.evidence?.doc_id === doc.id && f.evidence.bbox && (f.evidence.page ?? 1) === page.page,
-  )
+  if (!doc) return null
+  const current = img.key === key ? img : { src: null, failed: false }
+  const boxes = findings.filter((f) => f.evidence?.doc_id === doc.id && f.evidence.bbox && (f.evidence.page ?? 1) === page.page)
+  const flagged = (id: string) => findings.some((f) => f.evidence?.doc_id === id && f.severity !== 'info')
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-xl font-semibold">
-          {DOC_LABEL[doc.type]} <span className="text-base font-normal text-slate-500">· {doc.filename}</span>
-        </h3>
-        <Tabs value={view} onValueChange={(v) => setView(v as View)}>
-          <TabsList>
-            {VIEWS.map((v) => <TabsTrigger key={v.id} value={v.id}>{v.label}</TabsTrigger>)}
-          </TabsList>
-        </Tabs>
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line px-5">
+        <div role="tablist" aria-label="Documente" className="flex gap-5">
+          {docs.map((d) => (
+            <button key={d.id} role="tab" aria-selected={d.id === doc.id} type="button" onClick={() => onDocChange(d.id)}
+              className={cn('flex items-center gap-2 border-b-2 py-3.5 text-[15px] font-medium',
+                d.id === doc.id ? 'border-ink text-ink' : 'border-transparent text-ink-2 hover:text-ink')}>
+              {DOC_LABEL[d.type]}
+              {flagged(d.id) && <span className="h-2 w-2 rounded-full bg-danger" aria-label="are dovezi" />}
+            </button>
+          ))}
+        </div>
+        <div className="mb-2 flex overflow-hidden rounded-sm border border-line" role="group" aria-label="Vedere">
+          {VIEWS.map((v) => (
+            <button key={v.id} type="button" title={v.hint} aria-pressed={view === v.id} onClick={() => setView(v.id)}
+              className={cn('px-3 py-1.5 text-sm font-medium', view === v.id ? 'bg-ink text-white' : 'text-ink-2 hover:text-ink')}>
+              {v.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Containerul are raportul paginii, iar chenarele sunt în procente → se scalează cu imaginea. */}
-      <div
-        className="relative w-full overflow-hidden rounded-lg border bg-slate-100"
-        style={{ aspectRatio: `${page.width} / ${page.height}` }}
-      >
-        {src ? (
-          <img src={src} alt={`${DOC_LABEL[doc.type]} — ${view}`} className="absolute inset-0 h-full w-full object-contain" />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-slate-500">
-            {mock ? (
-              <pre className="max-w-full whitespace-pre-wrap font-mono text-sm">{doc.redacted_text}</pre>
-            ) : failed ? 'Imaginea nu a putut fi încărcată' : 'Se încarcă…'}
-          </div>
-        )}
-        {boxes.map((f, i) => {
-          const [x0, y0, x1, y1] = f.evidence!.bbox!
-          const active = highlighted === f
-          return (
-            <div
-              key={i}
-              title={f.message}
-              className={cn(
-                'absolute rounded-sm border-[3px] transition-all',
-                f.severity === 'critical' || f.severity === 'high' ? 'border-red-600 bg-red-500/15' : 'border-amber-500 bg-amber-400/15',
-                active && 'ring-4 ring-blue-500 ring-offset-2',
+      <div className="bg-canvas p-5">
+        <div className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-sm bg-surface ring-1 ring-line"
+             style={{ aspectRatio: `${page.width} / ${page.height}` }}>
+          {current.src ? (
+            <img src={current.src} alt={`${DOC_LABEL[doc.type]}: ${VIEWS.find((v) => v.id === view)?.label}`}
+                 className="absolute inset-0 h-full w-full object-contain" />
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center text-ink-3">
+              {mock ? (
+                <pre className="max-w-full whitespace-pre-wrap text-left text-sm leading-relaxed text-ink-2">{doc.redacted_text}</pre>
+              ) : current.failed ? (
+                <><ImageOff className="h-6 w-6" aria-hidden />Vederea „{VIEWS.find((v) => v.id === view)?.label}” nu există pentru acest document.</>
+              ) : (
+                <><Loader2 className="h-6 w-6 animate-spin" aria-hidden />Se încarcă documentul</>
               )}
-              style={{
-                left: `${(x0 / page.width) * 100}%`,
-                top: `${(y0 / page.height) * 100}%`,
-                width: `${((x1 - x0) / page.width) * 100}%`,
-                height: `${((y1 - y0) / page.height) * 100}%`,
-              }}
-            >
-              <span className={cn('absolute -top-7 left-0 whitespace-nowrap rounded border px-1.5 text-xs font-semibold', SEVERITY[f.severity].cls)}>
-                {SEVERITY[f.severity].icon} {f.code}
-              </span>
             </div>
-          )
-        })}
+          )}
+          {boxes.map((f, i) => {
+            const [x0, y0, x1, y1] = f.evidence!.bbox!
+            const sev = SEVERITY[f.severity]
+            return (
+              <div key={i} title={f.message}
+                className={cn('absolute border-2', f.severity === 'critical' || f.severity === 'high' ? 'border-danger bg-danger/10' : 'border-warn bg-warn/10',
+                  highlighted === f && 'outline outline-2 outline-offset-4 outline-info')}
+                style={{ left: `${(x0 / page.width) * 100}%`, top: `${(y0 / page.height) * 100}%`,
+                         width: `${((x1 - x0) / page.width) * 100}%`, height: `${((y1 - y0) / page.height) * 100}%` }}>
+                <span className={cn('absolute -top-6 left-0 whitespace-nowrap rounded-sm px-1.5 py-0.5 text-xs font-semibold text-white',
+                  f.severity === 'critical' || f.severity === 'high' ? 'bg-danger' : 'bg-warn')}>
+                  {sev.label}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+        <p className="mx-auto mt-3 max-w-3xl text-sm text-ink-3">{doc.filename} · {VIEWS.find((v) => v.id === view)?.hint}</p>
       </div>
     </div>
   )
