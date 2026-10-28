@@ -78,8 +78,8 @@ export function saveNick(n: string) {
 }
 
 export const AGENT_RO: Record<string, string> = {
-  paznic: '🛡️ Paznicul', functionar: '📄 Funcționarul', verificator: '🔍 Verificatorul',
-  detector: '🤖 Detectorul', detectiv: '🕵️ Detectivul', compliance: '⚖️ Compliance',
+  paznic: 'Paznicul', functionar: 'Funcționarul', verificator: 'Verificatorul',
+  detector: 'Detectorul', detectiv: 'Detectivul', compliance: 'Compliance',
 }
 
 export const lei = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`

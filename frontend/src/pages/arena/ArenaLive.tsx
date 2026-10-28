@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import QRCode from 'qrcode'
 import { useEffect, useState } from 'react'
+import { AlertOctagon, Brain, CircleHelp, ShieldCheck, Trophy } from 'lucide-react'
 import { AGENT_RO, getLeaderboard, liveUrl, type Submission } from '@/lib/arena'
 import { apiUrl } from '@/lib/config'
 import { cn } from '@/lib/utils'
@@ -32,12 +33,15 @@ interface AttackerRound { round: number; outcome: 'passed' | 'caught' | 'invalid
 interface AttackerStatus { running: boolean; rounds: AttackerRound[]; passed: number; caught: number }
 interface LiveEvent { type: string; message: string; data?: Record<string, unknown> | null }
 
-function line(s: Submission): { icon: string; text: string; cls: string } {
-  if (s.outcome === 'passed') return { icon: '🏆', text: `${s.nickname} a păcălit agenții! +${s.points}`, cls: 'text-emerald-300' }
-  if (s.outcome === 'caught') {
-    return { icon: '🚨', text: `${s.nickname} prins de ${s.caught_by.map((a) => AGENT_RO[a] ?? a).join(', ')}`, cls: 'text-slate-100' }
+const agentName = (a: string) => AGENT_RO[a] ?? a
+
+function line(s: Submission): { icon: typeof Trophy; text: string; tone: string } {
+  if (s.outcome === 'passed') {
+    // 0 puncte = fals repetat sau plafon atins → nu afișăm „+0”
+    return { icon: Trophy, text: `${s.nickname} a păcălit agenții${s.points ? `, +${s.points}` : ''}`, tone: 'text-brand' }
   }
-  return { icon: '🤔', text: `${s.nickname}: fals invalid`, cls: 'text-slate-400' }
+  if (s.outcome === 'caught') return { icon: AlertOctagon, text: `${s.nickname}, prins de ${s.caught_by.map(agentName).join(' și ')}`, tone: 'text-night-ink' }
+  return { icon: CircleHelp, text: `${s.nickname}: fals invalid`, tone: 'text-night-mute' }
 }
 
 /** Ecranul de pe proiector (1920×1080): QR, flux live, top 10, cât de des trec falsurile. */
@@ -92,93 +96,97 @@ export function ArenaLive() {
   const passRate = st && st.valid ? Math.round((st.passed / st.valid) * 100) : 0
 
   return (
-    <div className="grid h-dvh grid-cols-[minmax(0,5fr)_minmax(0,7fr)_minmax(0,5fr)] gap-8 overflow-hidden bg-slate-950 p-10 text-slate-100">
-      <section className="flex flex-col items-center justify-center text-center">
-        <h1 className="text-5xl font-black">🎮 ORB Arena</h1>
-        <p className="mt-3 text-2xl text-slate-300">Păcălește agenții AI ai băncii</p>
-        {qr && <img src={qr} alt="Cod QR pentru Arena" className="mt-8 w-[min(100%,26rem)] rounded-2xl bg-white p-3" />}
-        <p className="mt-6 break-all font-mono text-2xl text-amber-300">{url.replace(/^https?:\/\//, '').split('?')[0]}</p>
-        {isLocal(base) && (
-          <p className="mt-3 rounded-lg bg-red-500/20 px-3 py-2 text-lg text-red-200">
-            Telefoanele nu pot deschide localhost. Deschide pagina cu ?base=https://adresa-publică
-          </p>
-        )}
-        <p className="mt-4 text-xl text-slate-300">⚠️ Joc demonstrativ. Nu încărcați documente reale.</p>
-      </section>
-
-      <section className="flex min-h-0 flex-col">
-        <h2 className="flex items-center gap-3 text-3xl font-bold">
-          Live <span className={cn('h-3 w-3 rounded-full', connected ? 'bg-emerald-400' : 'bg-slate-600')} aria-label={connected ? 'conectat' : 'deconectat'} />
-        </h2>
-        {learning.length > 0 && (
-          <div className={cn('mt-4 rounded-2xl border-2 p-5 transition-colors',
-            fresh ? 'border-amber-400 bg-amber-400/15' : 'border-slate-800 bg-slate-900')}>
-            <div className="text-xl font-semibold text-amber-300">🧠 Agenții au învățat</div>
-            {learning.map((l) => (
-              <p key={l.at} className={cn('mt-2 text-2xl', l === learning[0] ? 'text-slate-50' : 'text-slate-400')}>
-                {l.approved ? '✅' : '📝'} {l.message}
-              </p>
-            ))}
+    <div className="flex h-dvh flex-col overflow-hidden bg-night text-night-ink">
+      <div className="h-1.5 shrink-0 bg-brand" />
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,5fr)_minmax(0,7fr)_minmax(0,5fr)] gap-12 p-12">
+        <section className="flex flex-col justify-center">
+          <div className="flex items-center gap-4">
+            <span className="grid h-14 w-14 place-items-center rounded-sm bg-brand font-condensed text-3xl font-bold text-ink">O</span>
+            <h1 className="text-5xl font-bold tracking-tight">ORB Arena</h1>
           </div>
-        )}
-        <ul className="mt-4 min-h-0 flex-1 space-y-3 overflow-hidden">
-          {board.data?.feed.slice(0, 9).map((s, i) => {
-            const l = line(s)
-            return (
-              <li key={s.id} className={cn('rounded-xl border border-slate-800 bg-slate-900 px-5 py-4 text-2xl', l.cls, i === 0 && 'border-amber-400')}>
-                <span className="mr-3">{l.icon}</span>{l.text}
-              </li>
-            )
-          })}
-          {board.data && board.data.feed.length === 0 && <li className="text-2xl text-slate-500">Așteptăm primul fals…</li>}
-        </ul>
-      </section>
+          <p className="mt-4 text-2xl leading-snug text-night-mute">Scanează codul și încearcă să păcălești agenții băncii cu un fluturaș fals.</p>
+          {qr && <img src={qr} alt="Cod QR pentru Arena" className="mt-8 w-[min(100%,24rem)] rounded-md bg-white p-3" />}
+          <p className="mt-5 break-all text-2xl font-semibold text-brand">{url.replace(/^https?:\/\//, '').split('?')[0]}</p>
+          {isLocal(base) && (
+            <p className="mt-3 rounded-sm border border-night-danger/60 bg-night-danger/10 px-3 py-2 text-lg text-night-danger">
+              Telefoanele nu pot deschide localhost. Deschide pagina cu ?base=https://adresa-publică
+            </p>
+          )}
+          <p className="mt-4 text-xl text-night-mute">Joc demonstrativ. Nu încărca documente reale.</p>
+        </section>
 
-      <section className="flex min-h-0 flex-col">
-        <h2 className="text-3xl font-bold">🏆 Top 10</h2>
-        <ol className="mt-4 space-y-2">
-          {board.data?.top.map((r) => (
-            <li key={r.rank} className="flex items-center gap-4 text-2xl">
-              <span className="w-10 text-right font-bold text-slate-400">{r.rank}.</span>
-              <span className="flex-1 truncate">{r.nickname}</span>
-              <span className="tabular-nums font-bold">{r.points.toLocaleString('ro-RO')}</span>
-            </li>
-          ))}
-        </ol>
-        {attacker && attacker.rounds.length > 0 && (
-          <div className="mt-auto rounded-2xl border border-slate-800 bg-slate-900 p-5">
-            <div className="text-xl text-slate-300">😈 AI atacator vs 🛡️ AI apărător {attacker.running ? '· rulează' : ''}</div>
-            <ol className="mt-3 flex flex-wrap gap-2" aria-label="Rundele atacatorului">
-              {attacker.rounds.map((r) => (
-                <li key={r.round} title={r.reasons.join('; ')}
-                    className={cn('flex h-14 w-14 flex-col items-center justify-center rounded-lg text-sm font-semibold',
-                      r.outcome === 'passed' ? 'bg-red-500/25 text-red-100' : r.outcome === 'caught' ? 'bg-emerald-500/20 text-emerald-100' : 'bg-slate-800 text-slate-400')}>
-                  <span className="text-xl">{r.outcome === 'passed' ? '😈' : r.outcome === 'caught' ? '🛡️' : '·'}</span>R{r.round}
-                </li>
+        <section className="flex min-h-0 flex-col">
+          <h2 className="flex items-center gap-3 text-3xl font-semibold">
+            Încercări în timp real
+            <span className={cn('h-3 w-3 rounded-full', connected ? 'bg-night-ok' : 'bg-night-line')} aria-label={connected ? 'conectat' : 'deconectat'} />
+          </h2>
+          {learning.length > 0 && (
+            <div className={cn('mt-5 rounded-md border p-5 transition-colors', fresh ? 'border-brand bg-brand/10' : 'border-night-line bg-night-2')}>
+              <div className="flex items-center gap-2 text-xl font-semibold text-brand"><Brain className="h-6 w-6" aria-hidden />Agenții au învățat</div>
+              {learning.map((l) => (
+                <p key={l.at} className={cn('mt-2 text-2xl leading-snug', l === learning[0] ? 'text-night-ink' : 'text-night-mute')}>{l.message}</p>
               ))}
-            </ol>
-            <div className="mt-3 flex justify-between text-xl">
-              <span>🛡️ {attacker.caught} prinse</span><span>😈 {attacker.passed} au trecut</span>
             </div>
-            {attackerLine && <p className="mt-2 line-clamp-2 text-lg text-slate-400">{attackerLine}</p>}
-          </div>
-        )}
-        {st && !(attacker && attacker.rounds.length > 0) && (
-          <div className="mt-auto rounded-2xl border border-slate-800 bg-slate-900 p-5">
-            <div className="text-xl text-slate-300">Jucători vs agenții ORB</div>
-            <div className="mt-3 flex h-6 overflow-hidden rounded-full bg-slate-800" role="img"
-                 aria-label={`${st.caught} prinse, ${st.passed} trecute`}>
-              <div className="bg-emerald-500" style={{ width: `${100 - passRate}%` }} />
-              <div className="ml-0.5 bg-red-500" style={{ width: `${passRate}%` }} />
+          )}
+          <ul className="mt-5 min-h-0 flex-1 divide-y divide-night-line overflow-hidden">
+            {board.data?.feed.slice(0, 9).map((s, i) => {
+              const l = line(s)
+              return (
+                <li key={s.id} className={cn('flex items-center gap-4 py-4 text-2xl', l.tone, i === 0 && 'font-semibold')}>
+                  <l.icon className="h-7 w-7 shrink-0" aria-hidden />{l.text}
+                </li>
+              )
+            })}
+            {board.data && board.data.feed.length === 0 && <li className="py-4 text-2xl text-night-mute">Așteptăm prima încercare.</li>}
+          </ul>
+        </section>
+
+        <section className="flex min-h-0 flex-col">
+          <h2 className="text-3xl font-semibold">Top 10</h2>
+          <ol className="mt-5 divide-y divide-night-line">
+            {board.data?.top.map((r) => (
+              <li key={r.rank} className="flex items-center gap-4 py-2.5 text-2xl">
+                <span className={cn('w-9 text-right font-condensed font-bold tabular-nums', r.rank <= 3 ? 'text-brand' : 'text-night-mute')}>{r.rank}</span>
+                <span className="flex-1 truncate">{r.nickname}</span>
+                <span className="font-semibold tabular-nums">{r.points.toLocaleString('ro-RO')}</span>
+              </li>
+            ))}
+          </ol>
+          {attacker && attacker.rounds.length > 0 ? (
+            <div className="mt-auto rounded-md border border-night-line bg-night-2 p-5">
+              <div className="text-xl font-semibold">Atacatorul AI, pe runde{attacker.running ? ' (rulează)' : ''}</div>
+              <ol className="mt-4 flex flex-wrap gap-2" aria-label="Rundele atacatorului">
+                {attacker.rounds.map((r) => (
+                  <li key={r.round} title={r.reasons.join('; ')}
+                      className={cn('flex h-14 w-14 flex-col items-center justify-center rounded-sm border text-sm font-semibold',
+                        r.outcome === 'passed' ? 'border-night-danger bg-night-danger/15 text-night-danger'
+                          : r.outcome === 'caught' ? 'border-night-ok/60 bg-night-ok/10 text-night-ok' : 'border-night-line text-night-mute')}>
+                    {r.outcome === 'passed' ? <AlertOctagon className="h-5 w-5" aria-hidden /> : <ShieldCheck className="h-5 w-5" aria-hidden />}
+                    R{r.round}
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-4 flex justify-between text-xl">
+                <span className="text-night-ok">{attacker.caught} prinse</span><span className="text-night-danger">{attacker.passed} au trecut</span>
+              </div>
+              {attackerLine && <p className="mt-2 line-clamp-2 text-lg text-night-mute">{attackerLine.replace(/^\S+\s/, '').replace(': passed', ': a trecut').replace(': caught', ': prins').replace(': invalid', ': invalid')}</p>}
             </div>
-            <div className="mt-3 flex justify-between text-xl">
-              <span>🛡️ {st.caught} prinse</span>
-              <span>🏆 {st.passed} au trecut ({passRate}%)</span>
+          ) : st && (
+            <div className="mt-auto rounded-md border border-night-line bg-night-2 p-5">
+              <div className="text-xl font-semibold">Jucătorii împotriva agenților</div>
+              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-night-line" role="img" aria-label={`${st.caught} prinse, ${st.passed} trecute`}>
+                <div className="bg-night-ok" style={{ width: `${100 - passRate}%` }} />
+                <div className="ml-0.5 bg-night-danger" style={{ width: `${passRate}%` }} />
+              </div>
+              <div className="mt-3 flex justify-between text-xl">
+                <span className="text-night-ok">{st.caught} prinse</span>
+                <span className="text-night-danger">{st.passed} au trecut, {passRate}%</span>
+              </div>
+              <div className="mt-1 text-lg text-night-mute">{st.players} jucători, {st.submissions} încercări</div>
             </div>
-            <div className="mt-1 text-lg text-slate-400">{st.players} jucători · {st.submissions} încercări</div>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+      </div>
     </div>
   )
 }
