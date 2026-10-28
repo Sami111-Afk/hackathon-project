@@ -62,3 +62,13 @@ Mergeuit. 206 teste trec, ruff curat, fără conflicte cu main. Observații mino
 - PNG-urile nu sunt analizate (fără compresie JPEG); o fotografie/scan salvat ca PNG scapă de ELA.
 - Pe Maria, a doua zonă ELA (doc_2, bbox 832,1328-1136,1616) e `info` fără câmp asociat; probabil ștampila/semnătura, de verificat vizual.
 - O singură salvare JPEG sau recompresii oneste (75→90, 60→85, 70→80→90) nu dau fals pozitive în testele mele.
+
+## Review PR #30
+
+`scripts/start_bank.sh` (Ollama + backend ENV=demo + ngrok + test Maria). Verdict: OK, mergeuit. `bash -n` curat, shellcheck doar SC2015 (info). Nu atinge `.env`, nu afișează secrete, nu șterge nimic, re-rulabil.
+
+Minor:
+- `NGROK_DOMAIN` nu e în `.env.example`; scriptul pică cu "NGROK_DOMAIN lipsește" dacă nu e setat. De adăugat.
+- `--stop` folosește `pkill -f` pe `uvicorn app.main:app`, `ollama serve`, `ngrok http`: oprește și serverul de dev de pe 8000 sau un Ollama pornit ca serviciu. De știut înainte de demo.
+- Pasul "Test: dosarul Mariei" apelează `rerun-demo`, care șterge dosarele Maria terminate (intenționat), și se sare silențios dacă `BANK_UI_TOKEN` e gol.
+- Scriptul nu e menționat în README.
