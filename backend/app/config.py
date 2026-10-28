@@ -46,7 +46,8 @@ class Settings(BaseSettings):
     database_url: str = f"sqlite:///{REPO_ROOT / 'backend' / 'orb.db'}"
     vault_database_url: str = f"sqlite:///{REPO_ROOT / 'backend' / 'vault.db'}"
 
-    arena_rate_limit_per_min: int = 5
+    arena_rate_limit_per_min: int = 5        # pe jucător (IP + pseudonim)
+    arena_rate_limit_per_ip_min: int = 300   # toată sala poate ieși prin același IP
     arena_max_file_mb: int = 5
 
     manual_minutes_per_case: float = 20
