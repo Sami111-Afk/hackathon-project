@@ -24,6 +24,8 @@ class StatementRow:
     balance: float
     page: int
     bbox: list[float]
+    amount_bbox: list[float] | None = None  # chenarul fiecărei sume, pentru recitire și dovadă
+    balance_bbox: list[float] | None = None
 
 
 @dataclass
@@ -59,6 +61,8 @@ def parse_statement(lines: list[Line]) -> StatementTable:
             balance=parse_amount(balance_w["text"]),
             page=line.page,
             bbox=line.bbox,
+            amount_bbox=list(amount_w["bbox"]) if amount_w else None,
+            balance_bbox=list(balance_w["bbox"]),
         )
         if row.amount is None and not table.rows and "sold" in normalize(desc):
             table.opening_balance = row.balance
