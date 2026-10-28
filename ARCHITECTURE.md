@@ -201,13 +201,14 @@ Vezi §4. Ieșire: text redactat, imagine redactată, `pages` (cu dimensiuni), a
 ### 🔍 Verificator — Stefan
 **Fluturaș (definiția folosită în proiect, declarată ca simplificare):**
 ```
-G = brut, D = deducere personală (calculată de bancă în clar, apoi criptată)
-CAS  = 0,25·G      CASS = 0,10·G
-impozit = 0,10·(G − CAS − CASS − D) = 0,10·(0,65·G − D)
-net = 0,65·G − 0,10·(0,65·G − D) = 0,585·G + 0,1·D
+G = brut, D = deducere personală, N = suma netaxabilă (calculate de bancă în clar, apoi criptate)
+N: OUG 89/2025 — 300 lei ian–iun 2026 (brut 4.050–4.300), 200 lei iul–dec 2026 (brut 4.325–4.600), altfel 0
+CAS  = 0,25·(G − N)      CASS = 0,10·(G − N)
+impozit = 0,10·(G − N − CAS − CASS − D)
+net = 0,585·G + 0,415·N + 0,1·D
 toleranță: ±2 lei (rotunjiri pe fiecare componentă)
 ```
-„Net” = net **înainte** de alte rețineri (tichete, avansuri, popriri). Generatorul nu emite tichete de masă și evită salariul minim (suma netaxabilă e altă regulă). Deducerea personală reală e pe tranșe (doar pentru brut ≤ salariul minim + 2.000 lei, în funcție de persoanele în întreținere) — pentru demo o tabelă simplificată, spusă deschis.
+„Net” = net **înainte** de alte rețineri (tichete, avansuri, popriri). Salariul minim se ia după luna fluturașului (4.050 lei, apoi 4.325 lei din iulie 2026, HG 146/2026). Deducerea personală reală e pe tranșe (doar pentru brut ≤ salariul minim + 2.000 lei, în funcție de persoanele în întreținere) — pentru demo o tabelă simplificată, spusă deschis. Numărul de persoane în întreținere nu scrie pe fluturaș → acceptăm netul dacă iese pentru oricare variantă 0–4 (altfel am acuza oamenii cu copii și salariu mic). Implementare: `verificator/tax.py`.
 
 **Extras:** sold anterior + intrări − ieșiri = sold final, pe fiecare rând; netul de pe fluturaș apare ca intrare de la angajator.
 
@@ -262,17 +263,20 @@ toleranță: ±2 lei (rotunjiri pe fiecare componentă)
   ctx.global_scale = 2**40
   # fără galois keys — nu facem rotații
   g = ts.ckks_vector(ctx, [G1, G2, ...])   # toți brutii din dosar (batch)
-  n = ts.ckks_vector(ctx, [N1, N2, ...])
-  d = ts.ckks_vector(ctx, [D1, D2, ...])
-  trimite ctx.serialize(save_secret_key=False) + g,n,d serializați ──►
-                                                     ctx = ts.context_from(bytes)
-                                                     diff = g*0.585 + d*0.1 - n
+  n = ts.ckks_vector(ctx, [N1, N2, ...])   # suma netaxabilă
+  d = ts.ckks_vector(ctx, [D1, D2, ...])   # deducerea, câte un slot pt. 0–4 persoane
+  r = ts.ckks_vector(ctx, [R1, R2, ...])   # rotunjirea pe componente (net rotunjit − forma liniară)
+  net = ts.ckks_vector(ctx, [Net1, ...])   # netul declarat
+  trimite ctx.serialize(save_secret_key=False) + vectorii serializați ──►
+                                                     ctx = ts.context_from(bytes)   # refuză cheie secretă
+                                                     diff = g*0.585 + n*0.415 + d*0.1 + r - net
                                               ◄────  diff.serialize()
-  decriptează diff → |diffᵢ| > 2 lei → NET_MISMATCH
+  decriptează diff → nicio variantă cu |diffᵢ| ≤ 2 lei → NET_MISMATCH
   rezultatul decriptat NU se trimite înapoi verificatorului
 ```
-- Vectori separați pentru G, N, D → fără rotații, fără galois keys, context mult mai mic.
-- CKKS e aproximativ (eroare ~1e-6 la acești parametri) — irelevant la toleranța de 2 lei.
+- Vectori separați → fără rotații, fără galois keys. Implementare: `verificator/he_bank.py` + `he_verifier.py`.
+- Cu R, rezultatul e **identic** cu calculul în clar (`tax.py`), testat pe 300 de fluturași aleatori.
+- CKKS e aproximativ (eroare ~1e-3 lei la acești parametri); marjă de 0,005 lei, sub un ban, ca o diferență de exact 2,00 lei să fie tratată ca în clar.
 - CKKS dă **confidențialitate, nu integritate**: un verificator rău-intenționat poate întoarce orice. Spunem asta.
 - **Nu returnăm niciodată rezultatul decriptat verificatorului** (decriptările CKKS partajate pot scurge cheia — atacul Li–Micciancio).
 - UI: dimensiunea contextului, câțiva bytes din ciphertext (ca **ilustrație**, nu dovadă), latența, plus fraza cu modelul de amenințare.
