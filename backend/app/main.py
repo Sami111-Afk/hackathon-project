@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import admin, cases, system
+from app.api import admin, arena, cases, rules, system
 from app.config import settings
 from app.core.store import store
 
@@ -36,6 +36,8 @@ app.add_middleware(
 app.include_router(cases.router)
 app.include_router(admin.router)
 app.include_router(system.router)
+app.include_router(arena.router)
+app.include_router(rules.router)
 
 
 @app.get("/health")

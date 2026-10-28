@@ -51,3 +51,15 @@ r.data.net_salary   # validat
 
 ## API (rute „bancă” cer `Authorization: Bearer <BANK_UI_TOKEN>`)
 `POST /api/cases` · `GET /api/cases` · `GET /api/cases/{id}` · `GET /api/cases/{id}/events` (SSE) · `GET /api/cases/{id}/documents/{doc}/image` · `POST /api/cases/{id}/decision` · `GET /api/events` · `GET|POST /api/settings` · `GET /api/dashboard/stats` · `GET /api/audit` · `POST /api/admin/rerun-demo` · `POST /api/admin/reset`
+
+## Arena (PUBLICĂ, fără token) — pentru Erin
+- `GET /api/arena/missions` — misiunile: `template` (fluturașul de pornire), `editable` (câmpurile de pus în formular: number/select/date), `tricks` (bife), `target`.
+- `POST /api/arena/submissions` `{nickname, mission_id, edits: {câmp: valoare}, tricks: [..]}` → `{id, outcome: passed|caught|invalid, points, reasons[], caught_by[], duplicate}`. Limită: 5/minut/IP (429).
+- `GET /api/arena/submissions/{id}/image` — falsul generat (JPEG), de arătat jucătorului.
+- `GET /api/arena/leaderboard` — `{top, feed, stats}`; `GET /api/arena/live` — SSE pentru proiector (`arena_scored`, `rule_proposed`, `rule_approved`).
+
+## Self-learning (rute „bancă”)
+- Un fals care trece în Arena → Claude Opus propune reguli în fundal → backtest automat (respinsă dacă nu prinde falsul sau prinde fluturași legitimi).
+- `GET /api/rules` · `POST /api/rules/{id}/approve|reject` `{decided_by}` · `POST /api/rules/learn/{submission_id}` (pornire manuală, util la demo).
+- Regulile sunt JSON evaluat de `app/learning/engine.py` — LLM-ul nu scrie cod.
+- Arena folosește deocamdată un arbitru provizoriu (`app/arena/judge.py`) cu aceleași verificări ca Verificatorul; trece pe pipeline-ul complet când agenții reali sunt gata.

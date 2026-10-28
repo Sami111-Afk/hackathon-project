@@ -63,6 +63,13 @@ class EventBus:
             if not self._subs[case_id]:
                 del self._subs[case_id]
 
+    def trim(self, case_id: str, keep: int) -> None:
+        h = self._history.get(case_id)
+        if h and len(h) > keep:
+            drop = len(h) - keep
+            self._offset[case_id] = self._offset.get(case_id, 0) + drop
+            del h[:drop]
+
     def reset(self) -> None:
         self._history.clear()
         self._offset.clear()
