@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
 import { DecisionPanel } from '@/components/DecisionPanel'
+import { AppNav } from '@/components/AppNav'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { FindingsList } from '@/components/FindingsList'
 import { NetworkGraph } from '@/components/NetworkGraph'
@@ -10,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCaseLive } from '@/hooks/useCaseLive'
 import { getGraph } from '@/lib/api'
-import { logout } from '@/lib/auth'
 import { AGENT_INFO } from '@/lib/labels'
 import { AGENTS, type AgentName, type Finding } from '@/lib/types'
 import type { ConnectionState } from '@/lib/events'
@@ -56,6 +56,7 @@ export function CasePage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
+      <AppNav />
       <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-white px-4 py-3 md:px-6">
         <div>
           <h1 className="text-2xl font-bold">🔒 ORB · Dosar {c.id}</h1>
@@ -66,7 +67,6 @@ export function CasePage() {
         <div className="flex items-center gap-3">
           <span className="text-base">{CONN[conn]}</span>
           {mock && <Button variant="outline" onClick={() => { setSelected(null); setReplayKey((k) => k + 1) }}>↻ Reia demo</Button>}
-          {!mock && <Button variant="ghost" onClick={() => { logout(); window.location.assign('/login') }}>Ieșire</Button>}
         </div>
       </header>
 

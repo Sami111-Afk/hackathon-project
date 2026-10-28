@@ -2,6 +2,7 @@
 
 Toate funcțiile sunt pure și primesc șirul deja curățat de spații.
 """
+import re
 from dataclasses import dataclass
 from datetime import date
 
@@ -62,6 +63,40 @@ def valid_iban(iban: str) -> bool:
     rearranged = iban[4:] + iban[:4]
     digits = "".join(str(int(c, 36)) for c in rearranged)  # A=10 … Z=35
     return int(digits) % 97 == 1
+
+
+# confuzii tipice de OCR: litere citite în loc de cifre
+_OCR_DIGITS = str.maketrans({"O": "0", "Q": "0", "D": "0", "I": "1", "L": "1", "S": "5", "B": "8", "Z": "2",
+                             "G": "6"})
+
+
+def repair_iban(raw: str) -> str | None:
+    """IBAN RO citit greșit de OCR → varianta validă, sau None.
+
+    Încearcă, în ordine: „R0” → „RO”; litere-confuzie → cifre în cele 16 caractere ale contului;
+    un caracter în plus (OCR dublează des „0”/„O”). Checksum-ul mod 97 decide; fiecare încercare are
+    ~1% șanse de potrivire întâmplătoare, deci rămân puține și în ordinea celor mai probabile.
+    """
+    iban = re.sub(r"\s", "", raw).upper()
+    if iban.startswith("R0"):
+        iban = "RO" + iban[2:]
+    if not iban.startswith("RO") or len(iban) not in (23, 24, 25):
+        return None
+    head = iban[:8]  # RO + cifre de control + codul băncii (litere)
+    head = head[:2] + head[2:4].translate(_OCR_DIGITS) + head[4:8]
+    account = iban[8:]
+    candidates = [head + account, head + account.translate(_OCR_DIGITS)]
+    if len(account) == 17:
+        for i in range(len(account)):
+            if account[i] in "0O" and (i and account[i - 1] in "0O" or i + 1 < len(account) and account[i + 1] in "0O"):
+                dropped = account[:i] + account[i + 1:]
+                candidates += [head + dropped, head + dropped.translate(_OCR_DIGITS)]
+    seen = set()
+    for c in candidates:
+        if c not in seen and len(c) == 24 and valid_iban(c):
+            return c
+        seen.add(c)
+    return None
 
 
 def iban_bank_code(iban: str) -> str | None:

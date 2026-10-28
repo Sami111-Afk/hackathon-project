@@ -161,8 +161,8 @@ def statement(iban_value):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    cnp_value = cnp(MARIA["sex"], MARIA["birth"], MARIA["county"], seq=17)
-    iban_value = iban("RZBR", "0000060012345678")
+    cnp_value = cnp(MARIA["sex"], MARIA["birth"], MARIA["county"], seq=0)
+    iban_value = iban("RZBR", "9999000000000001")
     card, mrz = id_card(cnp_value)
     card.save(OUT / "buletin.jpg", "JPEG", quality=90)
     slip, slip_truth = payslip(cnp_value)
