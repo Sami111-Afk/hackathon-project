@@ -13,6 +13,7 @@ from datetime import date
 
 from app.agents.stubs import StubAgent
 from app.agents.verificator import anaf, local_values, ro_checks
+from app.agents.verificator.ro_checks import parse_iso
 from app.agents.verificator.statement import check_balances, check_income
 from app.agents.verificator.tax import check_net
 from app.learning.engine import apply_rules
@@ -80,7 +81,7 @@ class Verificator:
                 findings.append(f)
 
         cnp = _vault_first(values, "CNP")
-        on = date.fromisoformat(_val(employment, "issue_date")) if _val(employment, "issue_date") else today
+        on = parse_iso(_val(employment, "issue_date")) or today
         if employment and (f := ro_checks.check_age_employment(cnp, on, employment.id)):
             findings.append(f)
         if card:
@@ -103,8 +104,8 @@ class Verificator:
     @staticmethod
     def _payslip(slip: Document, scratch: dict) -> list[Finding]:
         gross, net = _val(slip, "gross_salary"), _val(slip, "net_salary")
-        if gross is None or net is None:
-            return []
+        if not isinstance(gross, int | float) or not isinstance(net, int | float):
+            return []  # sumă lipsă sau neparsată → nu acuzăm pe baza ei
         f = check_net(gross, net, evidence=_evidence(scratch, slip, "net_salary"), period=_val(slip, "period"))
         return [f] if f else []
 

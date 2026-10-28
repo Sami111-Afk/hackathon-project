@@ -15,7 +15,7 @@ def check_balances(table: dict, doc_id: str) -> list[Finding]:
     rows = table.get("rows") or []
     findings: list[Finding] = []
     for prev, row in zip(rows, rows[1:], strict=False):
-        if row["amount"] is None:
+        if row.get("amount") is None or prev.get("balance") is None or row.get("balance") is None:
             continue
         expected = round(prev["balance"] + row["amount"], 2)
         if abs(expected - row["balance"]) > BALANCE_TOLERANCE_RON:
@@ -25,7 +25,8 @@ def check_balances(table: dict, doc_id: str) -> list[Finding]:
                         f"anterior ({format_ron(expected)} lei)",
                 evidence=Evidence(doc_id=doc_id, page=row["page"], bbox=row["bbox"])))
     closing = table.get("closing_balance")
-    if rows and closing is not None and abs(closing - rows[-1]["balance"]) > BALANCE_TOLERANCE_RON:
+    if rows and closing is not None and rows[-1].get("balance") is not None \
+            and abs(closing - rows[-1]["balance"]) > BALANCE_TOLERANCE_RON:
         ev = table.get("closing_evidence") or {}
         findings.append(Finding(
             code="BALANCE_MISMATCH", severity="high",
