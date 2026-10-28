@@ -1,4 +1,63 @@
-# Video 3:00 — scenariu + textul vocii (engleză)
+# Video 3:00 — VARIANTA 2 (după 4 jurați fără context, 28.10 seara)
+
+> Asta e varianta de lucru. Varianta veche e mai jos, la „Varianta 1”, doar ca istoric.
+> **De confirmat după workshopul de la 20:00.**
+
+## Ce au zis jurații (business Raiffeisen, tehnic, om din afara domeniului, avocatul diavolului)
+Note: 7 · 7 · 6,5 · 6,5 din 10. Șansă de top 3 doar din video: ~15–35% acum, ~40–45% cu schimbările de mai jos.
+1. **Toți 4: povestea cu frauda acoperă eficiența**, adică tema concursului. Eficiența are ~25 s, frauda și confidențialitatea ~105 s.
+   Dosarul cinstit e chiar locul unde se câștigă orele → îl lungim și spunem orele.
+2. **Maria: prea lung și prea dens** (4 dovezi într-o frază) → 3 dovezi, spuse rar.
+3. **Afirmații de reparat:**
+   - „~20 min” → „după cronometrarea noastră”;
+   - „20 s” → „ORB pregătește verificarea; analistul se uită la dovezi un minut”;
+   - „customer data never leaves the bank” contrazice scena cu AI-ul din cloud → „datele personale sunt mascate înainte de AI, sau totul rămâne local”;
+   - „six specialised agents” → „șase specialiști: doi folosesc AI, patru sunt cod simplu” (e adevărat: Funcționarul și rezumatul folosesc LLM);
+   - „no honest applicant accused” → „niciun dosar cinstit marcat cu risc mare”, cu numărul de dosare.
+4. **Jargon** pentru cine nu e bancher: „net/gross” → „take-home pay”, „IBAN” → „bank account”, „shadow-mode pilot” → „next to your analysts”.
+5. **Finalul**: fraza tăiată în două la schimbarea de cadru, fără o cerere clară → o propunere concretă, într-o singură frază.
+6. **Arena și regula în 9 s = prea mult.** Doi jurați zic s-o scoatem, unul zice că bucla de învățare e partea interesantă →
+   o păstrăm, dar într-o singură propoziție.
+7. Dashboard-ul la filmare: **fără rânduri „Error”/„unknown”** (seed curat înainte).
+
+## Structura nouă — ce se vede și ce se aude
+
+Totalul e 180 s, cu ~300 de cuvinte de voce (rar, cu pauze).
+
+| # | Timp | Durată | Pe ecran | Vocea (engleză) | Text mare pe ecran |
+|---|---|---|---|---|---|
+| 0 | 0:00–0:03 | 3 s | Titlu: ORB — „AI agents that do the repetitive checks on loan applications” | — (muzică) | — |
+| 1 | 0:03–0:17 | 14 s | Buletinul, fluturașul și extrasul Mariei, zoom lent pe fiecare | "Every loan application comes with the same repetitive work. Read the ID card, the payslip, the bank statement. Recalculate the taxes. Look up the employer. Cross-check everything. By our own timing — about twenty minutes per file." | „~20 min per application” |
+| 2 | 0:17–0:29 | 12 s | Dashboard-ul băncii; zoom pe bara „ore de lucru: manual vs ORB” | "ORB prepares that check in about twenty seconds — the analyst just reviews the findings. Across these twenty-one files: seven hours of manual work, down to under half an hour." | „7 h → under 0.5 h” |
+| 3 | 0:29–0:57 | 28 s | „New application” → încărcăm dosarul cinstit → cei 6 agenți rulează → nicio dovadă gravă → valorile sunt legate de document → analistul apasă Approve | "Most applications are honest — and that's where the hours go. Here's one. Six specialists, each with one job: two use AI, four are plain code. Every value is traced back to the document, nothing is flagged — so the analyst approves it in one click." | — |
+| 4 | 0:57–1:37 | 40 s | Maria → „Re-run live”: agenții se aprind (2x) → dovezile apar → click pe dovadă = chenar pe fluturaș → harta editării | "Now Maria. She's sixty-seven and retired — and someone has applied for a forty-five-thousand-lei loan with her stolen identity. ORB recalculates the payslip: the take-home pay should be 8,307 lei, not 8,500. The employer is listed as inactive. And the Detector shows exactly where the payslip was edited — every finding marked on the document itself." | „real time: 20 s” (pe agenți) · „8,307 ≠ 8,500 lei” |
+| 5 | 1:37–1:45 | 8 s | Graful: Maria + încă 5 cereri, același cont | "And what no analyst sees one file at a time: the same bank account in six applications, under six different names." | „1 account · 6 identities” |
+| 6 | 1:45–2:06 | 21 s | Cardul de risc → „Why this score?” → Approve fără motiv → aplicația cere motivul | "The AI doesn't decide. The risk level is computed from the evidence, and each piece is explained. The analyst decides — and approving a flagged file takes a written reason." | „The AI doesn't decide” |
+| 7 | 2:06–2:24 | 18 s | Privacy: ce a văzut AI-ul ([PERSOANA_1]) → butonul „100% local” | "Before any cloud AI sees a document, names and ID numbers are replaced with placeholders. ID cards and unclear photos never go to the cloud. Or, with one switch, everything runs on the bank's own machine." | „0 personal data to the cloud” |
+| 8 | 2:24–2:40 | 16 s | Cardul cu cifrele măsurate | "We measured it on sixty synthetic applications, with the real AI: no personal data sent to the cloud, no honest applicant flagged as high risk, all thirty-six planted forgeries caught. A baseline — real accuracy is what a pilot measures." | (cardul plin) |
+| 9 | 2:40–2:48 | 8 s | Telefonul: Arena, fals prins (4 s) → proiectorul: regula propusă → Approve (4 s) | "Think you can fool it? Try our Arena. Forgeries that slip through become new rules — approved by a human." | — |
+| 10 | 2:48–3:00 | 12 s | Cardul de final: propunerea + linkul + Arena | "Our proposal: run ORB next to your analysts on a hundred real files, and measure the hours saved. ORB does the checking. People decide." | „Pilot: 100 real files, next to your analysts” |
+
+### Ce schimbăm față de varianta 1
+- dosarul cinstit: 18 s → 28 s, plus o scenă nouă cu orele (dashboard) → eficiența ~55 s în loc de ~25 s;
+- Maria: 48 s → 40 s, 3 dovezi în loc de 4 (scoatem soldul);
+- confidențialitatea: 24 s → 18 s;
+- finalul: o cerere concretă (100 de dosare reale, măsurăm orele), fără fraza tăiată în două.
+
+### De făcut înainte de filmare
+- **Cardurile** (`scripts/make_video_cards.py`):
+  - titlul fără „without customer data leaving the bank”;
+  - overlay nou „7 h → under 0.5 h”;
+  - „1 IBAN” → „1 account”;
+  - pe cardul de cifre, „honest applicants accused” → „honest applicants flagged high-risk”;
+  - cardul de final cu propunerea de pilot.
+- **Dashboard-ul:** seed curat (fără rânduri Error/unknown). Cifra „21 files / 7 h / 0.4 h” trebuie să fie cea de pe ecran la filmare;
+  dacă se schimbă numărul de dosare, schimbăm și vocea.
+- Designul nou al lui Narcis intră înainte de filmare (termen ~22:30).
+
+---
+
+# Varianta 1 (veche, doar ca istoric)
 
 Format: înregistrare de ecran a aplicației (OBS, 1080p, zoom 125–150%) + voce înregistrată separat (telefon la 20 cm, cameră liniștită)
 + 4–5 texte mari pe ecran. Montaj: Kdenlive / Shotcut / CapCut. Secvența cu agenții (~20 s) accelerată 2x, cu „real time: 20 s”.
