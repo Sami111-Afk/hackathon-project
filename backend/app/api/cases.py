@@ -1,0 +1,141 @@
+import asyncio
+import uuid
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import Response
+from pydantic import BaseModel
+from sse_starlette.sse import EventSourceResponse
+
+from app.api.deps import require_bank
+from app.config import settings
+from app.core.events import bus, now_iso
+from app.core.files import load_decrypted, save_encrypted, sniff
+from app.core.pipeline import start_pipeline
+from app.core.store import store
+from app.models import Case, Decision, Document
+
+router = APIRouter(prefix="/api", dependencies=[Depends(require_bank)])
+
+MAX_FILES = 5
+DECISION_STATUS = {"clear": "cleared", "reject": "rejected", "escalate": "escalated",
+                   "flag_network": "escalated", "correct": "awaiting_review"}
+
+
+@router.post("/cases")
+async def create_case(files: list[UploadFile] = File(...),
+                      requested_amount_ron: float | None = Form(default=None)):
+    if not 1 <= len(files) <= MAX_FILES:
+        raise HTTPException(400, f"între 1 și {MAX_FILES} fișiere")
+    case_id = f"case_{uuid.uuid4().hex[:8]}"
+    max_bytes = settings.arena_max_file_mb * 1024 * 1024
+    documents, originals = [], {}
+    for i, f in enumerate(files, start=1):
+        data = await f.read(max_bytes + 1)
+        if len(data) > max_bytes:
+            raise HTTPException(413, f"fișier prea mare (max {settings.arena_max_file_mb} MB)")
+        kind = sniff(data)
+        if not kind:
+            raise HTTPException(415, "doar PNG, JPG sau PDF")
+        doc_id = f"doc_{i}"
+        save_encrypted(case_id, doc_id, data)
+        originals[doc_id] = data
+        documents.append(Document(id=doc_id, filename=f"document_{i}.{kind[0]}"))
+
+    case = Case(id=case_id, created_at=now_iso(), requested_amount_ron=requested_amount_ron, documents=documents)
+    await store.save(case)
+    bus.publish(case_id, "case_created", message=f"Dosar nou: {len(documents)} documente")
+    start_pipeline(case, originals)
+    return {"case_id": case_id}
+
+
+@router.get("/cases")
+def list_cases(status: str | None = None, source: str = "bank"):
+    cases = [c for c in store.list() if c.source == source and (status is None or c.status == status)]
+    return [{"id": c.id, "status": c.status, "created_at": c.created_at,
+             "requested_amount_ron": c.requested_amount_ron,
+             "risk": c.verdict.risk if c.verdict else None,
+             "recommendation": c.verdict.recommendation if c.verdict else None} for c in cases]
+
+
+@router.get("/cases/{case_id}")
+def get_case(case_id: str):
+    case = store.get(case_id)
+    if not case:
+        raise HTTPException(404, "dosar inexistent")
+    return case.model_dump(exclude_none=True)
+
+
+@router.get("/cases/{case_id}/documents/{doc_id}/image")
+def get_image(case_id: str, doc_id: str, view: str = "original"):
+    if view != "original":
+        raise HTTPException(404, f"vederea '{view}' nu e încă disponibilă")  # redacted/ela: Narcis
+    try:
+        data = load_decrypted(case_id, doc_id)
+    except ValueError:
+        data = None
+    if not data:
+        raise HTTPException(404, "document inexistent")
+    return Response(data, media_type=sniff(data)[1], headers={"Cache-Control": "no-store"})
+
+
+class DecisionIn(BaseModel):
+    action: str
+    decided_by: str
+    notes: str = ""
+    corrections: dict = {}
+
+
+@router.post("/cases/{case_id}/decision")
+async def decide(case_id: str, body: DecisionIn):
+    case = store.get(case_id)
+    if not case:
+        raise HTTPException(404, "dosar inexistent")
+    if case.status == "processing":
+        raise HTTPException(409, "dosarul încă e în lucru")
+    if body.action not in DECISION_STATUS:
+        raise HTTPException(400, "acțiune necunoscută")
+    if not body.decided_by.strip():
+        raise HTTPException(400, "decided_by e obligatoriu")
+    case.decision = Decision(action=body.action, decided_by=body.decided_by.strip()[:60], notes=body.notes,
+                             corrections=body.corrections, decided_at=now_iso())
+    case.status = DECISION_STATUS[body.action]
+    await store.save(case)
+    bus.publish(case_id, "decision", message=f"{case.decision.decided_by}: {body.action}",
+                data=case.decision.model_dump())
+    # TODO (Samuel, P1): action == "correct" → self-learning propune o regulă
+    return case.model_dump(exclude_none=True)
+
+
+def _sse(case_id: str | None, request: Request):
+    last = request.headers.get("last-event-id")
+    after = int(last) if last and last.isdigit() else -1
+
+    async def gen():
+        q = bus.subscribe(case_id)
+        try:
+            if case_id is not None:
+                for e in bus.history(case_id, after):
+                    yield {"id": str(e.seq), "event": e.type, "data": e.model_dump_json(exclude_none=True)}
+            while True:
+                try:
+                    e = await asyncio.wait_for(q.get(), timeout=15)
+                except TimeoutError:
+                    continue  # sse-starlette trimite ping-ul
+                yield {"id": str(e.seq) if case_id else None, "event": e.type,
+                       "data": e.model_dump_json(exclude_none=True)}
+        finally:
+            bus.unsubscribe(q, case_id)
+
+    return EventSourceResponse(gen(), ping=15, headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"})
+
+
+@router.get("/cases/{case_id}/events")
+def case_events(case_id: str, request: Request):
+    if not store.get(case_id):
+        raise HTTPException(404, "dosar inexistent")
+    return _sse(case_id, request)
+
+
+@router.get("/events")
+def global_events(request: Request):
+    return _sse(None, request)

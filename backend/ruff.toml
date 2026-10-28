@@ -1,0 +1,7 @@
+line-length = 120
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "I", "B", "UP"]
+# B008: File()/Depends() în argumente e stilul normal FastAPI
+ignore = ["B008"]
