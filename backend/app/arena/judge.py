@@ -6,11 +6,10 @@ complet. Până atunci, aceleași verificări pe care le face Verificatorul + re
 from datetime import date
 
 from app.agents.compliance.scoring import score
-from app.arena.forge import net_from_gross
+from app.agents.verificator.tax import check_net
 from app.arena.missions import COMPANIES
 from app.models import AgentResult, Finding
 
-TOLERANCE_LEI = 2
 TODAY = date(2026, 10, 28)
 
 
@@ -22,10 +21,8 @@ def check(doc: dict) -> list[AgentResult]:
     company = COMPANIES.get(doc["employer"])
     issued = date.fromisoformat(doc["issue_date"])
 
-    expected = net_from_gross(gross)
-    if abs(expected - net) > TOLERANCE_LEI:
-        verificator.append(Finding(code="NET_MISMATCH", severity="high",
-                                   message=f"Netul calculat ({expected} lei) diferă de cel declarat ({net} lei)"))
+    if mismatch := check_net(gross, net, period=doc["issue_date"][:7]):  # calculul real al Verificatorului (Stefan)
+        verificator.append(mismatch)
     if company is None:
         verificator.append(Finding(code="COMPANY_NOT_FOUND", severity="critical", message="Angajatorul nu există"))
     else:

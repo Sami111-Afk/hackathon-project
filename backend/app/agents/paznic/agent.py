@@ -14,7 +14,7 @@ from app.agents.paznic.validators import mrz_matches_cnp, parse_mrz_td2_line2
 from app.agents.paznic.vault import vault
 from app.agents.stubs import StubAgent
 from app.config import settings
-from app.core.files import save_encrypted, sniff
+from app.core.files import save_derived, sniff
 from app.models import AgentResult, Evidence, Finding, PageInfo
 
 log = logging.getLogger("orb.paznic")
@@ -93,7 +93,7 @@ class Paznic:
             redacted = await asyncio.to_thread(images.redact_pages, ext, replacements, id_card)
             for page_no, img in enumerate(redacted, start=1):
                 png = await asyncio.to_thread(images.to_png, img)
-                save_encrypted(case.id, f"{doc.id}_redacted_p{page_no}", png)
+                save_derived(case.id, doc.id, "redacted", page_no, png)
             scratch[doc.id] = {"source": ext.source, "is_id_card": id_card,
                                "words": redacted_words(doc.id, ext, replacements)}
 

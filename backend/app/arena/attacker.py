@@ -87,13 +87,13 @@ async def run(mission_id: str, rounds: int, auto_approve: bool, seed: int | None
 
     mission = MISSIONS[mission_id]
     rng = random.Random(seed)
-    state.rounds = []
     history: list[dict] = []
     try:
         for n in range(1, rounds + 1):
             edits, tricks, thinking = next_attempt(mission, history, rng)
             try:
-                result = await asyncio.to_thread(service.submit, NICK, mission_id, edits, tricks)
+                result = await asyncio.to_thread(service._submit, NICK, mission_id, edits, tricks)
+                service.announce(result)
             except service.ArenaError as exc:
                 result = {"outcome": "invalid", "reasons": [str(exc)], "id": None, "duplicate": False}
             codes = [f.code for r in service.last_results(result.get("id")) for f in r.findings]
@@ -125,5 +125,6 @@ def start(mission_id: str, rounds: int, auto_approve: bool, seed: int | None = N
         return False
     loop = asyncio.get_running_loop()
     state.running = True
+    state.rounds = []
     state.task = loop.create_task(run(mission_id, rounds, auto_approve, seed))
     return True

@@ -114,3 +114,23 @@ def test_attacker_adapts_and_finally_passes():
             asyncio.run(asyncio.sleep(0.05))
         outcomes = [r["outcome"] for r in s["rounds"]]
         assert outcomes[0] == "caught" and "passed" in outcomes[1:]
+
+
+def test_review_regressions():
+    from app.learning import engine as eng
+    with TestClient(app) as c:
+        assert post(c, {**WIN, "nickname": "Big", "edits": {"gross_salary": "1e999"}}).status_code == 400
+        a = post(c, {**WIN, "nickname": "Dup1"}).json()
+        b = post(c, {**WIN, "nickname": "Dup2", "tricks": ["recompute_taxes", "recompute_taxes"]}).json()
+        assert a["points"] == 500 and b["duplicate"] and b["points"] == 0
+        assert post(c, {**WIN, "nickname": "AI-Atacator"}).status_code == 400
+        futuristic = {**WIN, "nickname": "Futuristic", "edits": {**WIN["edits"], "gross_salary": 16100}}
+        assert post(c, futuristic).status_code == 200
+    broken = {"id": "r", "status": "approved", "then": {"code": "X", "severity": "high", "message": "x"},
+              "when": {"left": "doc.issue_date", "op": "lt", "right": "nu-e-data"}}
+    assert eng.apply_rules({"issue_date": "2026-09-30", "employer": "x"}, [broken]) == []
+    doc = {"gross_salary": 16000, "net_salary": 9360, "employer": "Bitwave Software SRL",
+           "job_title": "Operator date", "issue_date": "2026-09-30", "tricks": []}
+    ok, why, _ = proposer.vet({"when": {"left": "doc.issue_date", "op": "eq", "right": "2026-09-30"}}, doc,
+                              proposer.legit_dataset())
+    assert not ok and "specifică" in why

@@ -11,7 +11,7 @@ import re
 import threading
 import time
 import uuid
-from collections import defaultdict, deque
+from collections import deque
 
 from app.arena.forge import apply_edits, render
 from app.arena.judge import judge
@@ -24,13 +24,16 @@ POINTS_CAUGHT = 10
 POINTS_NEAR_MISS = 100      # prins de un singur agent = „aproape”
 MAX_POINTS_PER_PLAYER = 3000
 
-BAD_WORDS = {"pula", "pizda", "muie", "fut", "cacat", "fuck", "shit", "bitch", "nigger"}
+BAD_WORDS = {"pula", "pizda", "muie", "fut", "futu", "cacat", "fuck", "shit", "bitch", "nigger"}
+RESERVED = {"ai-atacator", "aiatacator", "admin", "orb"}
+MAX_STORED = 2000  # trimiteri păstrate în memorie (cele mai vechi se șterg)
 
 _lock = threading.Lock()
 _submissions: dict[str, dict] = {}
 _images: dict[str, bytes] = {}
 _seen: set[str] = set()
-_scores: dict[str, int] = defaultdict(int)
+_scores: dict[str, int] = {}
+_display: dict[str, str] = {}
 _feed: deque = deque(maxlen=50)
 _misses: list[dict] = []    # falsuri care au trecut → hrană pentru self-learning
 
@@ -43,20 +46,28 @@ def clean_nickname(raw: str) -> str:
     nick = re.sub(r"[^\w .-]", "", (raw or "").strip(), flags=re.UNICODE)[:20].strip()
     if len(nick) < 2:
         raise ArenaError("pseudonim prea scurt")
-    low = nick.lower().replace(" ", "")
-    if any(w in low for w in BAD_WORDS):
+    tokens = set(re.split(r"[\s._-]+", nick.casefold()))
+    if tokens & BAD_WORDS or nick.casefold().replace(" ", "") in RESERVED:
         raise ArenaError("alege alt pseudonim")
     return nick
 
 
+def player_key(nick: str) -> str:
+    """„Bob”, „bob” și „b.o.b” sunt același jucător."""
+    return re.sub(r"[\s._-]+", "", nick.casefold())
+
+
 def submit(nickname: str, mission_id: str, edits: dict, tricks: list[str]) -> dict:
-    nick = clean_nickname(nickname)
+    return _submit(clean_nickname(nickname), mission_id, edits, tricks)
+
+
+def _submit(nick: str, mission_id: str, edits: dict, tricks: list[str]) -> dict:
     mission = MISSIONS.get(mission_id)
     if not mission:
         raise ArenaError("misiune inexistentă")
     try:
         doc = apply_edits(mission["template"], edits, mission["editable"], tricks or [])
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, OverflowError) as exc:
         raise ArenaError("câmpuri invalide") from exc
 
     changed = {k for k in mission["template"] if doc.get(k) != mission["template"][k]} | set(doc["tricks"])
@@ -66,7 +77,9 @@ def submit(nickname: str, mission_id: str, edits: dict, tricks: list[str]) -> di
 
     t0 = time.perf_counter()
     result = judge(doc)
+    image_bytes = render(doc)  # în afara lock-ului: Pillow e lent
     sid = f"sub_{uuid.uuid4().hex[:12]}"
+    key = player_key(nick)
 
     with _lock:
         duplicate = fingerprint in _seen
@@ -80,8 +93,10 @@ def submit(nickname: str, mission_id: str, edits: dict, tricks: list[str]) -> di
             points, outcome = POINTS_PASSED, "passed"
         if duplicate:
             points = 0
-        points = max(0, min(points, MAX_POINTS_PER_PLAYER - _scores[nick]))
-        _scores[nick] += points
+        points = max(0, min(points, MAX_POINTS_PER_PLAYER - _scores.get(key, 0)))
+        if points or key in _scores:
+            _scores[key] = _scores.get(key, 0) + points
+            _display[key] = nick
 
         public = {
             "id": sid, "nickname": nick, "mission_id": mission_id, "mission_title": mission["title"],
@@ -91,14 +106,22 @@ def submit(nickname: str, mission_id: str, edits: dict, tricks: list[str]) -> di
             "ms": int((time.perf_counter() - t0) * 1000), "ts": now_iso(),
         }
         _submissions[sid] = {**public, "doc": doc, "results": result["results"]}
-        _images[sid] = render(doc)
+        _images[sid] = image_bytes
+        while len(_submissions) > MAX_STORED:
+            old = next(iter(_submissions))
+            _submissions.pop(old, None)
+            _images.pop(old, None)
         _feed.appendleft(public)
         if outcome == "passed" and not duplicate:
             _misses.append({"submission_id": sid, "mission_id": mission_id, "doc": doc})
 
+    return public
+
+
+def announce(public: dict) -> None:
+    """Publică pe ecranul live. Apelat din cod async (nu din thread): cozile asyncio nu sunt thread-safe."""
     bus.publish(LIVE_CHANNEL, "arena_scored", message=_feed_line(public), data=public)
     bus.trim(LIVE_CHANNEL, keep=200)
-    return public
 
 
 def _feed_line(p: dict) -> str:
@@ -125,7 +148,7 @@ def image(sid: str) -> bytes | None:
 def leaderboard(limit: int = 10) -> list[dict]:
     with _lock:
         top = sorted(_scores.items(), key=lambda kv: kv[1], reverse=True)[:limit]
-    return [{"rank": i + 1, "nickname": n, "points": p} for i, (n, p) in enumerate(top)]
+    return [{"rank": i + 1, "nickname": _display.get(k, k), "points": p} for i, (k, p) in enumerate(top)]
 
 
 def feed() -> list[dict]:
@@ -148,7 +171,7 @@ def pending_misses() -> list[dict]:
 
 def reset() -> None:
     with _lock:
-        for c in (_submissions, _images, _scores):
+        for c in (_submissions, _images, _scores, _display):
             c.clear()
         _seen.clear()
         _feed.clear()

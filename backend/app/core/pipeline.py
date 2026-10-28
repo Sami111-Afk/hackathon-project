@@ -14,12 +14,19 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.core.events import bus
+from app.core.files import render_pages, sniff
+from app.core.llm import LLMUnavailable
+from app.core.pii_gate import PIIGateBlocked
 from app.core.store import store
 from app.models import AgentResult, Case
 
 log = logging.getLogger("orb.pipeline")
 
-AGENT_TIMEOUT_S = 30
+# secunde; OCR/GLiNER/LLM local pe CPU pot dura — ajustați dacă e nevoie
+AGENT_TIMEOUT_S = {"paznic": 90, "functionar": 120, "verificator": 60, "detector": 60, "detectiv": 20,
+                   "compliance": 60}
+# dacă agentul din stânga pică, cei din dreapta nu au pe ce lucra → "skipped"
+DEPENDS_ON = {"functionar": {"paznic"}, "verificator": {"functionar"}, "detectiv": {"paznic"}}
 _running: set[asyncio.Task] = set()  # păstrăm referințe, altfel GC-ul poate opri task-urile
 
 
@@ -31,6 +38,20 @@ class PipelineContext:
     scratch: dict[str, Any] = field(default_factory=dict)   # date interne între agenți (nu ajung în API)
     _agent: str | None = None
 
+    def mime(self, doc_id: str) -> str | None:
+        """'image/jpeg' | 'image/png' | 'application/pdf' | None (fără fișier)."""
+        data = self.files.get(doc_id)
+        kind = sniff(data) if data else None
+        return kind[1] if kind else None
+
+    def pages(self, doc_id: str) -> list:
+        """Paginile documentului ca imagini PIL (PDF randat o singură dată, apoi din cache)."""
+        cache = self.scratch.setdefault("_pages", {})
+        if doc_id not in cache:
+            data = self.files.get(doc_id)
+            cache[doc_id] = render_pages(data) if data else []
+        return cache[doc_id]
+
     async def emit(self, type: str, message: str = "", data: dict | None = None, agent: str | None = None) -> None:
         bus.publish(self.case.id, type, agent=agent or self._agent, message=message, data=data)
 
@@ -39,17 +60,33 @@ async def _run_agent(name: str, ctx: PipelineContext) -> AgentResult:
     from app.agents.registry import AGENTS
 
     agent = AGENTS[name]
+    failed = {d for d in DEPENDS_ON.get(name, set()) if ctx.results.get(d) and ctx.results[d].status != "done"}
+    if failed:
+        result = AgentResult(agent=name, status="skipped", error=f"sărit: {', '.join(sorted(failed))} nu a terminat")
+        bus.publish(ctx.case.id, "agent_error", agent=name, message=result.error,
+                    data=result.model_dump(exclude_none=True))
+        ctx.results[name] = result
+        ctx.case.results = [r for r in ctx.case.results if r.agent != name] + [result]
+        await store.save(ctx.case)
+        return result
     agent_ctx = PipelineContext(case=ctx.case, results=ctx.results, files=ctx.files, scratch=ctx.scratch, _agent=name)
     bus.publish(ctx.case.id, "agent_started", agent=name, message=getattr(agent, "start_message", ""))
     t0 = time.perf_counter()
     try:
-        result = await asyncio.wait_for(agent.run(ctx.case, agent_ctx), timeout=AGENT_TIMEOUT_S)
+        result = await asyncio.wait_for(agent.run(ctx.case, agent_ctx), timeout=AGENT_TIMEOUT_S.get(name, 60))
         result.duration_ms = result.duration_ms or int((time.perf_counter() - t0) * 1000)
         ok = True
     except Exception as exc:
         corr = uuid.uuid4().hex[:8]
         log.exception("agent %s a picat (corelare %s)", name, corr)
-        kind = "timeout" if isinstance(exc, asyncio.TimeoutError) else "eroare internă"
+        if isinstance(exc, asyncio.TimeoutError):
+            kind = "timeout"
+        elif isinstance(exc, PIIGateBlocked):
+            kind = f"blocat de poarta anti-PII ({', '.join(exc.kinds)})"
+        elif isinstance(exc, LLMUnavailable):
+            kind = "AI indisponibil"
+        else:
+            kind = "eroare internă"
         result = AgentResult(agent=name, status="error", error=f"{kind} (ref {corr})",
                              duration_ms=int((time.perf_counter() - t0) * 1000))
         ok = False

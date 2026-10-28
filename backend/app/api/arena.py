@@ -33,6 +33,7 @@ async def submit(body: SubmissionIn):
         result = await asyncio.to_thread(service.submit, body.nickname, body.mission_id, body.edits, body.tricks)
     except service.ArenaError as exc:
         raise HTTPException(400, str(exc)) from exc
+    service.announce(result)
     if result["outcome"] == "passed" and not result["duplicate"]:
         proposer.on_arena_miss(result["id"])  # self-learning în fundal
     return result
