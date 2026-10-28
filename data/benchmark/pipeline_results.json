@@ -1833,5 +1833,421 @@
         ]
       }
     ]
+  },
+  "clean_bedrock": {
+    "generated": "2026-10-28",
+    "args": {
+      "n": 20,
+      "seed": 2026,
+      "noisy": false,
+      "phone": false,
+      "extra_fakes": false,
+      "save": null,
+      "generate_only": false,
+      "llm": "bedrock",
+      "jobs": 3,
+      "mode": "clean"
+    },
+    "summary": {
+      "dosare": 20,
+      "documente": 60,
+      "agenti_fara_erori": "20/20",
+      "erori_agenti": [],
+      "dosare_cu_scurgeri": 0,
+      "dosare_cu_scurgeri_spre_cloud": 0,
+      "scurgeri_pe_tip": {},
+      "extragere_corecta": {
+        "tip documente": "20/20",
+        "brut": "20/20",
+        "net": "19/20",
+        "luna": "20/20",
+        "data emiterii": "20/20",
+        "sold inițial": "20/20",
+        "sold final": "20/20",
+        "rânduri extras": "20/20",
+        "expirare buletin": "19/20",
+        "sex": "20/20"
+      },
+      "cinstiti_loviti": "0/4",
+      "cinstiti_loviti_detalii": [],
+      "falsuri_prinse": {
+        "forged_net": "4/4",
+        "forged_balance": "4/4",
+        "inactive_employer": "4/4"
+      },
+      "fals_perfect_semnalat": "1/4 (limită cunoscută; doar prin extras)",
+      "fals_perfect_cu_semnal_salariu": "4/4 (netul de pe fluturaș nu apare în extras)",
+      "ms_median_pe_dosar": 12831
+    },
+    "cases": [
+      {
+        "id": "bench_000",
+        "kind": "honest",
+        "ms": 22971,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_001",
+        "kind": "forged_net",
+        "ms": 20769,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "NET_MISMATCH",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_002",
+        "kind": "forged_balance",
+        "ms": 12831,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_003",
+        "kind": "inactive_employer",
+        "ms": 15305,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "AMOUNT_UNCERTAIN",
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED",
+          "SALARY_NOT_IN_STATEMENT",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.9055,
+        "expected_caught": true,
+        "fields_wrong": [
+          "net"
+        ]
+      },
+      {
+        "id": "bench_004",
+        "kind": "perfect_fake",
+        "ms": 8095,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED",
+          "SALARY_NOT_IN_STATEMENT"
+        ],
+        "recommendation": "clear",
+        "risk": 0.3,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_005",
+        "kind": "honest",
+        "ms": 10405,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_006",
+        "kind": "forged_net",
+        "ms": 11946,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "NET_MISMATCH",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_007",
+        "kind": "forged_balance",
+        "ms": 28805,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_008",
+        "kind": "inactive_employer",
+        "ms": 13847,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.85,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_009",
+        "kind": "perfect_fake",
+        "ms": 10805,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED",
+          "SALARY_NOT_IN_STATEMENT"
+        ],
+        "recommendation": "clear",
+        "risk": 0.3,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_010",
+        "kind": "honest",
+        "ms": 12888,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_011",
+        "kind": "forged_net",
+        "ms": 15717,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "NET_MISMATCH",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_012",
+        "kind": "forged_balance",
+        "ms": 13681,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_013",
+        "kind": "inactive_employer",
+        "ms": 11025,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.85,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_014",
+        "kind": "perfect_fake",
+        "ms": 1998,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "PII_GATE_BLOCKED",
+          "PII_REDACTED",
+          "SALARY_NOT_IN_STATEMENT"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.72,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_015",
+        "kind": "honest",
+        "ms": 7916,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_016",
+        "kind": "forged_net",
+        "ms": 11332,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "NET_MISMATCH",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_017",
+        "kind": "forged_balance",
+        "ms": 15591,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": [
+          "expirare buletin"
+        ]
+      },
+      {
+        "id": "bench_018",
+        "kind": "inactive_employer",
+        "ms": 12235,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.85,
+        "expected_caught": true,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_019",
+        "kind": "perfect_fake",
+        "ms": 10854,
+        "agents_ok": true,
+        "errors": [],
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "PII_REDACTED",
+          "SALARY_NOT_IN_STATEMENT"
+        ],
+        "recommendation": "clear",
+        "risk": 0.3,
+        "expected_caught": null,
+        "fields_wrong": []
+      }
+    ]
   }
 }

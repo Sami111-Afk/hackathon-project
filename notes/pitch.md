@@ -28,12 +28,12 @@ Excepție posibilă: 5–10 s de Arena la final („oricine poate încerca să-l
 | Ce | Valoare | Sursă / cum |
 |---|---|---|
 | Timp manual pe dosar | **X min** (de cronometrat: un coleg, 3 dosare) | cronometru; + cifra de la mentorii Raiffeisen |
-| Timp ORB pe dosar | **~20 s** cloud · **9,4 s** local (RTX 4060) | dosarul Mariei; PR #27 (Narcis) |
+| Timp ORB pe dosar | **~13–20 s** cloud · **8–9 s** local (RTX 4060, Ollama — testat și pe linkul public) | dosarul Mariei; benchmark |
 | Cost AI pe dosar | **~0,005 $** (Haiku extrage, Sonnet rezumă) | `llm_usage` pe dosarul Mariei |
 | Date personale trimise la AI-ul din cloud | **0 din 40** (curat) · **0 din 20** (poze de telefon) | `scripts/benchmark_pipeline.py`, `data/benchmark/pipeline_results.json` |
 | Oameni cinstiți acuzați | **0 din 8** (curat) · pe poze proaste: trimiși la om, nu acuzați | idem |
 | Falsuri prinse (net umflat / sold / firmă inactivă) | 8/8 · 8/8 · 8/8 pe documente curate | idem |
-| Valori inventate de AI oprite de filtru | **(în curs — benchmark cu Bedrock real)** | idem, `--llm bedrock` |
+| Cu AI-ul real (Haiku/Bedrock), 20 dosare | **0 valori inventate** (filtrul n-a avut ce opri) · **198/200 câmpuri corecte** · 0 cinstiți acuzați · 12/12 falsuri prinse · ~13 s/dosar | `--llm bedrock`, cheia `clean_bedrock` |
 
 **Spunem deschis:** date sintetice, falsuri create de noi → „test de corectitudine a lanțului, nu acuratețe pe fraude reale”.
 Ce NU prindem: falsul „perfect” (taxe refăcute corect) nu se vede din fluturaș — doar din extras/ANAF.
