@@ -15,7 +15,8 @@ const ROUTE_PAGES: [RegExp, string, auth?: boolean][] = [
   [/^\/login/, 'pages/LoginPage.tsx'],
   [/^\/zk/, 'pages/ZkPage.tsx', true],
   [/^\/cases\//, 'pages/CasePage.tsx', true],
-  [/^\/(dashboard)?\/?$/, 'pages/DashboardPage.tsx', true],
+  [/^\/dashboard/, 'pages/DashboardPage.tsx', true],
+  [/^\/$/, 'pages/LandingPage.tsx'],
 ]
 // Textul de bază: fără preload, fontul se descoperă abia după ce CSS-ul e citit.
 const PRELOAD_FONTS = [/ibm-plex-sans-latin-400-normal-.*\.woff2$/, /ibm-plex-sans-latin-ext-400-normal-.*\.woff2$/]
