@@ -5,6 +5,7 @@ textul OCR). Python parsează apoi valorile după `FIELD_KINDS` (sume RO, date) 
 verifică grounding-ul. Textul primit de LLM e deja redactat de Paznic, deci
 identificatorii apar ca etichete (`[PERSOANA_1]`, `[CUI_1]` ...) și se extrag ca atare.
 """
+import re
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -95,6 +96,16 @@ FIELD_KINDS: dict[str, FieldKind] = {
     "gross_salary": "amount", "personal_deduction": "amount", "cas": "amount", "cass": "amount",
     "income_tax": "amount", "net_salary": "amount", "opening_balance": "amount", "closing_balance": "amount",
 }
+
+# Date personale: în extracted intră doar ca etichete ale Paznicului, niciodată în clar.
+IDENTIFIER_FIELDS = {"last_name", "first_name", "address", "series", "employee_name", "account_holder", "iban",
+                     "employer_cui"}
+_LABELS_ONLY = re.compile(r"(?:\[[A-Z_]+_\d+\]\s*)+")
+
+
+def is_label(value) -> bool:
+    return isinstance(value, str) and bool(_LABELS_ONLY.fullmatch(value.strip()))
+
 
 DOC_LABELS = {
     "id_card": "carte de identitate",
