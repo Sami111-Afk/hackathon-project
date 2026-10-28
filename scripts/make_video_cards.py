@@ -65,14 +65,14 @@ def numbers() -> None:
     img = Image.new("RGB", (W, H), NIGHT)
     d = ImageDraw.Draw(img)
     d.rectangle((0, 0, W, 10), fill=BRAND)
-    centered(d, 120, "Measured with the real AI · 60 applications", font(54), WHITE)
-    cards = [("0", "personal values\nsent to the cloud", OK), ("0", "values invented\nby the AI", OK),
-             ("0 / 12", "honest applicants\naccused", OK), ("36 / 36", "planted forgeries\ncaught", BRAND)]
+    centered(d, 120, "Measured with the real AI · 60 synthetic applications", font(54), WHITE)
+    cards = [("0", "names or ID numbers\nsent to the cloud", OK), ("0 / 12", "honest applicants\nflagged high-risk", OK),
+             ("36 / 36", "simple forgeries\ncaught", BRAND), ("12 / 12", "perfect forgeries\nsent to a human", BRAND)]
     cw, gap = 380, 40
     x = (W - (4 * cw + 3 * gap)) / 2
     for big, small, color in cards:
         d.rounded_rectangle((x, 300, x + cw, 720), radius=20, outline="#323843", width=3, fill="#171B21")
-        fb = font(120 if len(big) <= 2 else 92)
+        fb = font(100)
         box = d.textbbox((0, 0), big, font=fb)
         d.text((x + (cw - (box[2] - box[0])) / 2, 360), big, font=fb, fill=color)
         fs = font(34, bold=False)
@@ -80,7 +80,7 @@ def numbers() -> None:
             box = d.textbbox((0, 0), line, font=fs)
             d.text((x + (cw - (box[2] - box[0])) / 2, 560 + i * 48), line, font=fs, fill="#C9CED6")
         x += cw + gap
-    centered(d, 800, "~20 min manual  ·  ~20 s with ORB  ·  ~0.005 $ per application", font(40), WHITE)
+    centered(d, 800, "3 of 12 honest files went to a human for a second look  ·  ~10 s per file  ·  ~0.005 $ per file", font(40), WHITE)
     centered(d, 880, "Synthetic data and forgeries made by us: a correctness test of the pipeline, not accuracy on real fraud.",
              font(28, bold=False), INK3)
     img.save(OUT / "05_numbers.png")

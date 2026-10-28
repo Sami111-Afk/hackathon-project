@@ -22,13 +22,19 @@ FORGERY_CODES = {"NET_MISMATCH", "ELA_ANOMALY", "PDF_EDITOR_PRODUCER", "PDF_INCR
 RING_CODES = {"FRAUD_RING_SUSPECTED", "SHARED_IBAN"}
 # PII_GATE_BLOCKED: poarta și-a făcut treaba (n-a plecat nimic în cloud) — nu e o dovadă împotriva clientului,
 # dar AI-ul n-a putut citi tot → un om verifică (benchmark cu Bedrock: 2/12 cinstiți escaladați doar din asta).
-REVIEW_OVERRIDES = {"OCR_LOW_QUALITY", "MRZ_INVALID", "PII_GATE_BLOCKED"}  # nu acuză pe nimeni; un om se uită
+# SALARY_NOT_IN_STATEMENT: netul de pe fluturaș nu apare ca încasare în extras. E singurul semnal care vede falsul
+# „perfect” (taxe refăcute corect): benchmark cu Bedrock, 12/12 falsuri perfecte și 0/12 cinstiți (0/4 pe poze) →
+# nu acuzăm (poate fi alt cont de salariu), dar un om se uită.
+REVIEW_OVERRIDES = {"OCR_LOW_QUALITY", "MRZ_INVALID", "PII_GATE_BLOCKED",
+                    "SALARY_NOT_IN_STATEMENT"}  # nu acuză pe nimeni; un om se uită
 
 # Poză neclară (OCR_LOW_QUALITY): cifrele de control (MRZ, IBAN, CNP) și sumele pot fi citite greșit, iar riscul se
 # adună din semnale născute din OCR (benchmark --phone: 2/8 cinstiți escaladați). Atunci recomandarea e cel mult
 # „review” (un om se uită oricum), cu excepția semnalelor care nu depind de cifrele citite de pe poză.
 NOT_FROM_OCR = {"COMPANY_INACTIVE", "COMPANY_NOT_FOUND", "PROMPT_INJECTION_SUSPECTED", "FRAUD_RING_SUSPECTED",
                 "SHARED_IBAN"}
+
+NOT_EVIDENCE = REVIEW_OVERRIDES | {"EXTRACTION_UNGROUNDED"}
 
 ESCALATE_AT = 0.70  # de recalibrat pe benchmark: 0 fals pozitive pe dosarele legitime
 REVIEW_AT = 0.35
@@ -50,8 +56,16 @@ def score(results: list[AgentResult]) -> tuple[Verdict, list[Finding]]:
 
     codes = {f.code for f in findings}
     hard = codes & HARD_OVERRIDES
+    # la escaladare (= acuzație) contează doar dovezile împotriva dosarului; semnalele care „nu acuză pe nimeni”
+    # (REVIEW_OVERRIDES) și cele despre propria noastră citire (EXTRACTION_UNGROUNDED) trimit doar la om.
+    # Benchmark pe poze: un buletin cinstit, cu MRZ ilizibil + câteva valori nelegate de document, trecea de 0,70.
+    keep_e = 1.0
+    for f in findings:
+        if f.code not in NOT_EVIDENCE:
+            keep_e *= 1 - finding_weight(f)
+    risk_evidence = 1 - keep_e
     soft_strong = any(f.code in SOFT_SIGNALS and SEVERITY_WEIGHT[f.severity] >= 0.3 for f in findings)
-    if risk >= ESCALATE_AT or hard:
+    if risk_evidence >= ESCALATE_AT or hard:
         recommendation = "escalate"
     elif risk >= REVIEW_AT or incomplete or soft_strong or codes & REVIEW_OVERRIDES:
         recommendation = "review"

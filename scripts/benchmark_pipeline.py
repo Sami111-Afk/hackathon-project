@@ -12,7 +12,7 @@ CE MĂSOARĂ ȘI CE NU (de spus la fel și în pitch):
     (--noisy) sau poze de telefon (--phone: perspectivă, ±3°, umbră, zgomot; vezi data/generator/phone.py).
     NU sunt documente reale de la bănci: cifrele arată că lanțul e implementat corect, nu că prindem
     orice fals real. Falsul „perfect” (taxe refăcute corect) e raportat separat, ca limită.
-  - Detector și Detectiv nu intră în scor aici (Detectorul e încă varianta de probă).
+  - Detector și Detectiv nu intră în scor aici (benchmark-ul măsoară Paznicul, Funcționarul și Verificatorul; Detectorul și Detectivul sunt testate separat, în tests/).
 
 Toate datele sunt INVENTATE: CNP cu număr de ordine 000 (nu se atribuie), IBAN cu sucursala 9999,
 firmele din Arena (CUI-uri verificate ca inexistente la ANAF).

@@ -79,3 +79,21 @@ def test_blurry_photo_still_escalates_on_signals_not_from_ocr():
 def test_clear_photo_unchanged():
     v, _ = score([res("verificator", ("NET_MISMATCH", "high"), ("BALANCE_MISMATCH", "high"))])
     assert v.recommendation == "escalate"
+
+
+def test_signals_that_accuse_no_one_never_escalate():
+    # poză de telefon: MRZ ilizibil + valori nelegate de document → la om, nu acuzat (benchmark --phone)
+    v, _ = score([res("paznic", ("MRZ_INVALID", "high")),
+                  res("functionar", *[("EXTRACTION_UNGROUNDED", "low")] * 4)])
+    assert v.risk >= 0.70 and v.recommendation == "review"
+
+
+def test_salary_missing_from_statement_goes_to_a_human():
+    # singura urmă a falsului „perfect” (taxe refăcute corect): nu acuzăm, dar un om se uită
+    v, _ = score([res("verificator", ("SALARY_NOT_IN_STATEMENT", "medium"))])
+    assert v.recommendation == "review"
+
+
+def test_real_evidence_still_escalates():
+    v, _ = score([res("verificator", ("NET_MISMATCH", "high"), ("BALANCE_MISMATCH", "high"))])
+    assert v.recommendation == "escalate"

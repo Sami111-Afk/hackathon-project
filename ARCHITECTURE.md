@@ -63,7 +63,7 @@ Decizia omului (cu decided_by) ──► SELF-LEARNING (regulă propusă → val
 
 - Paznic → Funcționar: secvențial. Verificator, Detector, Detectiv: în paralel.
 - Detectorul lucrează pe imaginea originală, **local**.
-- Un agent cu eroare / timeout (30 s) → `status: "error"`; Compliance marchează dosarul **„incomplet”** (nu scade riscul și nu blochează pipeline-ul).
+- Un agent cu eroare / timeout (20–120 s după agent, `AGENT_TIMEOUT_S` în `core/pipeline.py`) → `status: "error"`; Compliance marchează dosarul **„incomplet”** (nu scade riscul și nu blochează pipeline-ul).
 - Stări dosar: `received → processing → awaiting_review → cleared | rejected | escalated` (+ `error`).
 
 ## 3. Contractul comun (JSON)

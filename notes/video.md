@@ -1,4 +1,51 @@
-# Video 3:00 — VARIANTA 5 (după prezentarea organizatorilor, 28.10 ~20:00) — PROPUNERE
+# Video 3:00 — VARIANTA 6 (după juriul Raiffeisen simulat: șef AI, director de risc, design de servicii, inginer AI) — DE LUCRU
+
+> Variantele 5–1 sunt mai jos, ca istoric. Urmează structura recomandată de organizatori și criteriile Raiffeisen.
+
+## Ce s-a schimbat față de varianta 5 (și de ce)
+- **Cod:** semnalul „salariul de pe fluturaș nu apare în extras” trimite acum dosarul la om → **12/12 falsuri perfecte** ajung la om
+  (înainte 3/12), 0/12 cinstiți afectați. Plus: semnalele care nu acuză pe nimeni (MRZ ilizibil, valori nelegate de document) nu mai pot
+  escalada singure un dosar (pe poze, un cinstit era escaladat așa). Benchmark-urile reluate cu AI-ul real.
+- **Domeniu (directorul de risc):**
+  - **scos „pensie + salariu”**: cumulul e legal în România, nu e semnal de fraudă;
+  - în loc: „salariul nu ajunge în extras”;
+  - deschiderea spune că datele ANAF nu acoperă tot, deci ORB verifică documentele;
+  - „ORB checks documents, not creditworthiness” (AI Act).
+- **Un singur flux (design de servicii):** Maria merge până la decizie, **apoi** „second file” cu situațiile neprevăzute;
+  indicii pentru juriu înainte de click („Watch the names”, „Watch the button”); etichete pe ecran de la început.
+- **Designul agenților (șeful AI, 25%):** scenă nouă „Why this shape?”; **rezumatul AI respins** dacă citează o cifră fără dovadă
+  (nimeni altcineva nu va arăta asta); scos „debate” și agentul „skipped” din voce (doar text pe ecran).
+- **Arhitectura (inginerul AI, 15%):** pe ecran `pytest` → 275 passed + README cu o comandă; README-ul are acum Prerequisites,
+  „Verify it in 5 minutes” și „Why a fixed pipeline”.
+
+## Structura (180 s, 2,1–2,6 cuvinte/s pe fiecare scenă)
+
+| # | Timp | Durată | Pe ecran | Vocea (engleză) | Text pe ecran |
+|---|---|---|---|---|---|
+| 0 | 0:00–0:04 | 4 s | Intro animat ORB | — (muzică) |  |
+| 1 | 0:04–0:17 | 13 s | Zoom pe netul de pe fluturașul Mariei: 8.500 → apare „should be 8,307” cu roșu | "This payslip says 8,500 lei net. Romanian payroll rules say 8,307. Today a credit analyst catches that by hand: read, recalculate, cross-check. About twenty minutes a file, by our own timing." | „~20 min per file · our timing, not bank data” |
+| 2 | 0:17–0:32 | 15 s | Ecranul „New application” (fără mișcări de cursor) · text „User: credit analyst” | "We built ORB to help credit analysts check loan applications. Salary data from ANAF can't cover everything, so ORB checks the documents themselves against the bank's rules, and flags exactly what's wrong." | „User: credit analyst” |
+| 3 | 0:32–0:42 | 10 s | Încărcăm cele 3 documente → zoom pe nume → [PERSOANA_1] · insignă în colț „SYNTHETIC DATA · DEMO” până la 2:15 | "Watch the names. Maria's application: three synthetic documents. Before any AI sees them, the Guard swaps every name and ID number for a label." | „SYNTHETIC DATA” |
+| 4 | 0:42–1:08 | 26 s | Agenții live („2× SPEED” în colț) → dovezile, zoom pe fiecare când e numită → click = chenar pe fluturaș → zonele editate | "Six agents, at double speed. The Clerk extracts the fields; any value it can't point to in the document is discarded. Now the findings. The Verifier recomputes the tax: net should be 8,307, not 8,500. The employer, in our demo registry: inactive. The salary never arrives in her statement. One click, and the box lands on the exact spot." | „2× SPEED” · „DEMO REGISTRY” pe firmă · „8,307 ≠ 8,500 lei” |
+| 5 | 1:08–1:15 | 7 s | Graful: nodul contului → cele 6 cereri | "The Detector marks the edited pixels. The Detective finds one bank account in six applications." | „1 account · 6 names” |
+| 6 | 1:15–1:32 | 17 s | Risc „Very high” → „Why this score?” → click pe Approve → caseta goală de motiv (1 s pauză, singurul „ping” din video) | "Watch the button. The risk comes from fixed rules, every finding listed. The AI only writes the summary, and a summary quoting a number not in the evidence is thrown out. The analyst decides, with a written reason." | „The AI doesn't decide” |
+| 7 | 1:32–1:50 | 18 s | Card „SECOND FILE” → dosarul cu poză neclară: OCR_LOW_QUALITY, „not sent to the cloud” în audit → la om · apoi o sumă „to check” | "Different file now: a blurry phone photo. ORB can't guarantee it hid everything, so its text never goes to the cloud AI; a person gets it. And a sum the OCR may have misread is re-read from the image: 'to check', not 'forged'." | „no cloud call” · „to check” |
+| 8 | 1:50–2:06 | 16 s | Schema celor 6 pași, cu cele două locuri unde lucrează AI-ul evidențiate | "Why this shape? Fixed steps, because an audit needs the same steps every time. The AI only reads and summarises; every decision is a written rule. If an agent fails, the rest finish, and the file is never shown as clean." | „AI: read · summarise — rules: everything else” |
+| 9 | 2:06–2:16 | 10 s | Dosarul cinstit: clear, click pe o valoare = sursa ei | "Most files are honest: clean in seconds, every value linked to its source. Twenty minutes becomes about a minute of review, our estimate." | „~20 min → ~1 min review (estimate)” |
+| 10 | 2:16–2:28 | 12 s | Privacy: textul exact primit de AI → butonul „100% local” · text mic „demo: AWS us-west-2 · pilot: EU or in-house” | "Built for a bank: the cloud AI sees only labels, and a second gate blocks any request still carrying a name. One switch runs it all in-house." | „0 names or ID numbers to the cloud” |
+| 11 | 2:28–2:46 | 18 s | Cardul cu cifrele (nou) | "Sixty synthetic files, real cloud AI: no name or ID number left the bank. None of twelve honest applicants flagged high-risk; three went to a human. All thirty-six simple forgeries caught, and all twelve perfect ones sent to a human. The forgeries are ours." | (cardul plin) |
+| 12 | 2:46–2:56 | 10 s | Terminal: `pytest` → 275 passed · README cu comanda · schema | "Six modules, one contract, 275 tests, one command. ORB checks documents, not creditworthiness. Our ask: a pilot on a hundred real files, in-house." | „275 tests · runs without an API key” |
+| 13 | 2:56–3:00 | 4 s | Outro animat ORB | "ORB does the checking. Your people decide." |  |
+
+### De filmat / pregătit
+- dosarul cu **poză de telefon neclară** (`scripts/benchmark_pipeline.py --n 4 --phone --save data/generated/phone --generate-only`, un „honest”);
+- momentul **rezumat respins**: dacă nu apare natural, îl arătăm din audit (linia „summary replaced: unsupported figure”) — de verificat;
+- terminalul cu `pytest -q` și README-ul;
+- cardurile noi (cifrele sunt deja refăcute în `video/cards/05_numbers.png`).
+
+---
+
+# Varianta 5 (istoric)
 
 > Variantele 4–1 sunt mai jos, ca istoric. Varianta 5 urmează **structura recomandată de organizatori** și
 > **criteriile juriului Raiffeisen**. Sursa: slide-urile workshopului (link în chat).
