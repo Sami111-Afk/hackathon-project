@@ -137,3 +137,29 @@ export const AGENT_RO: Record<string, string> = {
 }
 
 export const lei = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`
+
+// Statistici locale ale jucătorului (doar pe telefonul lui), pentru cardul de rezultat.
+const STATS_KEY = 'orb.arena.stats'
+export interface MyStats { attempts: number; passed: number; caught: number; ids: string[] }
+
+export function myStats(): MyStats {
+  try {
+    const s = JSON.parse(localStorage.getItem(STATS_KEY) ?? '') as MyStats
+    if (Array.isArray(s.ids)) return s
+  } catch { /* gol sau mod privat */ }
+  return { attempts: 0, passed: 0, caught: 0, ids: [] }
+}
+
+/** Numără o încercare o singură dată (reîncărcarea paginii nu o dublează). */
+export function recordAttempt(s: Submission): MyStats {
+  const st = myStats()
+  if (st.ids.includes(s.id) || s.outcome === 'invalid') return st
+  const next = {
+    attempts: st.attempts + 1,
+    passed: st.passed + (s.outcome === 'passed' ? 1 : 0),
+    caught: st.caught + (s.outcome === 'caught' ? 1 : 0),
+    ids: [...st.ids, s.id].slice(-50),
+  }
+  try { localStorage.setItem(STATS_KEY, JSON.stringify(next)) } catch { /* mod privat */ }
+  return next
+}
