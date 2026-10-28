@@ -88,3 +88,16 @@ titlul („20 seconds, not 20 minutes” → „seconds, not ~20 minutes”; 20 
 plus registrul demo la ANAF. Fă `git pull` pe ramură înainte să mai lucrezi pe ea.
 
 - (21:15) PR #45: am rezolvat eu conflictele cu landing-ul și am pus linkul Mariei înapoi pe `/cases/case_maria` (testat: după Re-run, tab-ul duce la dosarul nou). E pe main. Fă `git pull` înainte să mai lucrezi.
+
+## Design pentru platformă — ce vrea Samuel (seara de 28.10)
+**Pagina de prezentare e ascunsă** (`/about`, fără link; `/` duce iar la dashboard). Nu mai lucra pe ea. Juriul vede
+**platforma** în video, deci acolo punem tot efortul. În ordinea în care apar în video:
+1. **Pagina dosarului** (cea mai importantă, ~1 minut din video): banda celor 6 agenți când rulează live (să se vadă clar
+   cine lucrează, cine a terminat, animație la pornire), documentul cu chenarele dovezilor (chenar mai vizibil, evidențiere
+   când dai click pe o dovadă), cardul de risc („Very high” mare, clar).
+2. **Lista de dovezi**: severitatea dintr-o privire (culoare/iconiță), mai aerisit, citibil pe proiector.
+3. **Panoul Privacy**: cele 4 carduri să arate ca „dovezi”, nu ca text — mai vizual.
+4. **Dashboard-ul**: primul cadru din video după titlu → să arate impresionant în 3 secunde.
+
+Reguli: **doar aspect**, nu schimbi ce face aplicația și nici textele cu cifre/afirmații. PR-uri mici (câte o pagină),
+ca să le verific și să le pun repede. **Termen: ~22:30** — după aia filmăm videoul și nu mai schimbăm interfața.
