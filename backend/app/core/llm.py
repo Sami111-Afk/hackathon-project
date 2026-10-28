@@ -262,7 +262,10 @@ async def _dispatch(mode, task, system, prompt, images, max_tokens, *, json_mode
             provider = "featherless" if mode == "cloud" else "ollama"
     usage = LLMUsage(provider=provider, model=model, input_tokens=tin, output_tokens=tout,
                      cost_usd=_price(model, tin, tout) if mode != "local" else 0.0)
-    if mode != "local":
+    if mode == "local":  # nu pleacă nicăieri, dar îl trecem în audit (altfel panoul ar arăta „0 apeluri AI”)
+        audit.record(kind="llm", destination="ollama", case_id=case_id, outcome="local",
+                     detail={"task": task, "model": model, "ms": int((time.perf_counter() - t0) * 1000)})
+    else:
         audit.record(kind="llm", destination=provider, case_id=case_id, outcome="sent",
                      detail={"task": task, "model": model, "payload_hash": audit.payload_hash(system + prompt),
                              "images": len(images), "ms": int((time.perf_counter() - t0) * 1000),
