@@ -47,7 +47,7 @@ def test_maria_is_caught_on_every_axis(no_llm, monkeypatch):
 
     assert f["NET_MISMATCH"].message == "Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)"
     assert f["NET_MISMATCH"].evidence.bbox[1] == 900 and f["NET_MISMATCH"].evidence.field == "net_salary"
-    assert f["COMPANY_INACTIVE"].message == "Angajatorul [CUI_1] figurează inactiv la ANAF"
+    assert f["COMPANY_INACTIVE"].message == "Angajatorul [CUI_1] figurează inactiv (registru demo, nu ANAF real)"
     assert f["BALANCE_MISMATCH"].message == "Soldul final (26.480 lei) nu iese din tranzacții (2.851,50 lei)"
     assert f["AGE_EMPLOYMENT_MISMATCH"].message == "Solicitant de 67 de ani declarat angajat activ"
     assert {"SALARY_NOT_IN_STATEMENT", "PENSION_INCOME"} <= set(f)

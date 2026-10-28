@@ -153,3 +153,13 @@ def test_privacy_panel_shows_encrypted_storage_and_no_pii_to_ai():
         for pii in ("2590312290006", "RO59RZBR9999000000000001", "Ionescu", "Florilor"):
             assert pii not in body
         assert c.get("/api/cases/nu_exista/privacy", headers=AUTH).status_code == 404
+
+
+def test_rerun_demo_replaces_previous_maria_run():
+    with TestClient(app) as c:
+        first = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        wait_for_review(c, first)
+        second = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        wait_for_review(c, second)
+        ids = [x["id"] for x in c.get("/api/cases", headers=AUTH).json()]
+        assert second in ids and first not in ids
