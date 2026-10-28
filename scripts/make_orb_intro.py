@@ -18,7 +18,7 @@ FONTS = ROOT / "backend" / "app" / "arena" / "fonts"
 W, H, FPS = 1920, 1080, 30
 NIGHT, BRAND, WHITE, GREY = (17, 20, 24), (255, 230, 0), (255, 255, 255), (201, 206, 214)
 CX, CY = W // 2, 400          # centrul globului
-R = 120                       # raza globului
+R = 135                       # raza globului
 T_MERGE = 1.2                 # când se adună punctele
 
 LINES_INTRO = [("Checks a loan file in 20 seconds.", True),
@@ -63,21 +63,79 @@ def glow(img: Image.Image, draw_fn, blur: float) -> None:
     img.alpha_composite(layer)
 
 
-def draw_orb(img: Image.Image, r: float, shine: float) -> None:
-    if r < 1:
+def draw_orb(img: Image.Image, r: float, shine: float, t: float = 0.0) -> None:
+    """„Ochiul”: sferă de sticlă întunecată, margine aprinsă, meridiane care se rotesc, linie de scanare,
+    nucleu care pulsează și un inel de particule care orbitează."""
+    if r < 2:
         return
-    halo = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    hr = r * (1.7 + 0.6 * shine)
-    ImageDraw.Draw(halo).ellipse((CX - hr, CY - hr, CX + hr, CY + hr), fill=(*BRAND, int(60 + 120 * shine)))
-    img.alpha_composite(halo.filter(ImageFilter.GaussianBlur(r * 0.6)))
-    d = ImageDraw.Draw(img)
-    steps = 40
+    S = int(r * 4)                                   # lucrăm pe un pătrat în jurul globului (mai rapid)
+    ox, oy = CX - S // 2, CY - S // 2
+    c = S / 2
+
+    # aura din spate
+    halo = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    hr = r * (1.35 + 0.5 * shine)
+    ImageDraw.Draw(halo).ellipse((c - hr, c - hr, c + hr, c + hr), fill=(*BRAND, int(45 + 120 * shine)))
+    img.alpha_composite(halo.filter(ImageFilter.GaussianBlur(r * 0.45)), (ox, oy))
+
+    # sfera: întunecată în centru, galbenă spre margine (efect de lentilă luminată din spate)
+    sph = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(sph)
+    steps = 48
     for i in range(steps):
-        k = i / (steps - 1)
-        rr = r * (1 - k * 0.92)
-        ox, oy = -r * 0.28 * k, -r * 0.30 * k
-        col = tuple(int(a + (b - a) * k) for a, b in zip((214, 158, 0), (255, 248, 180)))
-        d.ellipse((CX + ox - rr, CY + oy - rr, CX + ox + rr, CY + oy + rr), fill=(*col, 255))
+        k = i / (steps - 1)                          # 0 = marginea, 1 = centrul
+        rr = r * (1 - k)
+        edge = (1 - k) ** 6
+        col = tuple(int(dark + (lit - dark) * edge) for dark, lit in zip((12, 14, 20), (255, 214, 40)))
+        d.ellipse((c - rr, c - rr, c + rr, c + rr), fill=(*col, 255))
+
+    grid = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    g = ImageDraw.Draw(grid)
+    rot = t * 1.4
+    for m in range(8):                               # meridiane
+        phi = m * math.pi / 8 + rot
+        w = abs(math.cos(phi)) * r
+        front = 0.5 + 0.5 * math.sin(phi)
+        g.ellipse((c - w, c - r, c + w, c + r), outline=(255, 230, 0, int(40 + 110 * front)), width=2)
+    for lat in (-0.6, -0.3, 0.0, 0.3, 0.6):          # paralele
+        y = c + lat * r
+        hw = r * math.sqrt(1 - lat * lat)
+        g.ellipse((c - hw, y - hw * 0.18, c + hw, y + hw * 0.18), outline=(255, 230, 0, 70), width=2)
+    # linia de scanare: coboară prin sferă, se repetă
+    sy = c - r + (t * 0.9 % 1.0) * 2 * r
+    for j in range(18):                              # dâra liniei, în sus, din ce în ce mai slabă
+        a = int(90 * (1 - j / 18) ** 2)
+        g.line((c - r, sy - j * 2, c + r, sy - j * 2), fill=(255, 230, 0, a), width=2)
+    g.line((c - r, sy, c + r, sy), fill=(255, 248, 200, 230), width=2)
+    # nucleul (pupila)
+    pr = r * (0.13 + 0.04 * math.sin(t * 7)) * (1 + 0.6 * shine)
+    core = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    ImageDraw.Draw(core).ellipse((c - pr * 2.4, c - pr * 2.4, c + pr * 2.4, c + pr * 2.4), fill=(255, 230, 0, 150))
+    grid.alpha_composite(core.filter(ImageFilter.GaussianBlur(pr * 1.2)))
+    ImageDraw.Draw(grid).ellipse((c - pr, c - pr, c + pr, c + pr), fill=(255, 252, 225, 255))
+
+    mask = Image.new("L", (S, S), 0)                 # totul tăiat în cerc
+    ImageDraw.Draw(mask).ellipse((c - r, c - r, c + r, c + r), fill=255)
+    sph.alpha_composite(grid)
+    sph.putalpha(Image.composite(sph.getchannel("A"), Image.new("L", (S, S), 0), mask))
+    img.alpha_composite(sph, (ox, oy))
+
+    # marginea subțire, foarte luminoasă + inelul de particule care orbitează (înclinat)
+    rim = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    rd = ImageDraw.Draw(rim)
+    rd.ellipse((c - r, c - r, c + r, c + r), outline=(255, 240, 120, 255), width=3)
+    for k in range(70):
+        ang = k * math.tau / 70 + t * 0.8
+        x = c + math.cos(ang) * r * 1.45
+        y = c + math.sin(ang) * r * 0.38
+        y -= (x - c) * 0.25                           # înclinarea inelului
+        behind = math.sin(ang) < 0
+        if behind:
+            continue
+        s = 2.2 + 1.5 * ((k * 37) % 5) / 5
+        rd.ellipse((x - s, y - s, x + s, y + s), fill=(255, 238, 150, 220))
+    img.alpha_composite(rim.filter(ImageFilter.GaussianBlur(3)), (ox, oy))
+    img.alpha_composite(rim, (ox, oy))
 
 
 rng = random.Random(7)
@@ -105,7 +163,7 @@ def frame(t: float, total: float, final: bool) -> Image.Image:
     since = t - T_MERGE
     if since >= 0:
         pulse = math.exp(-(since ** 2) / 0.03)
-        draw_orb(img, R * ease_back(since / 0.45) * (1 + 0.05 * pulse), pulse)
+        draw_orb(img, R * ease_back(since / 0.45) * (1 + 0.05 * pulse), pulse, t)
 
         # unda de șoc + scânteile
         if since < 0.9:
