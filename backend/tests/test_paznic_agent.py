@@ -152,3 +152,33 @@ def test_ocr_noise_and_names_outside_labels_are_redacted():
     joined = " ".join(out).lower()
     for leak in ("ionescu", "maria", "ploie", "5903128", "2290006", "722 318", "259 031"):
         assert leak not in joined, (leak, out)
+
+
+def test_same_address_written_differently_has_one_fingerprint():
+    from app.agents.paznic.redact import normalize_value
+    a = normalize_value("ADRESA", "Str. Florilor nr. 12, Ploiești, jud. Prahova")
+    b = normalize_value("ADRESA", "Str. Florilor 12 Ploiesti")
+    c = normalize_value("ADRESA", "Ploiești, Strada Florilor 12")
+    assert a == b == c
+    assert normalize_value("ADRESA", "Str. Florilor 14 Ploiesti") != a
+
+
+def test_id_document_fingerprint_from_series_and_number():
+    r = CaseRedactor(secret="s")
+    card = "CARTE DE IDENTITATE\nSERIA PH NR 123456\nCNP 2590314290001"
+    r.label_spans(find_all(card))
+    fps = r.finalize_fingerprints()
+    assert len(fps["id_document"]) == 1 and "123456" not in fps["id_document"][0]
+    other = CaseRedactor(secret="s")
+    other.label_spans(find_all("CARTE DE IDENTITATE\nSERIA PH NR 654321"))
+    assert other.finalize_fingerprints()["id_document"] != fps["id_document"]
+
+
+def test_id_card_zones_leave_text_column_visible():
+    from app.agents.paznic.images import ID_CARD_ZONES
+    width, height, text_x, mrz_y = 1600, 1010, 440, 820  # șablonul din data/generator/build_demo.py
+    for name, (_x0, _y0, x1, _y1) in ID_CARD_ZONES.items():
+        if name != "mrz":
+            assert x1 * width < text_x, name
+    assert ID_CARD_ZONES["mrz"][1] * height <= mrz_y
+    assert ID_CARD_ZONES["poza"][0] * width <= 40 and ID_CARD_ZONES["poza"][2] * width >= 400
