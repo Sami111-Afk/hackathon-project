@@ -30,20 +30,32 @@ def _center(w: dict) -> float:
     return (w["bbox"][1] + w["bbox"][3]) / 2
 
 
+# rânduri vecine nu se suprapun deloc (sunt la ~1,5 înălțimi distanță); 30% acoperă o rotire de ~1°
+MIN_OVERLAP = 0.3
+
+
+def _overlap(a: dict, b: dict) -> float:
+    """Cât se suprapun pe verticală, ca fracție din înălțimea celui mai mic."""
+    inter = min(a["bbox"][3], b["bbox"][3]) - max(a["bbox"][1], b["bbox"][1])
+    smaller = min(a["bbox"][3] - a["bbox"][1], b["bbox"][3] - b["bbox"][1]) or 1
+    return inter / smaller
+
+
 def group_lines(words: list[dict]) -> list[Line]:
-    """Cuvinte cu centrul vertical apropiat (sub jumătate din înălțimea tipică) = același rând."""
+    """Rândurile, citite stânga → dreapta: un cuvânt continuă rândul al cărui ultim cuvânt îl suprapune
+    pe verticală (≥ 30% din înălțime). Așa o scanare ușor rotită (rândul „coboară” ~15 px pe
+    lățimea paginii) nu rupe „Sold final … 26.480,00” în două rânduri."""
     if not words:
         return []
-    tol = median(w["bbox"][3] - w["bbox"][1] for w in words) / 2
     lines: list[Line] = []
-    for w in sorted(words, key=lambda w: (w["page"], _center(w), w["bbox"][0])):
-        last = lines[-1] if lines else None
-        if last and last.page == w["page"] and abs(_center(w) - median(map(_center, last.words))) <= tol:
-            last.words.append(w)
+    for w in sorted(words, key=lambda w: (w["page"], w["bbox"][0], _center(w))):
+        candidates = [ln for ln in lines if ln.page == w["page"] and _overlap(ln.words[-1], w) >= MIN_OVERLAP]
+        if candidates:
+            best = max(candidates, key=lambda ln: (_overlap(ln.words[-1], w), -abs(_center(ln.words[-1]) - _center(w))))
+            best.words.append(w)
         else:
             lines.append(Line(page=w["page"], words=[w]))
-    for line in lines:
-        line.words.sort(key=lambda w: w["bbox"][0])
+    lines.sort(key=lambda ln: (ln.page, median(map(_center, ln.words)), ln.words[0]["bbox"][0]))
     return lines
 
 
