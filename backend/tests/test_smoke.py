@@ -54,6 +54,7 @@ def test_maria_end_to_end():
 
         d = c.post(f"/api/cases/{case_id}/decision", headers=AUTH, json={"action": "reject", "decided_by": "Andrei"})
         assert d.json()["status"] == "rejected"
+        assert d.json()["action"] == "reject" and d.json()["decided_by"] == "Andrei"
 
         stats = c.get("/api/dashboard/stats", headers=AUTH).json()
         assert stats["frauds_stopped"] >= 1
