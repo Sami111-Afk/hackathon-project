@@ -6,16 +6,16 @@ from datetime import date
 
 # Firme inventate — „ANAF simulat” pentru Arenă
 COMPANIES = {
-    "Tehnoserv Construct SRL": {"cui": "RO18547290", "active": True, "founded": date(2015, 4, 2),
+    "Tehnoserv Construct SRL": {"cui": "RO9185472906", "active": True, "founded": date(2015, 4, 2),
                                 "employees": 3, "median_gross": 5200,
                                 "role_medians": {"Operator date": 4800, "Contabil": 6000, "Administrator": 7500}},
-    "Bitwave Software SRL": {"cui": "RO34191029", "active": True, "founded": date(2011, 9, 14),
+    "Bitwave Software SRL": {"cui": "RO9341910290", "active": True, "founded": date(2011, 9, 14),
                              "employees": 420, "median_gross": 13500,
                              "role_medians": {"Operator date": 5500, "Contabil": 9000, "Programator": 14000,
                                               "Team lead": 21000, "Director": 34000}},
-    "Agro Prahova Distribuție SRL": {"cui": "RO40211937", "active": False, "founded": date(2019, 1, 22),
+    "Agro Prahova Distribuție SRL": {"cui": "RO9402119372", "active": False, "founded": date(2019, 1, 22),
                                      "employees": 0, "median_gross": 0, "role_medians": {}},
-    "Nordic Consulting Grup SRL": {"cui": "RO47732100", "active": True, "founded": date(2026, 6, 10),
+    "Nordic Consulting Grup SRL": {"cui": "RO9477321003", "active": True, "founded": date(2026, 6, 10),
                                    "employees": 2, "median_gross": 6000,
                                    "role_medians": {"Consultant": 6000, "Administrator": 8000}},
 }
