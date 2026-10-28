@@ -7,6 +7,7 @@ import { DecisionPanel } from '@/components/DecisionPanel'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { FindingsList } from '@/components/FindingsList'
 import { NetworkGraph } from '@/components/NetworkGraph'
+import { PrivacyPanel } from '@/components/PrivacyPanel'
 import { Panel } from '@/components/Panel'
 import { VerdictCard } from '@/components/VerdictCard'
 import { useCaseLive } from '@/hooks/useCaseLive'
@@ -74,6 +75,15 @@ function CaseView({ caseId }: { caseId: string }) {
   )
   const allFindings = findings.map((f) => f.finding)
   const lastDebate = [...state.feed].reverse().find((e) => e.type === 'debate')
+
+  // dosar deschis în timpul analizei: tipul documentelor și imaginea redactată apar abia după Paznic/Funcționar
+  // → reîncărcăm dosarul când termină Funcționarul și la verdict (altfel taburile rămân „Necunoscut”, vederea AI 404)
+  const functionarDone = state.agents.functionar.status === 'done'
+  const hasVerdict = Boolean(state.verdict)
+  const { refetch } = snapshot
+  useEffect(() => {
+    if (!mock && (functionarDone || hasVerdict)) refetch()
+  }, [mock, functionarDone, hasVerdict, refetch])
 
   // dosar deschis după ce Detectivul a terminat → graful nu a venit live, îl cerem o dată
   const detectivDone = state.agents.detectiv.status === 'done'
@@ -152,6 +162,8 @@ function CaseView({ caseId }: { caseId: string }) {
             </p>
           )}
         </section>
+
+        {!mock && <PrivacyPanel caseId={c.id} ready={Boolean(state.verdict)} />}
 
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
           <div className="space-y-6">

@@ -27,6 +27,7 @@ class Challenge:
 
 _lock = threading.Lock()
 _challenges: dict[int, Challenge] = {}
+last_by_case: dict[str, dict] = {}  # ultimul rezultat ZK per dosar (pentru panoul de confidențialitate)
 
 
 def threshold_for(installment_bani: int) -> int:
@@ -55,6 +56,7 @@ def consume(nonce: int) -> Challenge | None:
 def reset() -> None:
     with _lock:
         _challenges.clear()
+    last_by_case.clear()
 
 
 def verify(*, nonce: int, cui: str, period: str, commitment: int, signature: str, proof: bytes) -> dict:
@@ -76,6 +78,9 @@ def verify(*, nonce: int, cui: str, period: str, commitment: int, signature: str
         else:
             out.update(ok=True, answer="DA", reason="venit net ≥ prag, atestat de angajator; salariul nu a fost văzut")
     out["verify_ms"] = round((time.perf_counter() - t0) * 1000)
+    if out.get("case_id"):
+        last_by_case[out["case_id"]] = {k: out.get(k) for k in ("answer", "reason", "threshold_ron", "employer",
+                                                                "verify_ms")}
     audit.record(kind="zk_verify", destination="local", case_id=out.get("case_id"),
                  outcome="accepted" if out["ok"] else "rejected",
                  detail={"cui": cui, "reason": out["reason"], "threshold_ron": out.get("threshold_ron")})

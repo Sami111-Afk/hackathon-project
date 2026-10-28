@@ -139,3 +139,27 @@ def test_downstream_agents_skipped_when_paznic_fails(monkeypatch):
         assert status["paznic"] == "error"
         assert status["functionar"] == status["verificator"] == status["detectiv"] == "skipped"
         assert status["detector"] == "done" and case["verdict"]["incomplete"]
+
+
+def test_privacy_panel_shows_encrypted_storage_and_no_pii_to_ai():
+    with TestClient(app) as c:
+        case_id = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        wait_for_review(c, case_id)
+        p = c.get(f"/api/cases/{case_id}/privacy", headers=AUTH).json()
+        assert len(p["at_rest"]["documents"]) == 3
+        assert all(d["sample"].startswith("gAAAAA") for d in p["at_rest"]["documents"])  # token Fernet
+        assert p["ai_saw"]["with_pii"] == 0
+        body = str(p)
+        for pii in ("2590312290006", "RO59RZBR9999000000000001", "Ionescu", "Florilor"):
+            assert pii not in body
+        assert c.get("/api/cases/nu_exista/privacy", headers=AUTH).status_code == 404
+
+
+def test_rerun_demo_replaces_previous_maria_run():
+    with TestClient(app) as c:
+        first = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        wait_for_review(c, first)
+        second = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        wait_for_review(c, second)
+        ids = [x["id"] for x in c.get("/api/cases", headers=AUTH).json()]
+        assert second in ids and first not in ids
