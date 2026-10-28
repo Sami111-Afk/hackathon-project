@@ -43,7 +43,7 @@ TASKS = {
     "extract": "fast",   # Funcționar: extragere din documente
     "arena": "fast",     # volum mare
     "summary": "reason", # Compliance: rezumat din dovezi
-    "attack": "reason",  # Atacatorul
+    "attack": "reason",  # (rezervat; Atacatorul e acum un fuzzer, fără LLM)
     "learn": "deep",     # self-learning: propunere de reguli
 }
 

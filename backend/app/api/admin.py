@@ -2,8 +2,10 @@ import json
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 
 from app.api.deps import require_bank
+from app.arena import attacker
 from app.arena import service as arena_service
 from app.config import REPO_ROOT, settings
 from app.core import audit
@@ -44,3 +46,21 @@ def reset():
     arena_service.reset()
     proposer.reset()
     return {"ok": True}
+
+
+class AttackIn(BaseModel):
+    mission_id: str = "payslip_9000"
+    rounds: int = Field(default=6, ge=1, le=15)
+    auto_approve: bool = False  # doar pentru demo: regulile intră fără om
+
+
+@router.post("/attacker/start")
+async def attacker_start(body: AttackIn):
+    if not attacker.start(body.mission_id, body.rounds, body.auto_approve):
+        raise HTTPException(409, "atacatorul rulează deja sau misiunea nu există")
+    return attacker.status()
+
+
+@router.get("/attacker/status")
+def attacker_status():
+    return attacker.status()
