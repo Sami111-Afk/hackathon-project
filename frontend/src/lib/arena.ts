@@ -8,6 +8,7 @@ export interface FieldSpec {
   min?: number
   max?: number
   options?: string[]
+  option_labels?: Record<string, string> // valoare internă → ce vede jucătorul
 }
 
 export interface Mission {
@@ -137,7 +138,7 @@ export const AGENT_RO: Record<string, string> = {
   detector: 'Detector', detectiv: 'Detective', compliance: 'Compliance',
 }
 
-export const lei = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`
+export const lei = (n: number) => `${Math.round(n).toLocaleString('en-US')} lei`
 
 // Statistici locale ale jucătorului (doar pe telefonul lui), pentru cardul de rezultat.
 const STATS_KEY = 'orb.arena.stats'
