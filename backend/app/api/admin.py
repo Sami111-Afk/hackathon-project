@@ -44,7 +44,7 @@ async def rerun_demo():
     for i, name in enumerate(MARIA_FILES, start=1):
         path = MARIA_DIR / name
         if not path.exists():
-            raise HTTPException(500, "lipsesc documentele Mariei: rulați python -m data.generator.build_demo")
+            raise HTTPException(500, "Maria's documents are missing: run python -m data.generator.build_demo")
         data = path.read_bytes()
         doc_id = f"doc_{i}"
         files[doc_id] = data
@@ -52,7 +52,7 @@ async def rerun_demo():
         docs.append(Document(id=doc_id, filename=name))  # type/pages le setează agenții, ca la un upload real
     case = Case(id=case_id, created_at=now_iso(), requested_amount_ron=45000, documents=docs)
     await store.save(case)
-    bus.publish(case_id, "case_created", message=f"Dosar nou: {len(docs)} documente, credit 45.000 lei")
+    bus.publish(case_id, "case_created", message=f"New application: {len(docs)} documents, loan 45,000 lei")
     start_pipeline(case, files)
     return {"case_id": case_id}
 
@@ -109,10 +109,11 @@ async def seed_demo():
         st = "escalated" if i < 2 else "awaiting_review"
         case = _seeded(f"case_ring_{i + 1}", days_ago=21 - i * 4, amount=rng.choice([30000, 38000, 45000, 52000]),
                        fingerprints=fp, risk=round(0.82 + i * 0.03, 2), label="fraud_ring",
-                       rec="escalate", status=st, summary="Telefonul din cerere apare pe mai multe identități.",
+                       rec="escalate", status=st,
+                       summary="The phone number in the application appears on several identities.",
                        findings=[("detectiv", "FRAUD_RING_SUSPECTED", "critical",
-                                  f"Telefonul din cerere apare la {i + 1} alte identități"),
-                                 ("verificator", "NET_MISMATCH", "high", "Netul nu se potrivește cu brutul")])
+                                  f"The phone number in the application appears on {i + 1} other identities"),
+                                 ("verificator", "NET_MISMATCH", "high", "Net salary does not match gross salary")])
         case.applicant_token = name
         created.append(case)
     for i in range(10):
@@ -120,7 +121,7 @@ async def seed_demo():
         created.append(_seeded(f"case_ok_{i + 1}", days_ago=rng.uniform(0.5, 20), amount=rng.choice(
             [12000, 18000, 25000, 40000, 60000]), fingerprints=fp, risk=round(rng.uniform(0.0, 0.2), 2),
             label="clean", rec="clear", status="cleared", findings=[],
-            summary="Nicio problemă: dosarul poate merge la analiza normală de credit."))
+            summary="No issues: the application can proceed to normal credit analysis."))
     created = [c for c in created if not store.get(c.id)]  # a doua rulare nu suprascrie decizii
     for case in created:
         await store.save(case)
@@ -149,7 +150,7 @@ async def seed_arena():
 @router.post("/reset")
 def reset():
     if settings.env == "demo":
-        raise HTTPException(403, "reset dezactivat în modul demo")
+        raise HTTPException(403, "reset disabled in demo mode")
     for case in store.list():
         delete_case_files(case.id)
         vault.forget(case.id)
@@ -171,7 +172,7 @@ class AttackIn(BaseModel):
 @router.post("/attacker/start")
 async def attacker_start(body: AttackIn):
     if not attacker.start(body.mission_id, body.rounds, body.auto_approve):
-        raise HTTPException(409, "atacatorul rulează deja sau misiunea nu există")
+        raise HTTPException(409, "the attacker is already running or the mission does not exist")
     return attacker.status()
 
 

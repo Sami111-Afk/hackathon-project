@@ -43,7 +43,7 @@ async def submit(body: SubmissionIn):
 def submission(sid: str):
     s = service.get(sid)
     if not s:
-        raise HTTPException(404, "trimitere inexistentă")
+        raise HTTPException(404, "submission not found")
     return s
 
 
@@ -51,7 +51,7 @@ def submission(sid: str):
 def submission_image(sid: str):
     data = service.image(sid)
     if not data:
-        raise HTTPException(404, "trimitere inexistentă")
+        raise HTTPException(404, "submission not found")
     return Response(data, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
 
 

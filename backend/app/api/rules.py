@@ -22,7 +22,7 @@ def list_rules():
 def approve(rule_id: str, body: DecideIn):
     rule = proposer.decide(rule_id, True, body.decided_by)
     if not rule:
-        raise HTTPException(404, "regulă inexistentă sau deja decisă")
+        raise HTTPException(404, "rule not found or already decided")
     return rule
 
 
@@ -30,7 +30,7 @@ def approve(rule_id: str, body: DecideIn):
 def reject(rule_id: str, body: DecideIn):
     rule = proposer.decide(rule_id, False, body.decided_by)
     if not rule:
-        raise HTTPException(404, "regulă inexistentă sau deja decisă")
+        raise HTTPException(404, "rule not found or already decided")
     return rule
 
 
@@ -39,5 +39,5 @@ async def learn_now(submission_id: str):
     """Pornește manual propunerea de reguli pentru un fals din Arena (util la demo)."""
     sub = arena._submissions.get(submission_id)
     if not sub or sub["outcome"] != "passed":
-        raise HTTPException(404, "nu e un fals care a trecut")
+        raise HTTPException(404, "not a forgery that passed")
     return await proposer.propose_for(submission_id, sub["doc"])
