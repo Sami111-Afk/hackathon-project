@@ -1,4 +1,4 @@
-import { Calculator, EyeOff, Lock, ShieldCheck } from 'lucide-react'
+import { Calculator, CircleAlert, CircleCheck, CircleDashed, EyeOff, Lock, ShieldCheck } from 'lucide-react'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { apiFetch } from '@/lib/api'
 import { normAnswer, normText } from '@/lib/zk'
@@ -24,25 +24,34 @@ interface Privacy {
 
 const kb = (n: number) => `${Math.round(n / 1024).toLocaleString('en-GB')} KB`
 
-function Card({ icon, title, status, ok, children, proof }: {
-  icon: ReactNode; title: string; status: string; ok: boolean | null; children: ReactNode; proof?: ReactNode
+function Card({ n, icon, title, status, ok, children, proof }: {
+  n: number; icon: ReactNode; title: string; status: string; ok: boolean | null; children: ReactNode; proof?: ReactNode
 }) {
+  const Mark = ok === null ? CircleDashed : ok ? CircleCheck : CircleAlert
   return (
-    <div className="flex flex-col rounded-md border border-line bg-surface p-4">
-      <div className="flex items-center gap-2">
-        <span className={cn('grid h-8 w-8 place-items-center rounded-sm',
-          ok === null ? 'bg-canvas text-ink-3' : ok ? 'bg-ok-bg text-ok' : 'bg-danger-bg text-danger')}>{icon}</span>
-        <div className="leading-tight">
-          <div className="text-[15px] font-semibold text-ink">{title}</div>
-          <div className={cn('text-sm font-medium', ok === null ? 'text-ink-3' : ok ? 'text-ok' : 'text-danger')}>{status}</div>
-        </div>
+    // arată ca o dovadă: muchie colorată după rezultat, număr, și o bucată din dovada reală vizibilă direct
+    <div className={cn('flex flex-col rounded-md border border-line border-t-[3px] bg-surface p-4',
+      ok === null ? 'border-t-line' : ok ? 'border-t-ok' : 'border-t-danger')}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5 font-condensed text-xs font-semibold uppercase tracking-[0.14em] text-ink-3">
+          {icon}Proof {String(n).padStart(2, '0')}
+        </span>
+        <Mark className={cn('h-5 w-5', ok === null ? 'text-ink-3' : ok ? 'text-ok' : 'text-danger')} aria-hidden />
       </div>
+      <div className="mt-2 text-base font-semibold leading-snug text-ink">{title}</div>
+      <div className={cn('mt-0.5 text-sm font-medium', ok === null ? 'text-ink-3' : ok ? 'text-ok' : 'text-danger')}>{status}</div>
       <div className="mt-3 text-sm text-ink-2">{children}</div>
       {proof && (
-        <details className="mt-3 text-sm">
-          <summary className="cursor-pointer font-medium text-ink hover:underline">See the evidence</summary>
-          <div className="mt-2 space-y-2">{proof}</div>
-        </details>
+        <>
+          <div className="relative mt-3 max-h-20 overflow-hidden" aria-hidden>
+            <div className="space-y-2">{proof}</div>
+            <span className="absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-surface" />
+          </div>
+          <details className="mt-1 text-sm">
+            <summary className="cursor-pointer font-medium text-ink hover:underline">See the evidence</summary>
+            <div className="mt-2 space-y-2">{proof}</div>
+          </details>
+        </>
       )}
     </div>
   )
@@ -86,11 +95,11 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
   return (
     <section aria-label="Privacy" className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold text-ink">What the bank can prove about the client's data</h2>
+        <h2 className="flex items-center gap-2.5 text-lg font-semibold text-ink"><span className="h-4 w-1 shrink-0 bg-brand" aria-hidden />What the bank can prove about the client's data</h2>
         <span className="text-sm text-ink-3">Nothing is decrypted for this page.</span>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card icon={<Lock className="h-4 w-4" />} title="Encrypted on disk" ok={rest.documents.length > 0}
+        <Card n={1} icon={<Lock className="h-3.5 w-3.5" />} title="Encrypted on disk" ok={rest.documents.length > 0}
           status={`${rest.documents.length} documents, ${rest.vault.count} values in the vault`}
           proof={<>
             {rest.documents.map((d) => (
@@ -101,7 +110,7 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
           The files ({kb(totalEnc)}) and personal data are stored encrypted ({rest.scheme.split(' ')[0]}, AES). There is no plaintext image or CNP on disk.
         </Card>
 
-        <Card icon={<EyeOff className="h-4 w-4" />} title="The AI saw no personal data" ok={ai.with_pii === 0}
+        <Card n={2} icon={<EyeOff className="h-3.5 w-3.5" />} title="The AI saw no personal data" ok={ai.with_pii === 0}
           status={ai.llm_calls > 0 && ai.local_calls === ai.llm_calls
             ? `${ai.llm_calls} AI requests, all on the bank's own computer`
             : `${ai.llm_calls} AI requests, ${ai.with_pii} with personal data`}
@@ -111,7 +120,7 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
           {data.prompt_injection_detected && <span className="mt-1 block font-medium text-danger">The document contains text that tries to trick the AI.</span>}
         </Card>
 
-        <Card icon={<Calculator className="h-4 w-4" />} title="Computation on encrypted data" ok={he ? true : null}
+        <Card n={3} icon={<Calculator className="h-3.5 w-3.5" />} title="Computation on encrypted data" ok={he ? true : null}
           status={he ? `${he.he_scheme.split(',')[0]}, ${he.he_ms} ms` : 'not used for this application'}
           proof={he ? <>
             <div className="text-xs text-ink-3">Formula computed on the ciphertext: {he.he_formula}</div>
@@ -123,7 +132,7 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
             : 'The payslip had no readable amounts for the encrypted check.'}
         </Card>
 
-        <Card icon={<ShieldCheck className="h-4 w-4" />} title="Income proved without seeing it" ok={zk ? zk.answer === 'DA' || zk.answer === 'YES' : null}
+        <Card n={4} icon={<ShieldCheck className="h-3.5 w-3.5" />} title="Income proved without seeing it" ok={zk ? zk.answer === 'DA' || zk.answer === 'YES' : null}
           status={zk ? `ZK answer: ${normAnswer(zk.answer)}` : 'not requested yet'}>
           {zk
             ? <>{normText(zk.reason)}{zk.threshold_ron ? ` (threshold ${zk.threshold_ron.toLocaleString('en-GB')} lei` : ''}{zk.employer ? `, attested by ${zk.employer})` : zk.threshold_ron ? ')' : ''}.</>

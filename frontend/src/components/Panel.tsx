@@ -15,7 +15,7 @@ export function Panel({
     <section className={cn('rounded-md border border-line bg-surface', className)}>
       {title && (
         <header className="flex min-h-14 items-center justify-between gap-4 border-b border-line px-5 py-3">
-          <h2 className="text-lg font-semibold text-ink">{title}</h2>
+          <h2 className="flex items-center gap-2.5 text-lg font-semibold text-ink"><span className="h-4 w-1 shrink-0 bg-brand" aria-hidden />{title}</h2>
           {aside}
         </header>
       )}

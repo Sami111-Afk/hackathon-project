@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMissions, lei, saveNick, savedNick } from '@/lib/arena'
-import { ArenaShell } from './ArenaShell'
+import { ArenaHeading, ArenaShell } from './ArenaShell'
 import { usePageMeta } from '@/hooks/usePageMeta'
 
 type Step = 'intro' | 'nick' | 'missions'
@@ -28,7 +28,10 @@ export function ArenaStart() {
     return (
       <ArenaShell>
         <section className="flex min-h-[60dvh] flex-col justify-center">
-          <h1 className="text-4xl font-bold leading-tight tracking-tight">Can you fool the bank with a fake payslip?</h1>
+          <p className="inline-flex w-fit items-center gap-2 rounded-full border border-night-line px-3 py-1 text-sm font-medium text-night-mute">
+            <span className="h-2 w-2 rounded-full bg-brand motion-safe:animate-pulse" aria-hidden />Live demo · ORB Arena
+          </p>
+          <h1 className="mt-5 text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl">Can you fool the bank with a <span className="text-brand">fake payslip</span>?</h1>
           <p className="mt-4 text-lg leading-relaxed text-night-mute">
             Edit a payslip and submit it. The bank's AI agents check it within seconds and tell you whether they caught you, and why.
           </p>
@@ -37,6 +40,15 @@ export function ArenaStart() {
             Start
           </button>
           <p className="mt-4 text-center text-sm text-night-mute">Takes a minute. No account needed.</p>
+          {/* Cum merge jocul, în trei pași numerotați (același model ca pașii din aplicația băncii) */}
+          <ol className="mt-10 grid grid-cols-3 gap-px overflow-hidden rounded-md border border-night-line bg-night-line text-sm">
+            {['Pick a mission', 'Edit the payslip', 'See if the agents catch you'].map((t, i) => (
+              <li key={t} className="bg-night-2 p-3">
+                <span className="font-condensed text-lg font-bold tabular-nums text-brand" aria-hidden>{String(i + 1).padStart(2, '0')}</span>
+                <span className="mt-1 block leading-snug text-night-ink">{t}</span>
+              </li>
+            ))}
+          </ol>
         </section>
       </ArenaShell>
     )
@@ -63,7 +75,7 @@ export function ArenaStart() {
 
   return (
     <ArenaShell>
-      <h2 className="text-2xl font-semibold">Pick a mission</h2>
+      <ArenaHeading>Pick a mission</ArenaHeading>
       <p className="mt-1 text-sm text-night-mute">
         Playing as <span className="font-semibold text-night-ink">{savedNick()}</span>.{' '}
         <button type="button" onClick={() => setStep('nick')} className="underline underline-offset-2 hover:text-night-ink">Change</button>
@@ -71,15 +83,16 @@ export function ArenaStart() {
       {missions.isLoading && <p className="mt-4 text-night-mute">Loading missions.</p>}
       {missions.isError && <p className="mt-4 text-night-danger">The server is not responding. Try again in a few seconds.</p>}
       <div className="mt-4 space-y-3">
-        {missions.data?.map((m) => (
+        {missions.data?.map((m, i) => (
           <button key={m.id} type="button" onClick={() => nav(`/arena/m/${m.id}`)}
-            className="flex w-full items-center gap-4 rounded-md border border-night-line bg-night-2 p-5 text-left active:scale-[0.99] hover:border-night-mute">
+            className="group flex w-full items-center gap-4 rounded-md border border-night-line bg-night-2 p-5 text-left transition-colors active:scale-[0.99] hover:border-brand">
             <span className="flex-1">
-              <span className="block text-xl font-semibold">{m.title}</span>
+              <span className="block font-condensed text-sm font-semibold uppercase tracking-[0.14em] text-night-mute">Mission {String(i + 1).padStart(2, '0')}</span>
+              <span className="mt-1 block text-xl font-semibold">{m.title}</span>
               <span className="mt-1 block text-base leading-snug text-night-mute">{m.brief}</span>
-              <span className="mt-3 block text-sm font-semibold text-brand">Target: net income of at least {lei(m.target.min)}</span>
+              <span className="mt-3 inline-block rounded-sm bg-brand/15 px-2 py-1 text-sm font-semibold text-brand">Target: net income of at least {lei(m.target.min)}</span>
             </span>
-            <ChevronRight className="h-6 w-6 shrink-0 text-night-mute" aria-hidden />
+            <ChevronRight className="h-6 w-6 shrink-0 text-night-mute transition-transform group-hover:translate-x-0.5 group-hover:text-brand" aria-hidden />
           </button>
         ))}
       </div>

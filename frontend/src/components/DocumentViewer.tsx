@@ -89,10 +89,13 @@ export function DocumentViewer({
           {boxes.map((f, i) => {
             const [x0, y0, x1, y1] = f.evidence!.bbox!
             const sev = SEVERITY[f.severity]
+            // dovada aleasă în listă iese în față (contur gros + puls), celelalte se estompează
+            const on = highlighted === f
             return (
-              <div key={i} title={f.message}
-                className={cn('absolute border-2', f.severity === 'critical' || f.severity === 'high' ? 'border-danger bg-danger/10' : 'border-warn bg-warn/10',
-                  highlighted === f && 'outline outline-2 outline-offset-4 outline-info')}
+              <div key={on ? `on-${i}` : i} title={f.message}
+                className={cn('absolute rounded-[2px] border-[3px] transition-opacity duration-300',
+                  f.severity === 'critical' || f.severity === 'high' ? 'border-danger bg-danger/15' : 'border-warn bg-warn/15',
+                  on && 'evidence-pulse z-10 outline outline-[3px] outline-offset-4 outline-ink', highlighted && !on && 'opacity-40')}
                 style={{ left: `${(x0 / page.width) * 100}%`, top: `${(y0 / page.height) * 100}%`,
                          width: `${((x1 - x0) / page.width) * 100}%`, height: `${((y1 - y0) / page.height) * 100}%` }}>
                 <span className={cn('absolute -top-6 left-0 whitespace-nowrap rounded-sm px-1.5 py-0.5 text-xs font-semibold text-white',
@@ -103,7 +106,7 @@ export function DocumentViewer({
             )
           })}
         </div>
-        <p className="mx-auto mt-3 max-w-3xl text-sm text-ink-3">{doc.filename} · {VIEWS.find((v) => v.id === view)?.hint}</p>
+        <p className="mx-auto mt-3 max-w-3xl text-sm text-ink-2">{doc.filename} · {VIEWS.find((v) => v.id === view)?.hint}</p>
       </div>
     </div>
   )
