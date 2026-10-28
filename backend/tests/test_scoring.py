@@ -30,3 +30,30 @@ def test_hard_override_escalates():
 def test_agent_error_marks_incomplete():
     v, _ = score([res("detector", status="error")])
     assert v.incomplete and v.recommendation == "review"
+
+
+def test_summary_check_flags_invented_numbers_and_labels():
+    from app.agents.compliance.scoring import unsupported_claims
+    ev = ("- NET_MISMATCH [high]: Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)\n"
+          "- SHARED_IBAN [critical]: Contul [IBAN_1] apare în alte 5 cereri")
+    assert unsupported_claims("Netul de 8.500 lei nu iese (8.307 lei); [IBAN_1] apare în 5 cereri. Risc 100%.",
+                              ev, 0.998) == []
+    assert set(unsupported_claims("Netul de 9.200 lei e fals; [CNP_1] e invalid.", ev, 0.998)) == {"9200", "[CNP_1]"}
+
+
+def test_verdict_explains_its_score():
+    from app.agents.compliance.scoring import score
+    from app.models import AgentResult, Finding
+    results = [AgentResult(agent="verificator", status="done", findings=[
+        Finding(code="COMPANY_INACTIVE", severity="critical", message="firmă inactivă"),
+        Finding(code="NET_MISMATCH", severity="high", message="net greșit"),
+        Finding(code="ELA_ANOMALY", severity="high", message="zonă editată"),
+        Finding(code="DOCS_CLASSIFIED", severity="info", message="clasificat")])]
+    verdict, _ = score(results)
+    assert [i.code for i in verdict.breakdown] == ["COMPANY_INACTIVE", "NET_MISMATCH", "ELA_ANOMALY"]
+    assert verdict.breakdown[2].weight == 0.3  # semnal slab plafonat
+    assert verdict.breakdown[0].hard_override
+    keep = 1
+    for i in verdict.breakdown:
+        keep *= 1 - i.weight
+    assert abs(verdict.risk - (1 - keep)) < 1e-3

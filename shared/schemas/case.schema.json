@@ -394,6 +394,46 @@
       "title": "PageInfo",
       "type": "object"
     },
+    "ScoreItem": {
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "weight": {
+          "title": "Weight",
+          "type": "number"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "hard_override": {
+          "default": false,
+          "title": "Hard Override",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "weight",
+        "message"
+      ],
+      "title": "ScoreItem",
+      "type": "object"
+    },
     "Verdict": {
       "properties": {
         "risk": {
@@ -428,6 +468,23 @@
           "default": false,
           "title": "Incomplete",
           "type": "boolean"
+        },
+        "breakdown": {
+          "items": {
+            "$ref": "#/$defs/ScoreItem"
+          },
+          "title": "Breakdown",
+          "type": "array"
+        },
+        "summary_source": {
+          "default": "template",
+          "enum": [
+            "llm",
+            "template",
+            "template_after_check"
+          ],
+          "title": "Summary Source",
+          "type": "string"
         }
       },
       "required": [
