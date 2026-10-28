@@ -28,9 +28,13 @@ def fp_node(kind: str, value: str) -> str:
 
 
 def identity_of(case: Case) -> str:
-    """Cine e solicitantul: amprenta CNP-ului. Fără CNP → fiecare dosar e o identitate separată."""
+    """Cine e solicitantul: amprenta CNP-ului; fără CNP, amprenta numelui; altfel dosarul e o identitate separată
+    (altfel aceeași persoană cu două dosare fără CNP citit ar apărea ca „rețea”)."""
     cnps = sorted(case.fingerprints.get("cnp", []))
-    return "cnp:" + "|".join(cnps) if cnps else f"case:{case.id}"
+    if cnps:
+        return "cnp:" + "|".join(cnps)
+    names = sorted(case.fingerprints.get("name", []))
+    return "name:" + "|".join(names) if names else f"case:{case.id}"
 
 
 def parse_ts(ts: str) -> datetime:

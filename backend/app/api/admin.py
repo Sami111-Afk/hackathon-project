@@ -1,4 +1,5 @@
 import asyncio
+import json
 import random
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -69,15 +70,33 @@ def _seeded(case_id: str, days_ago: float, amount: float, fingerprints: dict, ri
     return case
 
 
+def _maria_fingerprints() -> dict[str, str]:
+    """Amprentele pe care Paznicul real le calculează pentru IBAN-ul și adresa Mariei (din truth.json),
+    ca rețeaua din seed să se lege de dosarul ei și cu agenții reali, nu doar cu cei de probă."""
+    try:
+        from app.agents.paznic.redact import fingerprint, normalize_value
+        truth = json.loads((MARIA_DIR / "truth.json").read_text(encoding="utf-8"))["pii"]
+    except (ImportError, OSError, KeyError, ValueError):
+        return {}
+    return {kind: fingerprint(settings.hmac_secret, kind, normalize_value(kind, truth[key]))
+            for kind, key in (("IBAN", "iban"), ("ADRESA", "address"))}
+
+
 @router.post("/seed-demo")
 async def seed_demo():
     """Istoric realist pentru demo: rețeaua legată de dosarul Mariei + 10 dosare legitime.
     Amprentele (hm_9c1e = telefonul, hm_44ab = IBAN-ul) sunt aceleași ca în dosarul Mariei."""
     rng = random.Random(7)
+    real = _maria_fingerprints()
     created = []
     for i, name in enumerate(RING_NAMES):
+        # hm_9c1e / hm_44ab = amprentele din fixture (agenți de probă); real[...] = cu Paznicul real
         fp = {"phone": ["hm_9c1e"], "cnp": [f"hm_r{i}c{i}"], "address": [f"hm_ra{i}"],
               "iban": ["hm_44ab"] if i in (1, 3) else [f"hm_ri{i}"]}
+        if real:
+            fp["iban"].append(real["IBAN"])  # banii merg în același cont ca la cererea Mariei
+            if i == 2:
+                fp["address"].append(real["ADRESA"])
         st = "escalated" if i < 2 else "awaiting_review"
         case = _seeded(f"case_ring_{i + 1}", days_ago=21 - i * 4, amount=rng.choice([30000, 38000, 45000, 52000]),
                        fingerprints=fp, risk=round(0.82 + i * 0.03, 2), label="fraud_ring",
