@@ -19,7 +19,7 @@ export function AgentBand({ agents }: { agents: Record<AgentName, AgentLane> }) 
         return (
           <li key={name} className={cn('relative flex flex-col gap-3 bg-surface p-4', running && 'bg-[#F5F8FF]')}>
             {running && <span className="absolute inset-x-0 top-0 h-0.5 bg-info" aria-hidden />}
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-full border',
                 done ? 'border-ink bg-ink text-white' : running ? 'border-info text-info' : failed ? 'border-danger text-danger' : 'border-line text-ink-3')}>
                 {running ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -29,7 +29,7 @@ export function AgentBand({ agents }: { agents: Record<AgentName, AgentLane> }) 
               </span>
               <div className="min-w-0">
                 <div className="font-semibold text-ink">{info.label}</div>
-                <div className="truncate text-sm text-ink-3">{info.role}</div>
+                <div className="text-sm leading-snug text-ink-3">{info.role}</div>
               </div>
             </div>
             <p className={cn('min-h-[3.75rem] text-[15px] leading-snug', lane.message ? 'text-ink-2' : 'text-ink-3')}>

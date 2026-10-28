@@ -124,3 +124,12 @@ export async function openReport(caseId: string): Promise<void> {
     throw e
   }
 }
+
+/** Dosar nou: 1–5 documente (PNG, JPG sau PDF) + suma cerută. Pornește analiza pe server. */
+export async function createCase(files: File[], amountRon?: number): Promise<string> {
+  const body = new FormData()
+  for (const f of files) body.append('files', f)
+  if (amountRon) body.append('requested_amount_ron', String(amountRon))
+  const res = await apiFetch('/api/cases', { method: 'POST', body })
+  return (await res.json()).case_id
+}
