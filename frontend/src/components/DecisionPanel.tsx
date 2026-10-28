@@ -10,20 +10,28 @@ const BTN = 'h-11 rounded-sm px-4 text-[15px] font-semibold transition-colors di
 
 /** Omul ia decizia. În mock, decizia rămâne doar local. */
 export function DecisionPanel({
-  caseId, decision, mock, disabled, onDecided,
+  caseId, decision, mock, disabled, onDecided, recommendation,
 }: {
   caseId: string
   decision: Decision | null
   mock: boolean
   disabled: boolean
   onDecided: (d: Decision) => void
+  /** recomandarea ORB: dacă e „escalate”, aprobarea cere un motiv scris (rămâne în auditul dosarului) */
+  recommendation?: 'clear' | 'review' | 'escalate'
 }) {
   const [notes, setNotes] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const name = getUserName() || (mock ? 'Demo' : '')
 
+  const needsReason = recommendation === 'escalate'
+
   async function decide(action: DecisionAction) {
+    if (action === 'clear' && needsReason && notes.trim().length < 10) {
+      setError('Dosarul e marcat pentru investigație. Ca să-l aprobi, scrie motivul în notă (minim 10 caractere).')
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -53,7 +61,9 @@ export function DecisionPanel({
   const off = busy || disabled
   return (
     <div className="space-y-3 border-t border-line px-6 py-5">
-      <label className="block text-sm font-medium text-ink-2" htmlFor="notes">Notă pentru dosar (opțional)</label>
+      <label className="block text-sm font-medium text-ink-2" htmlFor="notes">
+        {needsReason ? 'Notă pentru dosar (obligatorie dacă aprobi)' : 'Notă pentru dosar (opțional)'}
+      </label>
       <input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)}
              className="h-10 w-full rounded-sm border border-input bg-surface px-3 text-[15px] outline-none focus:border-info" />
       <div className="grid grid-cols-2 gap-2">
