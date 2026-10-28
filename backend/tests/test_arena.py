@@ -99,3 +99,18 @@ def test_rule_engine_rejects_unknown_fields():
     ok, why, _ = proposer.vet({"when": {"left": "doc.cnp", "op": "eq", "right": 1}}, {}, [])
     assert not ok and "necunoscute" in why
     asyncio.run(asyncio.sleep(0))
+
+
+
+def test_attacker_adapts_and_finally_passes():
+    from app.arena import attacker
+    attacker.state.running, attacker.state.rounds = False, []
+    with TestClient(app) as c:
+        assert c.post("/api/admin/attacker/start", headers=AUTH, json={"rounds": 4}).status_code == 200
+        for _ in range(300):
+            s = c.get("/api/admin/attacker/status", headers=AUTH).json()
+            if not s["running"]:
+                break
+            asyncio.run(asyncio.sleep(0.05))
+        outcomes = [r["outcome"] for r in s["rounds"]]
+        assert outcomes[0] == "caught" and "passed" in outcomes[1:]

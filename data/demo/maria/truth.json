@@ -1,0 +1,61 @@
+{
+  "case": "maria",
+  "label": "identity_fraud",
+  "requested_amount_ron": 45000,
+  "pii": {
+    "name": "MARIA IONESCU",
+    "cnp": "2590312290171",
+    "iban": "RO54RZBR0000060012345678",
+    "address": "Str. Florilor nr. 12, Ploiești, jud. Prahova",
+    "phone": "0722 318 405",
+    "id_series": "PH",
+    "id_number": "481925",
+    "mrz": [
+      "IDROUIONESCU<<MARIA<<<<<<<<<<<<<<<<<",
+      "PH481925<7ROU5903128F290312722901712"
+    ]
+  },
+  "documents": {
+    "buletin.jpg": {
+      "type": "id_card",
+      "forged": [
+        "photo"
+      ],
+      "note": "poză înlocuită (placeholder generat)"
+    },
+    "fluturas.jpg": {
+      "type": "payslip",
+      "forged": [
+        "net_salary"
+      ],
+      "net_bbox": [
+        820,
+        895,
+        1165,
+        950
+      ],
+      "net_true": 8307,
+      "net_declared": 8500,
+      "employer": {
+        "name": "Agro Prahova Distribuție SRL",
+        "cui": "RO40211937"
+      },
+      "employer_inactive": true
+    },
+    "extras.pdf": {
+      "type": "bank_statement",
+      "forged": [
+        "closing_balance"
+      ],
+      "balance_bbox": [
+        840,
+        675,
+        1165,
+        725
+      ],
+      "balance_true": 2851.5,
+      "balance_declared": 26480,
+      "producer": "GIMP 2.10.38"
+    }
+  }
+}

@@ -63,3 +63,12 @@ r.data.net_salary   # validat
 - `GET /api/rules` · `POST /api/rules/{id}/approve|reject` `{decided_by}` · `POST /api/rules/learn/{submission_id}` (pornire manuală, util la demo).
 - Regulile sunt JSON evaluat de `app/learning/engine.py` — LLM-ul nu scrie cod.
 - Arena folosește deocamdată un arbitru provizoriu (`app/arena/judge.py`) cu aceleași verificări ca Verificatorul; trece pe pipeline-ul complet când agenții reali sunt gata.
+
+## Atacatorul (fuzzer, fără LLM)
+`POST /api/admin/attacker/start` `{rounds, mission_id, auto_approve}` · `GET /api/admin/attacker/status`.
+Încearcă falsuri în Arena și se adaptează după motivele pentru care e prins; când trece, self-learning-ul propune reguli.
+`auto_approve: true` doar pentru demo. (Un LLM a refuzat rolul de falsificator — de aceea e algoritmic.)
+
+## Documentele Mariei (versiune brută — Lorena le rafinează)
+`python -m data.generator.build_demo` (din rădăcina repo-ului) → `data/demo/maria/`: `buletin.jpg`, `fluturas.jpg`,
+`extras.pdf`, `truth.json` (ce e fals + toate valorile PII, pentru benchmark). Identificatorii: `data/generator/ro_ids.py`.

@@ -90,7 +90,7 @@ def submit(nickname: str, mission_id: str, edits: dict, tricks: list[str]) -> di
             "risk": result["verdict"].risk, "changed": sorted(changed),
             "ms": int((time.perf_counter() - t0) * 1000), "ts": now_iso(),
         }
-        _submissions[sid] = {**public, "doc": doc}
+        _submissions[sid] = {**public, "doc": doc, "results": result["results"]}
         _images[sid] = render(doc)
         _feed.appendleft(public)
         if outcome == "passed" and not duplicate:
@@ -111,7 +111,11 @@ def _feed_line(p: dict) -> str:
 
 def get(sid: str) -> dict | None:
     s = _submissions.get(sid)
-    return {k: v for k, v in s.items() if k != "doc"} if s else None
+    return {k: v for k, v in s.items() if k not in ("doc", "results")} if s else None
+
+
+def last_results(sid: str | None) -> list:
+    return (_submissions.get(sid) or {}).get("results", []) if sid else []
 
 
 def image(sid: str) -> bytes | None:
