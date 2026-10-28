@@ -41,7 +41,7 @@ def test_ring_of_five_identities_is_critical():
     ring = [mk(f"r{i}", days_ago=21 - 4 * i, phone="P", cnp=f"C{i + 1}") for i in range(5)]
     findings, stats = analyze(maria, ring, NOW)
     assert codes(findings) == {"FRAUD_RING_SUSPECTED": "critical"}
-    assert "alte 5 cereri, pe 5 identități diferite, în ultimele 3 săptămâni" in findings[0].message
+    assert "5 other applications, under 5 different identities, in the last 3 weeks" in findings[0].message
     assert stats == {"linked_cases": 5, "linked_identities": 5}
     assert noisy_or(findings) == 0.85
 

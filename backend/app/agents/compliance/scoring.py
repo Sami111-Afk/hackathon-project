@@ -75,11 +75,11 @@ def score(results: list[AgentResult]) -> tuple[Verdict, list[Finding]]:
 
 def template_summary(top: list[Finding], recommendation: str, incomplete: bool) -> str:
     """Rezumat fără LLM — folosit în mock și ca fallback."""
-    action = {"escalate": "Recomandare: respingere și investigație de fraudă.",
-              "review": "Recomandare: verificare manuală.",
-              "clear": "Nicio problemă: dosarul poate merge la analiza normală de credit."}[recommendation]
+    action = {"escalate": "Recommendation: reject and open a fraud investigation.",
+              "review": "Recommendation: manual review.",
+              "clear": "No issues: the application can proceed to normal credit analysis."}[recommendation]
     reasons = "; ".join(f.message for f in top[:3] if SEVERITY_WEIGHT[f.severity] > 0)
-    note = " Atenție: un agent nu a terminat, verdictul e incomplet." if incomplete else ""
+    note = " Warning: an agent did not finish, the verdict is incomplete." if incomplete else ""
     return f"{reasons + '. ' if reasons else ''}{action}{note}"
 
 

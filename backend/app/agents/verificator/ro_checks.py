@@ -59,7 +59,7 @@ def check_age_employment(cnp: str | None, on: date, doc_id: str) -> Finding | No
     if age < RETIREMENT_AGE:
         return None
     return Finding(code="AGE_EMPLOYMENT_MISMATCH", severity="medium",
-                   message=f"Solicitant de {age} de ani declarat angajat activ",
+                   message=f"Applicant aged {age} declared as actively employed",
                    evidence=Evidence(doc_id=doc_id))
 
 
@@ -69,7 +69,7 @@ def check_card_sex(cnp: str | None, card_sex: str | None, doc_id: str) -> Findin
     if not sex or printed not in ("M", "F") or printed == sex:
         return None
     return Finding(code="CNP_SEX_MISMATCH", severity="high",
-                   message="Sexul de pe buletin nu corespunde cu CNP-ul",
+                   message="The sex on the ID card does not match the CNP",
                    evidence=Evidence(doc_id=doc_id, field="sex"))
 
 
@@ -84,7 +84,7 @@ def parse_iso(value) -> date | None:
 def check_id_validity(expiry: str | None, on: date, doc_id: str) -> Finding | None:
     if parse_iso(expiry) is None or parse_iso(expiry) >= on:
         return None
-    return Finding(code="ID_EXPIRED", severity="medium", message=f"Buletinul a expirat ({expiry})",
+    return Finding(code="ID_EXPIRED", severity="medium", message=f"The ID card expired ({expiry})",
                    evidence=Evidence(doc_id=doc_id, field="expiry_date"))
 
 
@@ -99,7 +99,7 @@ def check_series_county(series: str | None, address: str | None, doc_id: str) ->
     if not expected or not county or county.startswith(expected):
         return None
     return Finding(code="SERIES_COUNTY_MISMATCH", severity="low",
-                   message="Seria buletinului e de alt județ decât domiciliul",
+                   message="The ID card series is from a different county than the home address",
                    evidence=Evidence(doc_id=doc_id, field="series"))
 
 
@@ -109,7 +109,7 @@ def check_iban_bank(iban: str | None, bank_name: str | None, doc_id: str) -> Fin
     if not expected or not bank_name or expected in normalize(bank_name):
         return None
     return Finding(code="IBAN_BANK_MISMATCH", severity="medium",
-                   message="Codul băncii din IBAN nu corespunde cu banca din antetul extrasului",
+                   message="The bank code in the IBAN does not match the bank in the statement header",
                    evidence=Evidence(doc_id=doc_id, field="iban"))
 
 
@@ -121,10 +121,10 @@ def check_dates(issue_date: str | None, founded: date | None, today: date, doc_i
         return []
     out = []
     if issued > today:
-        out.append(Finding(code="DOC_FUTURE_DATE", severity="high", message="Data emiterii e în viitor",
+        out.append(Finding(code="DOC_FUTURE_DATE", severity="high", message="The issue date is in the future",
                            evidence=Evidence(doc_id=doc_id, field="issue_date")))
     if founded and issued < founded:
         out.append(Finding(code="DOC_BEFORE_COMPANY", severity="high",
-                           message="Documentul e emis înainte de înființarea firmei",
+                           message="The document was issued before the company was founded",
                            evidence=Evidence(doc_id=doc_id, field="issue_date")))
     return out

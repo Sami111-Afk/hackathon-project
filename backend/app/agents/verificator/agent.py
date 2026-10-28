@@ -62,15 +62,16 @@ def _confirm_net(slip: Document, scratch: dict, rereader: Rereader, findings: li
     if (gross, net) == (_val(slip, "gross_salary"), _val(slip, "net_salary")) or check_net(gross, net, period=period):
         return findings
     uncertain = Finding(code="AMOUNT_UNCERTAIN", severity="low",
-                        message="Netul nu iese din brut cu sumele citite, dar iese la recitirea zonei: "
-                                "probabil eroare de citire, de verificat pe document",
+                        message="Net pay does not follow from gross pay with the amounts read, "
+                                "but it does when the area is re-read: "
+                                "probably a reading error, check on the document",
                         evidence=_evidence(scratch, slip, "net_salary"))
     return [f for f in findings if f.code != "NET_MISMATCH"] + [uncertain]
 
 
 class Verificator:
     name = "verificator"
-    start_message = "Refac calculele"
+    start_message = "Recomputing the figures"
 
     def __init__(self, today: date | None = None) -> None:
         self.today = today
@@ -141,7 +142,7 @@ class Verificator:
         keep = 1.0
         for f in findings:
             keep *= 1 - SEVERITY_RISK[f.severity]
-        await ctx.emit("agent_progress", f"{len(findings)} verificări cu probleme")
+        await ctx.emit("agent_progress", f"{len(findings)} checks with issues")
         return AgentResult(agent="verificator", status="done", risk=round(1 - keep, 4), findings=findings,
                            artifacts=artifacts)
 
@@ -160,7 +161,7 @@ class Verificator:
                 log.exception("verificarea pe date criptate a eșuat; trec pe calculul în clar")
             else:
                 check = report.checks[0]
-                await ctx.emit("agent_progress", f"Taxe verificate pe date criptate (CKKS, {report.ms} ms)")
+                await ctx.emit("agent_progress", f"Taxes verified on encrypted data (CKKS, {report.ms} ms)")
                 findings = [] if check.ok else [net_mismatch(check.computed_net, net, evidence)]
                 if findings and rereader:
                     findings = await asyncio.to_thread(_confirm_net, slip, scratch, rereader, findings, period)

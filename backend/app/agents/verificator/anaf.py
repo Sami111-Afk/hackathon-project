@@ -194,19 +194,19 @@ def check_company(company: Company | None, source: Source, doc_id: str, label: s
     ev = Evidence(doc_id=doc_id, field="employer_cui")
     if company is None and source in ("anaf", "cache"):
         return [Finding(code="COMPANY_NOT_FOUND", severity="critical",
-                        message=f"Angajatorul {label} nu există în registrul ANAF", evidence=ev)]
+                        message=f"Employer {label} does not exist in the ANAF registry", evidence=ev)]
     if company is None:
         return [Finding(code="COMPANY_UNVERIFIED", severity="info",
-                        message=f"Angajatorul {label} nu a putut fi verificat la ANAF", evidence=ev)]
+                        message=f"Employer {label} could not be verified with ANAF", evidence=ev)]
     # ANAF a răspuns cu firma de la acest CUI: e aceeași cu cea de pe document? Altfel NU-i folosim starea
     # (am atribui documentului situația unei firme străine — ex. un CUI inventat care există la altcineva).
     if source in ("anaf", "cache") and same_company(declared_name, company.name) is False:
         return [Finding(code="COMPANY_NAME_MISMATCH", severity="high",
-                        message=f"CUI-ul {label} aparține la ANAF altei firme decât cea de pe document",
+                        message=f"CUI {label} belongs, per ANAF, to a different company than the one on the document",
                         evidence=ev)]
     if not company.active:
         return [Finding(code="COMPANY_INACTIVE", severity="critical",
-                        message=(f"Angajatorul {label} figurează inactiv la ANAF" if source in ("anaf", "cache")
-                                 else f"Angajatorul {label} figurează inactiv (registru demo, nu ANAF real)"),
+                        message=(f"Employer {label} is listed as inactive with ANAF" if source in ("anaf", "cache")
+                                 else f"Employer {label} is listed as inactive (demo registry, not real ANAF)"),
                         evidence=ev)]
     return []

@@ -17,7 +17,7 @@ from app.models import Evidence
 def test_maria_net_mismatch_matches_fixture():
     f = check_net(14200, 8500, evidence=Evidence(doc_id="doc_2", field="net_salary"))
     assert f is not None and f.code == "NET_MISMATCH" and f.severity == "high"
-    assert f.message == "Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)"
+    assert f.message == "Calculated net pay (8.307 lei) differs from the declared one (8.500 lei)"
     assert f.evidence.field == "net_salary"
 
 

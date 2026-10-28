@@ -23,9 +23,9 @@ log = logging.getLogger("orb.detector")
 
 SEVERITY_RISK = {"info": 0.0, "low": 0.1, "medium": 0.3, "high": 0.6, "critical": 0.85}
 
-FIELD_RO = {"net_salary": "netului", "gross_salary": "brutului", "closing_balance": "soldului final",
-            "opening_balance": "soldului inițial", "employer_name": "angajatorului", "employer_cui": "CUI-ului",
-            "full_name": "numelui", "cnp": "CNP-ului"}
+FIELD_RO = {"net_salary": "net pay", "gross_salary": "gross pay", "closing_balance": "closing balance",
+            "opening_balance": "opening balance", "employer_name": "employer name", "employer_cui": "CUI",
+            "full_name": "name", "cnp": "CNP"}
 
 
 def _overlap(a, b) -> float:
@@ -53,7 +53,7 @@ def _scale(bbox, src_size, dst_size) -> list[float]:
 
 class Detector:
     name = "detector"
-    start_message = "Caut urme de editare"
+    start_message = "Looking for traces of editing"
 
     async def run(self, case, ctx) -> AgentResult:
         findings: list[Finding] = []
@@ -81,7 +81,7 @@ class Detector:
                 tool = structure.editor_name(software)
                 if tool:
                     findings.append(Finding(code="EXIF_EDITOR", severity="low",
-                                            message=f"Imaginea a fost salvată dintr-un editor ({tool})",
+                                            message=f"The image was saved from an editor ({tool})",
                                             evidence=Evidence(doc_id=doc.id)))
                 images = {1: img}
             else:
@@ -94,11 +94,11 @@ class Detector:
                 # zona peste un câmp citit de Funcționar întâi; ELA e semnal slab → o singură zonă „medium”
                 located.sort(key=lambda x: (x[2] is None, -x[0].z))
                 for i, (region, bbox, field) in enumerate(located):
-                    where = f"Zona {FIELD_RO.get(field, field)}" if field else "O zonă din document"
+                    where = f"The {FIELD_RO.get(field, field)} area" if field else "An area of the document"
                     findings.append(Finding(
                         code="ELA_ANOMALY", severity="medium" if i == 0 else "info",
-                        message=f"{where} nu are urma compresiei originale "
-                                f"(rescrisă după prima salvare, z={region.z:g})",
+                        message=f"{where} lacks the trace of the original compression "
+                                f"(rewritten after the first save, z={region.z:g})",
                         evidence=Evidence(doc_id=doc.id, page=page_no, bbox=bbox, field=field)))
                     if doc.id not in flagged:
                         flagged.append(doc.id)
@@ -107,7 +107,7 @@ class Detector:
                 save_derived(case.id, doc.id, "ela", page_no, png)
                 if doc.id not in ela_docs:
                     ela_docs.append(doc.id)
-            await ctx.emit("agent_progress", f"{doc.id}: verificat")
+            await ctx.emit("agent_progress", f"{doc.id}: checked")
 
         keep = 1.0
         for f in findings:
@@ -128,13 +128,13 @@ class Detector:
         tool = structure.editor_name(info.producer) or structure.editor_name(info.creator)
         if tool:
             out.append(Finding(code="PDF_EDITOR_PRODUCER", severity="medium",
-                               message=f"Documentul a fost produs de un editor de imagini "
-                                       f"({info.producer or info.creator}), nu de sistemul unei bănci",
+                               message=f"The document was produced by an image editor "
+                                       f"({info.producer or info.creator}), not by a bank system",
                                evidence=Evidence(doc_id=doc_id)))
         updates = structure.incremental_updates(info)
         if updates:
             out.append(Finding(code="PDF_INCREMENTAL_UPDATE", severity="medium",
-                               message=f"PDF-ul a fost modificat după emitere "
-                                       f"({updates} salvări adăugate peste original)",
+                               message=f"The PDF was modified after issuance "
+                                       f"({updates} saves added on top of the original)",
                                evidence=Evidence(doc_id=doc_id)))
         return out
