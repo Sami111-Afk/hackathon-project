@@ -61,12 +61,11 @@ export function ArenaStart() {
 
   return (
     <ArenaShell>
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-2xl font-semibold">Alege o misiune</h2>
-        <button type="button" onClick={() => setStep('nick')} className="text-sm text-night-mute underline-offset-2 hover:underline">
-          Joci ca {savedNick()}. Schimbă
-        </button>
-      </div>
+      <h2 className="text-2xl font-semibold">Alege o misiune</h2>
+      <p className="mt-1 text-sm text-night-mute">
+        Joci ca <span className="font-semibold text-night-ink">{savedNick()}</span>.{' '}
+        <button type="button" onClick={() => setStep('nick')} className="underline underline-offset-2 hover:text-night-ink">Schimbă</button>
+      </p>
       {missions.isLoading && <p className="mt-4 text-night-mute">Se încarcă misiunile.</p>}
       {missions.isError && <p className="mt-4 text-night-danger">Serverul nu răspunde. Încearcă din nou în câteva secunde.</p>}
       <div className="mt-4 space-y-3">
