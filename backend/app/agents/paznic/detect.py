@@ -28,14 +28,14 @@ CNP_SPACED_RX = re.compile(r"(?<![\d.])[1-9](?:[ .\-]?\d){12}(?!\d)")
 IBAN_RX = re.compile(r"\bRO\d{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]{4}){4}\b", re.I)
 # tolerant la OCR („R0”, un caracter în plus/lipsă, grupuri rupte): tot ascuns, chiar fără checksum (§4)
 # „ROO5” = RO05; „ROO09” = RO09 (un „O” în plus)
-IBAN_LOOSE_RX = re.compile(r"\bR[O0]{1,2}\s?[0-9OIL]{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]){15,17}\b", re.I)
+IBAN_LOOSE_RX = re.compile(r"\bR[O0]{1,2}\s?[0-9OILSBZG]{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]){15,17}\b", re.I)  # „ROOS” = RO05
 CUI_RX = re.compile(r"\b(?:CUI|CIF|C\.U\.I\.|cod fiscal|cod unic de [îi]nregistrare)\s*[:.]?\s*((?:RO)?\s?\d{2,10})\b",
                     re.I)
 PHONE_RX = re.compile(r"(?<!\d)(?:\+40|0040|0)[ .\-]?7(?:[ .\-]?\d){8}(?!\d)")
 EMAIL_RX = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
-# zgomot de OCR între serie și număr („SERIA BV _ NR 946988”) e tolerat
-SERIE_NR_RX = re.compile(r"\bSERIA\s*[:._|-]*\s*([A-Z]{2})\s*[:._|-]*\s*(?:NR\.?|N[O°]\.?)?\s*[:._|-]*\s*(\d{6})\b",
-                         re.I)
+# zgomot de OCR între serie și număr („SERIA BV _ NR 946988”) și spații în număr („NR 86524 7”) e tolerat
+SERIE_NR_RX = re.compile(r"\bSERIA\s*[:._|-]*\s*([A-Z]{2})\s*[:._|-]*\s*(?:NR\.?|N[O°]\.?)?\s*[:._|-]*\s*"
+                         r"(\d(?: ?\d){5})(?!\d)", re.I)
 MRZ_RX = re.compile(r"^[A-Z0-9<]{28,46}$")  # pe linia compactată (fără spații, « → <)
 # seria + numărul fără eticheta „SERIA” (doar pe buletin, altfel ar prinde orice cod)
 BARE_SERIE_NR_RX = re.compile(r"\b([A-Z]{2})\s?(\d{6})\b")
@@ -165,17 +165,30 @@ def find_mrz(text: str) -> list[Span]:
     for raw in text.split("\n"):
         start, end = pos, pos + len(raw)
         pos = end + 1
-        compact = _compact_mrz(raw)
+        s, e = _trim_mrz_noise(raw)
+        compact = _compact_mrz(raw[s:e])
         # rândul 2 TD2 poate avea un singur „<” (PH481925<7ROU…) → ajunge unul, dacă linia e lungă
         if MRZ_RX.match(compact) and "<" in compact and len(compact) >= 30:
-            lead = len(raw) - len(raw.lstrip())
-            lines.append((start + lead, end - (len(raw) - len(raw.rstrip())), compact))
+            lines.append((start + s, start + e, compact))
+        elif "<" in compact and "ROU" in compact and len(compact) >= 25:
+            # poză de telefon: zgomot și în interiorul liniei → n-o putem valida, dar e clar MRZ → o ascundem
+            lines.append((start + s, start + e, None))
     spans = []
     for i, (start, end, compact) in enumerate(lines):
         is_last = i + 1 == len(lines) or text[end:lines[i + 1][0]].strip()
-        parsed = _repair_mrz_line2(compact) if is_last and i > 0 else None
-        spans.append(Span("MRZ", start, end, compact, parsed.valid if parsed else None))
+        parsed = _repair_mrz_line2(compact) if compact and is_last and i > 0 else None
+        spans.append(Span("MRZ", start, end, compact or text[start:end], parsed.valid if parsed else None))
     return spans
+
+
+def _trim_mrz_noise(raw: str) -> tuple[int, int]:
+    """Capetele rândului fără „gunoi” de OCR („__ 15750912<4ROU… E =”): bucăți scurte fără „<” de la margini."""
+    tokens = [(m.start(), m.end()) for m in re.finditer(r"\S+", raw)]
+    while tokens and "<" not in raw[tokens[0][0]:tokens[0][1]] and tokens[0][1] - tokens[0][0] <= 2:
+        tokens.pop(0)
+    while tokens and "<" not in raw[tokens[-1][0]:tokens[-1][1]] and tokens[-1][1] - tokens[-1][0] <= 2:
+        tokens.pop()
+    return (tokens[0][0], tokens[-1][1]) if tokens else (0, 0)
 
 
 def find_known_names(text: str, tokens: set[str]) -> list[Span]:
@@ -246,8 +259,37 @@ def looks_like_id_card(text: str) -> bool:
     return "carte de identitate" in folded or "identity card" in folded or "idrou" in folded.replace(" ", "")
 
 
+# Adrese recunoscute după FORMĂ, nu după etichetă: pe pozele de telefon OCR-ul strică des „Domiciliu/Adresse”,
+# iar adresa de pe rândul următor rămânea în clar (benchmark --phone). Restul rândului (oraș, județ) e ascuns și el.
+_STREET = r"(?:str|strada|bd|b-dul|bulevardul|calea|aleea|sos|șos|soseaua|șoseaua|piata|piața|intrarea|splaiul)"
+STREET_RX = re.compile(r"(?<![\w\[])" + _STREET + r"\b\.?\s+[^\n\[\]]{2,40}?\bnr\.?\s*\d+[^\n]*", re.I)
+# „… nr. 14, Timișoara, jud. Timiș” — OCR-ul a mâncat chiar „Str.”: nr. + jud. pe același rând
+NR_JUD_RX = re.compile(r"[^\n\[\]]{2,60}\bnr\.?\s*\d+[A-Za-z]?\b[^\n]*?\bjud(?:etul|ețul)?\b\.?\s*[^\n]*", re.I)
+# locul nașterii: „Mun. Ploiești, Jud. PH”
+BIRTHPLACE_RX = re.compile(r"\b(?:mun|municipiul|or|oras|oraș|com|comuna|sat)\.?\s+[^\n,\[\]]{2,30},"
+                           r"\s*jud\.?\s*[^\n]{2,20}", re.I)
+
+
+# pe buletin, singurele rânduri cu „jud.” sunt domiciliul și locul nașterii → oricum le-ar fi citit OCR-ul
+# („Victoriei pr. 96, Ploiești, jud. Prahova”, „ser. Zorilor nr Sa Cluj-Napoca, jud. Cluj”)
+ID_CARD_JUD_RX = re.compile(r"[^\n]*\bjud\b[^\n]*", re.I)
+
+
+def find_addresses(text: str, id_card: bool = False) -> list[Span]:
+    spans = []
+    for rx in (STREET_RX, NR_JUD_RX, BIRTHPLACE_RX) + ((ID_CARD_JUD_RX,) if id_card else ()):
+        for m in rx.finditer(text):
+            value = m.group().strip(" \t,;")
+            if not value:
+                continue
+            start = m.start() + m.group().index(value)
+            spans.append(Span("ADRESA", start, start + len(value), value))
+    return spans
+
+
 def find_all(text: str, known_names: set[str] | None = None) -> list[Span]:
     spans = find_mrz(text) + find_identifiers(text, looks_like_id_card(text)) + find_anchored(text)
+    spans += find_addresses(text, looks_like_id_card(text))
     if known_names:
         spans += find_known_names(text, known_names)
     return resolve_overlaps(spans)
