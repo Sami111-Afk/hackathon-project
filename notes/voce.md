@@ -3,7 +3,7 @@
 „Orb” e scris așa intenționat (altfel vocea AI spune „or B”). Cifrele sunt transformate în cuvinte la generare.
 
 **s01 (~13 s)**
-This payslip says 8,500 lei take-home pay. Romanian payroll rules say 8,307. Today a credit analyst catches that by hand: read, recalculate, cross-check. About twenty minutes a file, by our own timing.
+This payslip says 8,500 lei, take-home. Romanian payroll rules say 8,307. Today a credit analyst catches that by hand: read, recalculate, cross-check. About twenty minutes a file, by our own timing.
 
 **s02 (~13 s)**
 We built Orb to help credit analysts check loan documents. Today that's slow: every payslip, statement and employer is checked by hand, and fraud rings hide across files. Orb flags exactly what's wrong.
@@ -39,7 +39,7 @@ Sixty synthetic files, real cloud AI: no name or ID number left the bank. None o
 Limits: synthetic data and our own forgeries, so real-fraud accuracy is untested; a forger who also fakes the statement would pass. Next: a pilot on a hundred real files, in-house.
 
 **s13 (~4 s)**
-Orb does the checking... and your people decide.
+The orb does the checking... and your people decide.
 
 **s14 (~12 s)**
 Think you can fool it? Anyone can try in our public Arena: most fakes get caught, with the reason. When one slips through, the AI proposes a rule, tests it on honest files, and a human approves it.
