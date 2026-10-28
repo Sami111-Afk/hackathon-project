@@ -20,3 +20,13 @@ Detalii: `zk/README.md` și `ARCHITECTURE.md` §7. Nu mai trebuie să instalezi 
    Atacuri de arătat: `lie_salary`, `lower_threshold`, `fake_signature`, `replay` — toate trebuie să dea NU.
    Ruta cere `Authorization: Bearer <BANK_UI_TOKEN>` (ca restul paginilor de bancă) + header-ul `ngrok-skip-browser-warning: 1`.
 4. (după 18:00) slide-urile și scenariul de demo împreună cu noi.
+
+## Review PR #29
+PR-ul e îmbinat (233 teste trec, fără conflicte cu main, fără fișiere binare adăugate: doar `phone.py` și `benchmark_pipeline.py`). Observații minore:
+- `--phone` (n=12, mock): scurgeri de PII în 4/12 dosare (NR_BULETIN, IBAN, STRADA, MRZ) față de 0/12 la clean. Redactarea ratează când OCR-ul citește prost. Cifra e reală și trebuie spusă onest în pitch, nu ascunsă.
+- Degradarea pare cam agresivă: extragerea scade la brut 4/12, sold 4/12, expirare 5/12 (clean: 12/12). Merită testat cu blur și zgomot mai mici, ca să se vadă și un caz „poză decentă”.
+- Falsuri prinse în phone: forged_net 1/3, forged_balance 1/2 (clean: 3/3 și 2/2); cinstiți loviți 1/3 (MRZ_INVALID din OCR).
+- `prompt_injection` (text gri #b4b4b4) dă 0/1 și pe clean: ori OCR nu citește textul, ori Paznicul nu îl prinde. De verificat înainte să-l prezentăm ca tip de fals acoperit.
+- `--extra-fakes` clean: bad_cnp, mrz_mismatch, doc_before_company prinse 1/1 fiecare.
+- Ruff trece cu configul din `backend/`; rulat din rădăcină, `benchmark_pipeline.py` dă I001 (ordinea importurilor), nu blochează.
+- Rezultatele nu sunt comise în PR; `data/benchmark/pipeline_results.json` trebuie regenerat dacă vrem cifrele phone în repo.
