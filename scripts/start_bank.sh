@@ -35,7 +35,7 @@ else
     # NUM_PARALLEL=2 = LLM_MAX_CONCURRENCY; cu 4 (implicit) Ollama mută 16% din model pe CPU
     OLLAMA_HOST=127.0.0.1:11434 OLLAMA_KEEP_ALIVE=-1 OLLAMA_NUM_PARALLEL=2 OLLAMA_FLASH_ATTENTION=1 \
         OLLAMA_KV_CACHE_TYPE=q8_0 OLLAMA_CONTEXT_LENGTH=8192 \
-        setsid ollama serve >"$LOGS/ollama.log" 2>&1 < /dev/null &
+        setsid ollama serve >"$LOGS/ollama.log" 2>&1 < /dev/null & disown
     wait_for "curl -sf localhost:11434/api/version" 30 && ok "pornit pe 127.0.0.1:11434" || bad "nu pornește (vezi logs/ollama.log)"
 fi
 if [[ -n "$MODEL" ]]; then
@@ -49,8 +49,11 @@ echo "▶ Backend"
 if curl -sf localhost:8000/health >/dev/null; then
     ok "rulează deja (pentru cod nou: scripts/start_bank.sh --stop, apoi din nou)"
 else
-    (cd "$REPO/backend" && ENV=demo setsid .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 \
-        >"$LOGS/backend.log" 2>&1 < /dev/null &)
+    # fără „( cd … && … & )”: cu ieșirea scriptului într-un pipe, bash aștepta după uvicorn și scriptul nu se mai termina
+    cd "$REPO/backend"
+    ENV=demo setsid .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 \
+        >"$LOGS/backend.log" 2>&1 < /dev/null & disown
+    cd "$REPO"
     wait_for "curl -sf localhost:8000/health" 30 && ok "pornit pe 127.0.0.1:8000 (ENV=demo)" || bad "nu pornește (vezi logs/backend.log)"
 fi
 echo "  mod LLM: $(envval LLM_MODE)"
@@ -62,7 +65,7 @@ else
     if curl -sf localhost:4040/api/tunnels | grep -q "$NGROK_DOMAIN"; then
         ok "tunelul rulează deja"
     else
-        setsid ngrok http --url="https://$NGROK_DOMAIN" 8000 --log=stdout >"$LOGS/ngrok.log" 2>&1 < /dev/null &
+        setsid ngrok http --url="https://$NGROK_DOMAIN" 8000 --log=stdout >"$LOGS/ngrok.log" 2>&1 < /dev/null & disown
         wait_for "curl -sf localhost:4040/api/tunnels | grep -q $NGROK_DOMAIN" 20 && ok "tunel pornit" \
             || bad "tunelul nu pornește (vezi logs/ngrok.log)"
     fi
@@ -71,7 +74,10 @@ else
 fi
 
 echo "▶ Test: dosarul Mariei"
-if [[ $FAILED -eq 0 && -n "$TOKEN" ]]; then
+if [[ -z "$TOKEN" ]]; then
+    bad "BANK_UI_TOKEN lipsește din .env, testul e sărit"
+elif [[ $FAILED -eq 0 ]]; then
+    # rerun-demo șterge rulările Mariei terminate (intenționat, ca Dashboard-ul să nu le numere de mai multe ori)
     t0=$(date +%s)
     id=$(curl -sf -X POST -H "Authorization: Bearer $TOKEN" localhost:8000/api/admin/rerun-demo \
          | python3 -c 'import sys,json;print(json.load(sys.stdin)["case_id"])' 2>/dev/null)
