@@ -7,9 +7,9 @@ import { cn } from '@/lib/utils'
 
 type View = 'original' | 'redacted' | 'ela'
 const VIEWS: { id: View; label: string; hint: string }[] = [
-  { id: 'redacted', label: 'Ce a văzut AI-ul', hint: 'Datele personale sunt acoperite' },
-  { id: 'original', label: 'Original', hint: 'Documentul primit' },
-  { id: 'ela', label: 'Harta de editare', hint: 'Zonele luminoase au fost modificate' },
+  { id: 'redacted', label: 'What the AI saw', hint: 'Personal data is covered' },
+  { id: 'original', label: 'Original', hint: 'The document as received' },
+  { id: 'ela', label: 'Edit map', hint: 'Bright areas were modified' },
 ]
 
 /** Actele din dosar: un tab pe document, trei vederi, chenare peste dovezi. */
@@ -48,17 +48,17 @@ export function DocumentViewer({
   return (
     <div>
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line px-5">
-        <div role="tablist" aria-label="Documente" className="flex gap-5">
+        <div role="tablist" aria-label="Documents" className="flex gap-5">
           {docs.map((d) => (
             <button key={d.id} role="tab" aria-selected={d.id === doc.id} type="button" onClick={() => onDocChange(d.id)}
               className={cn('flex items-center gap-2 border-b-2 py-3.5 text-[15px] font-medium',
                 d.id === doc.id ? 'border-ink text-ink' : 'border-transparent text-ink-2 hover:text-ink')}>
               {d.type === 'unknown' ? `Document ${docs.indexOf(d) + 1}` : DOC_LABEL[d.type]}
-              {flagged(d.id) && <span className="h-2 w-2 rounded-full bg-danger" aria-label="are dovezi" />}
+              {flagged(d.id) && <span className="h-2 w-2 rounded-full bg-danger" aria-label="has evidence" />}
             </button>
           ))}
         </div>
-        <div className="mb-2 flex overflow-hidden rounded-sm border border-line" role="group" aria-label="Vedere">
+        <div className="mb-2 flex overflow-hidden rounded-sm border border-line" role="group" aria-label="View">
           {VIEWS.map((v) => (
             <button key={v.id} type="button" title={v.hint} aria-pressed={view === v.id} onClick={() => setView(v.id)}
               className={cn('px-3 py-1.5 text-sm font-medium', view === v.id ? 'bg-ink text-white' : 'text-ink-2 hover:text-ink')}>
@@ -79,9 +79,9 @@ export function DocumentViewer({
               {mock ? (
                 <pre className="max-w-full whitespace-pre-wrap text-left text-sm leading-relaxed text-ink-2">{doc.redacted_text}</pre>
               ) : current.failed ? (
-                <><ImageOff className="h-6 w-6" aria-hidden />Vederea „{VIEWS.find((v) => v.id === view)?.label}” nu există pentru acest document.</>
+                <><ImageOff className="h-6 w-6" aria-hidden />The “{VIEWS.find((v) => v.id === view)?.label}” view is not available for this document.</>
               ) : (
-                <><Loader2 className="h-6 w-6 animate-spin" aria-hidden />Se încarcă documentul</>
+                <><Loader2 className="h-6 w-6 animate-spin" aria-hidden />Loading the document</>
               )}
             </div>
           )}

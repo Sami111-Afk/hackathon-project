@@ -20,7 +20,7 @@ const ring = ['A', 'B', 'C', 'D', 'E'].map((x, i): GraphNode => ({
 
 const deltas: { message: string; nodes: GraphNode[]; links: GraphLink[] }[] = [
   {
-    message: 'Construiesc graful',
+    message: 'Building the graph',
     nodes: [maria, PHONE, IBAN, fp('cnp', 'hm_0f2d', 1), fp('address', 'hm_aa71', 1)],
     links: [
       { source: maria.id, target: PHONE.id, kind: 'phone' },
@@ -30,7 +30,7 @@ const deltas: { message: string; nodes: GraphNode[]; links: GraphLink[] }[] = [
     ],
   },
   ...ring.map((n, i) => ({
-    message: `Legătură găsită: ${n.label}`,
+    message: `Link found: ${n.label}`,
     nodes: [n],
     links: [
       { source: n.id, target: PHONE.id, kind: 'phone' },

@@ -18,14 +18,14 @@ const SURFACE = '#ffffff'
 const LEGEND_ORDER = ['clear', 'review', 'escalate']
 
 const STATUS_LABEL: Record<CaseStatus, string> = {
-  received: 'Primit', processing: 'În analiză', awaiting_review: 'Așteaptă decizia', cleared: 'Aprobat',
-  rejected: 'Respins', escalated: 'La investigație', error: 'Eroare',
+  received: 'Received', processing: 'In analysis', awaiting_review: 'Awaiting decision', cleared: 'Approved',
+  rejected: 'Rejected', escalated: 'Under investigation', error: 'Error',
 }
 
 /** Cum citește un analist cererea: suma, nu codul intern (tipul creditului nu e cunoscut). */
 function describe(c: CaseSummary): string {
-  const amount = c.requested_amount_ron ? `${Math.round(c.requested_amount_ron).toLocaleString('ro-RO')} lei` : 'sumă necunoscută'
-  return `Cerere de credit de ${amount}`
+  const amount = c.requested_amount_ron ? `${Math.round(c.requested_amount_ron).toLocaleString('ro-RO')} lei` : 'unknown amount'
+  return `Loan application for ${amount}`
 }
 
 const ron = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`
@@ -73,7 +73,7 @@ function perDay(cases: CaseSummary[]) {
     const d = new Date(Date.now() - i * 86400000)
     const key = localDay(d)
     idx.set(key, days.length)
-    days.push({ day: d.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' }), clear: 0, review: 0, escalate: 0 })
+    days.push({ day: d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), clear: 0, review: 0, escalate: 0 })
   }
   for (const c of cases) {
     const i = idx.get(localDay(c.created_at))
@@ -93,7 +93,7 @@ export function DashboardPage() {
     return (
       <div className="min-h-screen bg-canvas">
         <AppNav />
-        <p className="p-8 text-lg text-danger">Cifrele nu s-au încărcat: serverul nu răspunde. Verifică backend-ul sau deschide demo-ul cu ?mock=1.</p>
+        <p className="p-8 text-lg text-danger">The figures could not be loaded: the server is not responding. Check the backend or open the demo with ?mock=1.</p>
       </div>
     )
   }
@@ -102,8 +102,8 @@ export function DashboardPage() {
   const manualH = s && a ? (s.cases_processed * a.manual_minutes_per_case) / 60 : 0
   const orbH = s && a ? (s.cases_processed * a.review_minutes_per_case) / 60 : 0
   const timeData = [
-    { name: 'Verificare manuală', hours: Math.round(manualH), fill: C.manual },
-    { name: 'Cu ORB, doar revizuire', hours: Math.round(orbH * 10) / 10, fill: C.orb },
+    { name: 'Manual review', hours: Math.round(manualH), fill: C.manual },
+    { name: 'With ORB, review only', hours: Math.round(orbH * 10) / 10, fill: C.orb },
   ]
 
   return (
@@ -112,51 +112,51 @@ export function DashboardPage() {
       <div className="border-b border-line bg-surface px-4 py-5 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-semibold tracking-tight">Privire de ansamblu</h1>
+            <h1 className="text-3xl font-semibold tracking-tight">Overview</h1>
             <p className="mt-1 text-base leading-relaxed text-ink-2">
-              Pentru analistul de credit: ORB verifică actele fiecărei cereri și semnalează ce nu se potrivește.
-              Analistul nu mai citește dosarul rând cu rând, ci revizuiește dovezile și decide, în aproximativ un minut în loc de douăzeci.
+              For the credit analyst: ORB checks the documents of every loan application and flags what does not add up.
+              The analyst no longer reads the file line by line, but reviews the evidence and decides, in about a minute instead of twenty.
             </p>
           </div>
           <div className="flex items-center gap-4">
-            {!mock && <span className="flex items-center gap-2 text-sm text-ink-2"><span className="h-2 w-2 rounded-full bg-ok" />Actualizare la 5 secunde</span>}
+            {!mock && <span className="flex items-center gap-2 text-sm text-ink-2"><span className="h-2 w-2 rounded-full bg-ok" />Updates every 5 seconds</span>}
             {!mock && !creating && (
               <button type="button" onClick={() => setCreating(true)}
                 className="flex h-11 items-center gap-2 rounded-sm bg-ink px-4 text-[15px] font-semibold text-white hover:bg-black">
-                <Plus className="h-4 w-4" aria-hidden /> Dosar nou
+                <Plus className="h-4 w-4" aria-hidden /> New application
               </button>
             )}
           </div>
         </div>
         {mock && (
           <p className="mt-4 rounded-sm border border-warn bg-warn-bg px-4 py-3 text-base font-semibold text-warn">
-            Date de demo: cifrele de pe această pagină sunt inventate și nu vin de la backend.
+            Demo data: the figures on this page are made up and do not come from the backend.
           </p>
         )}
       </div>
 
       <main className="space-y-6 px-4 py-6 md:px-8">
         {creating && <NewCaseForm onClose={() => setCreating(false)} />}
-        <section aria-label="Indicatori" className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
-          <Kpi label="Dosare verificate" value={s ? num(s.cases_processed) : '—'}
-               note={s ? `Cost AI: ${s.ai_cost_usd.toLocaleString('ro-RO', { minimumFractionDigits: 2 })} $ în total` : undefined} />
-          <Kpi label="Timp de lucru economisit" value={s ? num(s.hours_saved) : '—'} unit="ore"
-               note={s ? `Echivalentul a ${ron(s.money_saved_ron)} cost de personal` : undefined} />
-          <Kpi label="Fraude oprite" value={s ? num(s.frauds_stopped) : '—'}
-               note={s ? `${ron(s.amount_stopped_ron)} în credite blocate` : undefined} />
-          <Kpi label="Date personale protejate" value={s ? num(s.pii_values_protected) : '—'}
-               note={s ? (s.external_calls_with_pii === 0 ? 'Niciuna trimisă către AI-ul din cloud' : `${s.external_calls_with_pii} trimise către cloud`) : undefined} />
+        <section aria-label="Indicators" className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
+          <Kpi label="Applications checked" value={s ? num(s.cases_processed) : '—'}
+               note={s ? `AI cost: $${s.ai_cost_usd.toLocaleString('ro-RO', { minimumFractionDigits: 2 })} in total` : undefined} />
+          <Kpi label="Working time saved" value={s ? num(s.hours_saved) : '—'} unit="hours"
+               note={s ? `Equivalent to ${ron(s.money_saved_ron)} in staff cost` : undefined} />
+          <Kpi label="Frauds stopped" value={s ? num(s.frauds_stopped) : '—'}
+               note={s ? `${ron(s.amount_stopped_ron)} in blocked loans` : undefined} />
+          <Kpi label="Personal data protected" value={s ? num(s.pii_values_protected) : '—'}
+               note={s ? (s.external_calls_with_pii === 0 ? 'None sent to the cloud AI' : `${s.external_calls_with_pii} sent to the cloud`) : undefined} />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-          <Panel title={`Ore de lucru pentru ${s ? num(s.cases_processed) : '…'} dosare`}>
+          <Panel title={`Working hours for ${s ? num(s.cases_processed) : '…'} applications`}>
             <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={timeData} layout="vertical" margin={{ left: 8, right: 72 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="name" width={220} tickLine={false} axisLine={false}
                          tick={{ fill: '#1F2328', fontSize: 18 }} />
-                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} formatter={(v) => [`${Number(v).toLocaleString('ro-RO')} ore`, 'Timp']} />
+                  <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} formatter={(v) => [`${Number(v).toLocaleString('ro-RO')} hours`, 'Time']} />
                   <Bar dataKey="hours" radius={[0, 3, 3, 0]} barSize={40} isAnimationActive={false}>
                     <LabelList dataKey="hours" position="right" formatter={(v) => `${Number(v).toLocaleString('ro-RO')} h`}
                                style={{ fill: '#1F2328', fontSize: 20, fontWeight: 600 }} />
@@ -166,13 +166,13 @@ export function DashboardPage() {
             </div>
             {a && (
               <p className="mt-2 text-[15px] text-ink-3">
-                Presupuneri, de confirmat cu Raiffeisen: {a.manual_minutes_per_case} minute de verificare manuală pe dosar,
-                {' '}{a.review_minutes_per_case} minut de revizuire cu ORB, {a.cost_per_hour_ron} lei pe oră.
+                Assumptions, to be confirmed with Raiffeisen: {a.manual_minutes_per_case} minutes of manual checking per application,
+                {' '}{a.review_minutes_per_case} minute of review with ORB, {a.cost_per_hour_ron} lei per hour.
               </p>
             )}
           </Panel>
 
-          <Panel title="Dosare pe zi, după recomandarea ORB">
+          <Panel title="Applications per day, by ORB recommendation">
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={perDay(list)} margin={{ left: -16, right: 8 }}>
@@ -183,9 +183,9 @@ export function DashboardPage() {
                   <Tooltip cursor={{ fill: 'rgba(31,35,40,0.04)' }} />
                   <Legend wrapperStyle={{ fontSize: 16 }} itemSorter={(i) => LEGEND_ORDER.indexOf(String(i.dataKey))}
                           formatter={(v) => <span style={{ color: '#1F2328' }}>{v}</span>} />
-                  <Bar dataKey="clear" name="Aprobat automat" stackId="d" fill={C.good} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
-                  <Bar dataKey="review" name="Verificare manuală" stackId="d" fill={C.warning} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
-                  <Bar dataKey="escalate" name="Investigație" stackId="d" fill={C.critical} stroke={SURFACE} strokeWidth={2}
+                  <Bar dataKey="clear" name="Auto-approved" stackId="d" fill={C.good} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
+                  <Bar dataKey="review" name="Manual review" stackId="d" fill={C.warning} stroke={SURFACE} strokeWidth={2} isAnimationActive={false} />
+                  <Bar dataKey="escalate" name="Investigation" stackId="d" fill={C.critical} stroke={SURFACE} strokeWidth={2}
                        radius={[3, 3, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
@@ -193,11 +193,11 @@ export function DashboardPage() {
           </Panel>
         </section>
 
-        <Panel title="Cereri recente" bodyClassName="p-0 overflow-x-auto">
+        <Panel title="Recent applications" bodyClassName="p-0 overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-base">
             <thead className="bg-canvas/60 text-sm text-ink-2">
               <tr className="border-b border-line">
-                <th className="px-6 py-3 font-medium">Cerere</th><th className="px-4 font-medium">Depusă</th><th className="px-4 font-medium">Risc</th><th className="px-6 font-medium">Stare</th>
+                <th className="px-6 py-3 font-medium">Application</th><th className="px-4 font-medium">Submitted</th><th className="px-4 font-medium">Risk</th><th className="px-6 font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -211,14 +211,14 @@ export function DashboardPage() {
                       {openable
                         ? <Link to={`/cases/${c.id}`} className="font-medium text-info hover:underline">{describe(c)}</Link>
                         : <span className="font-medium text-ink">{describe(c)}</span>}
-                      <div className="text-sm text-ink-3">Solicitant anonimizat, dosar {c.id.replace(/^case_/, '')}</div>
+                      <div className="text-sm text-ink-3">Anonymized applicant, case {c.id.replace(/^case_/, '')}</div>
                     </td>
-                    <td className="px-4 text-ink-2">{new Date(c.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}</td>
+                    <td className="px-4 text-ink-2">{new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</td>
                     <td className="px-4">
                       {lvl && Icon ? (
                         <span className={`flex items-center gap-2 font-semibold tabular-nums ${lvl.text}`}>
                           <Icon className="h-4 w-4" aria-hidden />{Math.round(c.risk! * 100)}
-                          <span className="font-normal text-ink-3">{lvl.label.replace('Risc ', '')}</span>
+                          <span className="font-normal text-ink-3">{lvl.label.replace(/ risk$/i, '')}</span>
                         </span>
                       ) : '—'}
                     </td>

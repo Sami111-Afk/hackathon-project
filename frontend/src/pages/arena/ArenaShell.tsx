@@ -4,8 +4,8 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 
 const LINKS = [
-  { to: '/arena', label: 'Misiuni', icon: Target, end: true },
-  { to: '/arena/top', label: 'Clasament', icon: Trophy, end: false },
+  { to: '/arena', label: 'Missions', icon: Target, end: true },
+  { to: '/arena/top', label: 'Leaderboard', icon: Trophy, end: false },
 ]
 
 /**
@@ -16,13 +16,13 @@ export function ArenaShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh bg-night pb-[calc(6rem+env(safe-area-inset-bottom))] text-night-ink md:pb-12">
       <div className="bg-brand px-4 py-2 text-center text-sm font-semibold text-ink">
-        Joc demonstrativ. Nu încărca documente reale.
+        Demo game. Do not upload real documents.
       </div>
       <header className="mx-auto flex max-w-xl items-center gap-3 px-5 pt-5">
         <span className="grid h-9 w-9 place-items-center rounded-sm bg-brand font-condensed text-lg font-bold text-ink">O</span>
         <div className="leading-tight">
           <div className="text-lg font-bold tracking-tight">ORB Arena</div>
-          <div className="text-sm text-night-mute">Încearcă să păcălești agenții băncii</div>
+          <div className="text-sm text-night-mute">Try to fool the bank's agents</div>
         </div>
         <nav className="ml-auto hidden gap-5 md:flex">
           {LINKS.map((l) => (

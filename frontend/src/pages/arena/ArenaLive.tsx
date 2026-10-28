@@ -38,10 +38,10 @@ const agentName = (a: string) => AGENT_RO[a] ?? a
 function line(s: Submission): { icon: typeof Trophy; text: string; tone: string } {
   if (s.outcome === 'passed') {
     // 0 puncte = fals repetat sau plafon atins → nu afișăm „+0”
-    return { icon: Trophy, text: `${s.nickname} a păcălit agenții${s.points ? `, +${s.points}` : ''}`, tone: 'text-brand' }
+    return { icon: Trophy, text: `${s.nickname} fooled the agents${s.points ? `, +${s.points}` : ''}`, tone: 'text-brand' }
   }
-  if (s.outcome === 'caught') return { icon: AlertOctagon, text: `${s.nickname}, prins de ${s.caught_by.map(agentName).join(' și ')}`, tone: 'text-night-ink' }
-  return { icon: CircleHelp, text: `${s.nickname}: fals invalid`, tone: 'text-night-mute' }
+  if (s.outcome === 'caught') return { icon: AlertOctagon, text: `${s.nickname}, caught by ${s.caught_by.map(agentName).join(' and ')}`, tone: 'text-night-ink' }
+  return { icon: CircleHelp, text: `${s.nickname}: invalid fake`, tone: 'text-night-mute' }
 }
 
 /** Ecranul de pe proiector (1920×1080): QR, flux live, top 10, cât de des trec falsurile. */
@@ -113,25 +113,25 @@ export function ArenaLive() {
             <span className="grid h-14 w-14 place-items-center rounded-sm bg-brand font-condensed text-3xl font-bold text-ink">O</span>
             <h1 className="text-5xl font-bold tracking-tight">ORB Arena</h1>
           </div>
-          <p className="mt-4 text-2xl leading-snug text-night-mute">Scanează codul și încearcă să păcălești agenții băncii cu un fluturaș fals.</p>
-          {qr && <img src={qr} alt="Cod QR pentru Arena" className="mt-8 w-[min(100%,24rem)] rounded-md bg-white p-3" />}
+          <p className="mt-4 text-2xl leading-snug text-night-mute">Scan the code and try to fool the bank's agents with a fake payslip.</p>
+          {qr && <img src={qr} alt="QR code for the Arena" className="mt-8 w-[min(100%,24rem)] rounded-md bg-white p-3" />}
           <p className="mt-5 break-all text-2xl font-semibold text-brand">{url.replace(/^https?:\/\//, '').split('?')[0]}</p>
           {isLocal(base) && (
             <p className="mt-3 rounded-sm border border-night-danger/60 bg-night-danger/10 px-3 py-2 text-lg text-night-danger">
-              Telefoanele nu pot deschide localhost. Deschide pagina cu ?base=https://adresa-publică
+              Phones cannot open localhost. Open the page with ?base=https://public-address
             </p>
           )}
-          <p className="mt-4 text-xl text-night-mute">Joc demonstrativ. Nu încărca documente reale.</p>
+          <p className="mt-4 text-xl text-night-mute">Demo game. Do not upload real documents.</p>
         </section>
 
         <section className="flex min-h-0 flex-col">
           <h2 className="flex items-center gap-3 text-3xl font-semibold">
-            Încercări în timp real
-            <span className={cn('h-3 w-3 rounded-full', connected ? 'bg-night-ok' : 'bg-night-line')} aria-label={connected ? 'conectat' : 'deconectat'} />
+            Attempts in real time
+            <span className={cn('h-3 w-3 rounded-full', connected ? 'bg-night-ok' : 'bg-night-line')} aria-label={connected ? 'connected' : 'disconnected'} />
           </h2>
           {learning.length > 0 && (
             <div className={cn('mt-5 rounded-md border p-5 transition-colors', fresh ? 'border-brand bg-brand/10' : 'border-night-line bg-night-2')}>
-              <div className="flex items-center gap-2 text-xl font-semibold text-brand"><Brain className="h-6 w-6" aria-hidden />Agenții au învățat</div>
+              <div className="flex items-center gap-2 text-xl font-semibold text-brand"><Brain className="h-6 w-6" aria-hidden />The agents learned</div>
               {learning.map((l) => (
                 <p key={l.at} className={cn('mt-2 text-2xl leading-snug', l === learning[0] ? 'text-night-ink' : 'text-night-mute')}>{l.message}</p>
               ))}
@@ -146,7 +146,7 @@ export function ArenaLive() {
                 </li>
               )
             })}
-            {board.data && board.data.feed.length === 0 && <li className="py-4 text-2xl text-night-mute">Așteptăm prima încercare.</li>}
+            {board.data && board.data.feed.length === 0 && <li className="py-4 text-2xl text-night-mute">Waiting for the first attempt.</li>}
           </ul>
         </section>
 
@@ -163,8 +163,8 @@ export function ArenaLive() {
           </ol>
           {attacker && attacker.rounds.length > 0 ? (
             <div className="mt-auto rounded-md border border-night-line bg-night-2 p-5">
-              <div className="text-xl font-semibold">Atacatorul automat, pe runde{attacker.running ? ' (rulează)' : ''}</div>
-              <ol className="mt-4 flex flex-wrap gap-2" aria-label="Rundele atacatorului">
+              <div className="text-xl font-semibold">The automatic attacker, round by round{attacker.running ? ' (running)' : ''}</div>
+              <ol className="mt-4 flex flex-wrap gap-2" aria-label="Attacker rounds">
                 {attacker.rounds.map((r) => (
                   <li key={r.round} title={r.reasons.join('; ')}
                       className={cn('flex h-14 w-14 flex-col items-center justify-center rounded-sm border text-sm font-semibold',
@@ -176,22 +176,22 @@ export function ArenaLive() {
                 ))}
               </ol>
               <div className="mt-4 flex justify-between text-xl">
-                <span className="text-night-ok">{attacker.caught} prinse</span><span className="text-night-danger">{attacker.passed} au trecut</span>
+                <span className="text-night-ok">{attacker.caught} caught</span><span className="text-night-danger">{attacker.passed} got through</span>
               </div>
-              {attackerLine && <p className="mt-2 line-clamp-2 text-lg text-night-mute">{attackerLine.replace(/^\S+\s/, '').replace(': passed', ': a trecut').replace(': caught', ': prins').replace(': invalid', ': invalid')}</p>}
+              {attackerLine && <p className="mt-2 line-clamp-2 text-lg text-night-mute">{attackerLine.replace(/^\S+\s/, '').replace(/^Runda\b/, 'Round').replace(/: (passed|a trecut)\b/, ': got through').replace(/: (caught|prins)\b/, ': caught')}</p>}
             </div>
           ) : st && (
             <div className="mt-auto rounded-md border border-night-line bg-night-2 p-5">
-              <div className="text-xl font-semibold">Jucătorii împotriva agenților</div>
-              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-night-line" role="img" aria-label={`${st.caught} prinse, ${st.passed} trecute`}>
+              <div className="text-xl font-semibold">Players against the agents</div>
+              <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-night-line" role="img" aria-label={`${st.caught} caught, ${st.passed} got through`}>
                 <div className="bg-night-ok" style={{ width: `${100 - passRate}%` }} />
                 <div className="ml-0.5 bg-night-danger" style={{ width: `${passRate}%` }} />
               </div>
               <div className="mt-3 flex justify-between text-xl">
-                <span className="text-night-ok">{st.caught} prinse</span>
-                <span className="text-night-danger">{st.passed} au trecut, {passRate}%</span>
+                <span className="text-night-ok">{st.caught} caught</span>
+                <span className="text-night-danger">{st.passed} got through, {passRate}%</span>
               </div>
-              <div className="mt-1 text-lg text-night-mute">{st.players} jucători, {st.submissions} încercări</div>
+              <div className="mt-1 text-lg text-night-mute">{st.players} players, {st.submissions} attempts</div>
             </div>
           )}
         </section>
@@ -208,17 +208,17 @@ function Spotlight({ s, waiting }: { s: Submission; waiting: number }) {
       <div className={cn('w-[min(90vw,64rem)] rounded-lg border-4 p-12 text-center shadow-2xl animate-in zoom-in-90 duration-300',
         passed ? 'border-brand bg-[#2A2610]' : 'border-night-danger bg-[#2A1517]')}>
         <div className={cn('font-condensed text-[9rem] font-bold leading-none tracking-tight', passed ? 'text-brand' : 'text-night-danger')}>
-          {passed ? 'A TRECUT' : 'PRINS'}
+          {passed ? 'GOT THROUGH' : 'CAUGHT'}
         </div>
         <div className="mt-6 text-5xl font-semibold text-night-ink">{s.nickname}</div>
         <div className="mt-4 text-3xl text-night-mute">
           {passed
-            ? `a păcălit agenții${s.points ? `, +${s.points} puncte` : ''}`
-            : `de ${s.caught_by.map((a) => AGENT_RO[a] ?? a).join(' și ')}`}
+            ? `fooled the agents${s.points ? `, +${s.points} points` : ''}`
+            : `by ${s.caught_by.map((a) => AGENT_RO[a] ?? a).join(' and ')}`}
         </div>
         {!passed && s.reasons[0] && <div className="mx-auto mt-6 max-w-3xl text-3xl leading-snug text-night-ink">„{s.reasons[0]}”</div>}
-        {passed && <div className="mt-6 text-3xl text-night-ink">Agenții învață acum din falsul ăsta.</div>}
-        {waiting > 0 && <div className="mt-8 text-xl text-night-mute">încă {waiting} {waiting === 1 ? 'încercare' : 'încercări'} la rând</div>}
+        {passed && <div className="mt-6 text-3xl text-night-ink">The agents are now learning from this fake.</div>}
+        {waiting > 0 && <div className="mt-8 text-xl text-night-mute">{waiting} more {waiting === 1 ? 'attempt' : 'attempts'} in the queue</div>}
       </div>
     </div>
   )

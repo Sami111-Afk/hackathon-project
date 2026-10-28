@@ -14,22 +14,22 @@ function PayslipPreview({ doc, tricks }: { doc: Record<string, string | number>;
   const net = recompute ? Math.round(Number(doc.gross_salary) * 0.585) : doc.net_salary
   return (
     <div className="relative rounded-sm bg-white p-5 text-[14px] leading-6 text-ink">
-      <div className="text-center font-bold">Fluturaș de salariu</div>
-      <div className="text-center text-xs text-ink-3">luna {String(doc.issue_date).slice(0, 7)}</div>
+      <div className="text-center font-bold">Payslip</div>
+      <div className="text-center text-xs text-ink-3">month {String(doc.issue_date).slice(0, 7)}</div>
       <hr className="my-2 border-line" />
-      <div>Angajator: <b>{doc.employer}</b></div>
-      <div>Angajat: {doc.employee}</div>
-      <div>Funcția: {doc.job_title}</div>
+      <div>Employer: <b>{doc.employer}</b></div>
+      <div>Employee: {doc.employee}</div>
+      <div>Job title: {doc.job_title}</div>
       <hr className="my-2 border-line" />
-      <div className="flex justify-between"><span>Salariu brut</span><b>{n(doc.gross_salary)}</b></div>
-      <div className="flex justify-between"><span>Salariu net</span><b>{recompute ? '≈ ' : ''}{n(net)}</b></div>
-      <div className="mt-2 text-xs text-ink-3">Emis la {doc.issue_date}</div>
+      <div className="flex justify-between"><span>Gross salary</span><b>{n(doc.gross_salary)}</b></div>
+      <div className="flex justify-between"><span>Net salary</span><b>{recompute ? '≈ ' : ''}{n(net)}</b></div>
+      <div className="mt-2 text-xs text-ink-3">Issued on {doc.issue_date}</div>
       {tricks.includes('ai_photo') && (
         <div className="absolute bottom-3 right-3 flex h-14 w-14 rotate-[-12deg] items-center justify-center rounded-full border-2 border-info text-[9px] font-bold text-info">
-          ȘTAMPILĂ<br />AI
+          AI<br />STAMP
         </div>
       )}
-      {tricks.includes('hide_injection') && <div className="text-[9px] text-[#EEF0F2]">text ascuns pentru AI</div>}
+      {tricks.includes('hide_injection') && <div className="text-[9px] text-[#EEF0F2]">hidden text for the AI</div>}
     </div>
   )
 }
@@ -56,7 +56,7 @@ function Forge({ mission }: { mission: Mission }) {
       const res = await submitFake({ nickname: savedNick(), mission_id: mission.id, edits, tricks })
       nav(`/arena/r/${res.id}`, { state: res })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Nu s-a putut trimite')
+      setError(e instanceof Error ? e.message : 'Could not submit')
       setBusy(false)
     }
   }
@@ -68,14 +68,14 @@ function Forge({ mission }: { mission: Mission }) {
 
       <div className="mt-4"><PayslipPreview doc={doc} tricks={tricks} /></div>
 
-      <h3 className="mt-8 text-lg font-semibold">Modifică documentul</h3>
+      <h3 className="mt-8 text-lg font-semibold">Edit the document</h3>
       <div className="mt-2 space-y-4">
         {Object.entries(mission.editable).map(([key, spec]) => {
           const disabled = key === 'net_salary' && recompute
           const cls = 'mt-1 h-14 w-full rounded-md border border-night-line bg-night-2 px-4 text-lg outline-none focus:border-brand disabled:opacity-40'
           return (
             <label key={key} className="block">
-              <span className="text-base text-night-mute">{spec.label}{disabled && ' — se calculează din brut'}</span>
+              <span className="text-base text-night-mute">{spec.label}{disabled && ' — calculated from gross'}</span>
               {spec.type === 'select' ? (
                 <select className={cls} value={String(doc[key])} onChange={(e) => set(key, e.target.value)}>
                   {spec.options?.map((o) => <option key={o} value={o}>{o}</option>)}
@@ -97,7 +97,7 @@ function Forge({ mission }: { mission: Mission }) {
         })}
       </div>
 
-      <h3 className="mt-8 text-lg font-semibold">Trucuri</h3>
+      <h3 className="mt-8 text-lg font-semibold">Tricks</h3>
       <div className="mt-2 space-y-2">
         {Object.entries(mission.tricks).map(([key, label]) => {
           const on = tricks.includes(key)
@@ -115,12 +115,12 @@ function Forge({ mission }: { mission: Mission }) {
 
       <div className="sticky bottom-20 mt-8 space-y-2 bg-night/95 py-3 backdrop-blur">
         <p className={cn('text-center text-base', targetMet ? 'text-night-ok' : 'text-brand')}>
-          {targetMet ? 'Ținta e atinsă' : `Ținta: net de cel puțin ${lei(target.min)}`}
+          {targetMet ? 'Target reached' : `Target: net of at least ${lei(target.min)}`}
         </p>
         {error && <p className="text-center text-night-danger">{error}</p>}
         <button type="button" onClick={send} disabled={busy}
           className="flex h-16 w-full items-center justify-center gap-2 rounded-md bg-brand text-xl font-bold text-ink active:scale-[0.99] disabled:opacity-60">
-          {busy ? 'Agenții verifică…' : <><Send className="h-5 w-5" aria-hidden /> Trimite falsul</>}
+          {busy ? 'The agents are checking…' : <><Send className="h-5 w-5" aria-hidden /> Submit the fake</>}
         </button>
       </div>
     </ArenaShell>
@@ -132,7 +132,7 @@ export function ArenaForge() {
   const missions = useQuery({ queryKey: ['arena-missions'], queryFn: getMissions, staleTime: 60_000 })
   if (!savedNick()) return <Navigate to="/arena" replace />
   const mission = missions.data?.find((m) => m.id === missionId)
-  if (missions.isLoading) return <ArenaShell><p className="text-night-mute">Se încarcă misiunea.</p></ArenaShell>
-  if (!mission) return <ArenaShell><p className="text-night-danger">Misiunea nu există. Alege alta din listă.</p></ArenaShell>
+  if (missions.isLoading) return <ArenaShell><p className="text-night-mute">Loading the mission.</p></ArenaShell>
+  if (!mission) return <ArenaShell><p className="text-night-danger">That mission does not exist. Pick another from the list.</p></ArenaShell>
   return <Forge key={mission.id} mission={mission} />
 }

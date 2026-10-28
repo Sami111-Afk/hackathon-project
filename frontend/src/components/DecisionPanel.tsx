@@ -29,7 +29,7 @@ export function DecisionPanel({
 
   async function decide(action: DecisionAction) {
     if (action === 'clear' && needsReason && notes.trim().length < 10) {
-      setError('Dosarul e marcat pentru investigație. Ca să-l aprobi, scrie motivul în notă (minim 10 caractere).')
+      setError('This application is flagged for investigation. To approve it, write the reason in the note (at least 10 characters).')
       return
     }
     setBusy(true)
@@ -40,7 +40,7 @@ export function DecisionPanel({
         : await postDecision(caseId, { action, notes, decided_by: name })
       onDecided(d)
     } catch {
-      setError('Decizia nu s-a salvat: serverul nu a răspuns. Încearcă din nou.')
+      setError('The decision was not saved: the server did not respond. Try again.')
     } finally {
       setBusy(false)
     }
@@ -52,7 +52,7 @@ export function DecisionPanel({
         <CheckCircle2 className="mt-0.5 h-5 w-5 text-ok" aria-hidden />
         <div>
           <div className="text-base font-semibold text-ink">{DECISION_DONE[decision.action]}</div>
-          <div className="text-sm text-ink-2">de {decision.decided_by || 'necunoscut'}{decision.notes ? `: „${decision.notes}”` : ''}</div>
+          <div className="text-sm text-ink-2">by {decision.decided_by || 'unknown'}{decision.notes ? `: “${decision.notes}”` : ''}</div>
         </div>
       </div>
     )
@@ -62,7 +62,7 @@ export function DecisionPanel({
   return (
     <div className="space-y-3 border-t border-line px-6 py-5">
       <label className="block text-sm font-medium text-ink-2" htmlFor="notes">
-        {needsReason ? 'Notă pentru dosar (obligatorie dacă aprobi)' : 'Notă pentru dosar (opțional)'}
+        {needsReason ? 'Note for the application (required if you approve)' : 'Note for the application (optional)'}
       </label>
       <input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)}
              className="h-10 w-full rounded-sm border border-input bg-surface px-3 text-[15px] outline-none focus:border-info" />
@@ -80,7 +80,7 @@ export function DecisionPanel({
           {DECISION_LABEL.clear}
         </button>
       </div>
-      {disabled && <p className="text-sm text-ink-3">Deciziile devin active după verdict.</p>}
+      {disabled && <p className="text-sm text-ink-3">Decisions become available after the verdict.</p>}
       {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   )

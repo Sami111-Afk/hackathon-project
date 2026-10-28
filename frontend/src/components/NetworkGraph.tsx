@@ -3,9 +3,9 @@ import ForceGraph2D, { type ForceGraphMethods, type NodeObject } from 'react-for
 import type { GraphData, GraphNode } from '@/lib/graph'
 
 // Amprentele se desenează ca etichete scurte, nu ca emoji.
-const FP_TAG: Record<string, string> = { phone: 'tel', iban: 'IBAN', email: 'email', address: 'adr', cnp: 'CNP', name: 'nume', cui: 'CUI' }
+const FP_TAG: Record<string, string> = { phone: 'phone', iban: 'IBAN', email: 'email', address: 'addr', cnp: 'CNP', name: 'name', cui: 'CUI' }
 const FP_LABEL: Record<string, string> = {
-  phone: 'telefon', iban: 'cont', email: 'email', address: 'adresă', cnp: 'CNP', name: 'nume', cui: 'angajator',
+  phone: 'phone', iban: 'account', email: 'email', address: 'address', cnp: 'CNP', name: 'name', cui: 'employer',
 }
 const C = { focus: '#FFE600', ring: '#F04438', other: '#98A2B3', text: '#E4E7EC', linkStrong: 'rgba(240,68,56,0.75)', link: 'rgba(152,162,179,0.35)' }
 
@@ -61,7 +61,7 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
     <div ref={wrap} className="relative w-full overflow-hidden rounded-sm bg-[#161A20]">
       {graph.nodes.length === 0 ? (
         <div className="flex items-center justify-center text-[#98A2B3]" style={{ height }}>
-          Nicio legătură găsită încă.
+          No links found yet.
         </div>
       ) : (
         <ForceGraph2D<N>
@@ -75,8 +75,8 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
             ? C.linkStrong : C.link)}
           linkWidth={(l) => ((l as { kind: string }).kind === 'phone' || (l as { kind: string }).kind === 'iban' ? 2.5 : 1)}
           nodeLabel={(n) => (n.type === 'case'
-            ? `${n.label.replace(/^\[PERSOANA_(\w+)\]$/, 'Persoana $1')}, dosarul ${n.case_id}${n.risk != null ? `, risc ${Math.round(n.risk * 100)}` : ''}`
-            : `${FP_LABEL[n.kind ?? ''] ?? n.kind} comun la ${n.shared_by} dosare`)}
+            ? `${n.label.replace(/^\[PERSOANA_(\w+)\]$/, 'Person $1')}, application ${n.case_id}${n.risk != null ? `, risk ${Math.round(n.risk * 100)}` : ''}`
+            : `${FP_LABEL[n.kind ?? ''] ?? n.kind} shared by ${n.shared_by} applications`)}
           nodeCanvasObject={(n, ctx, scale) => {
             const x = n.x ?? 0
             const y = n.y ?? 0
@@ -93,7 +93,7 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
                 ctx.font = `600 ${13 / scale}px 'IBM Plex Sans', sans-serif`
                 ctx.textAlign = 'center'
                 ctx.textBaseline = 'top'
-                ctx.fillText('Acest dosar', x, y + r + 5 / scale)
+                ctx.fillText('This application', x, y + r + 5 / scale)
               }
             } else {
               const tag = FP_TAG[n.kind ?? ''] ?? '?'
@@ -122,10 +122,10 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
         />
       )}
       <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-[#2A3039] px-4 py-3 text-sm text-[#D0D5DD]">
-        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-brand" />Acest dosar</span>
-        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#F04438]" />Rețea suspectă ({Math.max(0, ringSize - 1)} dosare)</span>
-        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#98A2B3]" />Alte dosare</span>
-        <span className="text-[#98A2B3]">tel, IBAN, adr, CNP: date comune, păstrate ca amprente. Treci cu mouse-ul peste un dosar.</span>
+        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-brand" />This application</span>
+        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#F04438]" />Suspicious ring ({Math.max(0, ringSize - 1)} applications)</span>
+        <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#98A2B3]" />Other applications</span>
+        <span className="text-[#98A2B3]">phone, IBAN, addr, CNP: shared data, kept as fingerprints. Hover over an application.</span>
       </div>
     </div>
   )
