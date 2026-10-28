@@ -25,7 +25,7 @@ POINTS_NEAR_MISS = 100      # prins de un singur agent = „aproape”
 MAX_POINTS_PER_PLAYER = 3000
 
 BAD_WORDS = {"pula", "pizda", "muie", "fut", "futu", "cacat", "fuck", "shit", "bitch", "nigger"}
-RESERVED = {"ai-atacator", "aiatacator", "admin", "orb"}
+RESERVED = {"auto-attacker", "autoattacker", "ai-atacator", "aiatacator", "admin", "orb"}
 MAX_STORED = 2000  # trimiteri păstrate în memorie (cele mai vechi se șterg)
 
 _lock = threading.Lock()
