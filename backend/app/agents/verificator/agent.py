@@ -77,7 +77,9 @@ class Verificator:
             company, source = await asyncio.to_thread(
                 anaf.resolve, local_values.resolve(values, cui),
                 local_values.resolve(values, _val(employment, "employer_name")), case.id)
-            findings += anaf.check_company(company, source, employment.id, cui if isinstance(cui, str) else "")
+            declared = local_values.resolve(values, _val(employment, "employer_name"))
+            findings += anaf.check_company(company, source, employment.id, cui if isinstance(cui, str) else "",
+                                           declared_name=declared)
             findings += ro_checks.check_dates(_val(employment, "issue_date"), company.founded if company else None,
                                               today, employment.id)
         if stmt:

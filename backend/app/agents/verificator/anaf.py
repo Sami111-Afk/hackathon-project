@@ -170,7 +170,27 @@ def resolve(cui: str | None, name: str | None = None, case_id: str | None = None
     return (parse_record(result["found"]) if result["found"] else None), "anaf"
 
 
-def check_company(company: Company | None, source: Source, doc_id: str, label: str) -> list[Finding]:
+_LEGAL_FORMS = {"srl", "sa", "sca", "snc", "scs", "ii", "if", "pfa", "srl-d", "ong", "ra", "intreprindere",
+                "individuala", "familiala", "societate", "comerciala", "sc", "si"}
+
+
+def _name_tokens(name: str) -> set[str]:
+    import re
+    import unicodedata
+    folded = "".join(c for c in unicodedata.normalize("NFKD", name or "") if not unicodedata.combining(c)).lower()
+    return {t for t in re.split(r"[^a-z0-9]+", folded) if len(t) > 1 and t not in _LEGAL_FORMS}
+
+
+def same_company(declared: str | None, registered: str | None) -> bool | None:
+    """True/False dacă numele de pe document se potrivește cu cel de la ANAF; None dacă nu avem ce compara."""
+    a, b = _name_tokens(declared or ""), _name_tokens(registered or "")
+    if not a or not b:
+        return None
+    return len(a & b) / min(len(a), len(b)) >= 0.5
+
+
+def check_company(company: Company | None, source: Source, doc_id: str, label: str,
+                  declared_name: str | None = None) -> list[Finding]:
     ev = Evidence(doc_id=doc_id, field="employer_cui")
     if company is None and source in ("anaf", "cache"):
         return [Finding(code="COMPANY_NOT_FOUND", severity="critical",
@@ -178,6 +198,12 @@ def check_company(company: Company | None, source: Source, doc_id: str, label: s
     if company is None:
         return [Finding(code="COMPANY_UNVERIFIED", severity="info",
                         message=f"Angajatorul {label} nu a putut fi verificat la ANAF", evidence=ev)]
+    # ANAF a răspuns cu firma de la acest CUI: e aceeași cu cea de pe document? Altfel NU-i folosim starea
+    # (am atribui documentului situația unei firme străine — ex. un CUI inventat care există la altcineva).
+    if source in ("anaf", "cache") and same_company(declared_name, company.name) is False:
+        return [Finding(code="COMPANY_NAME_MISMATCH", severity="high",
+                        message=f"CUI-ul {label} aparține la ANAF altei firme decât cea de pe document",
+                        evidence=ev)]
     if not company.active:
         return [Finding(code="COMPANY_INACTIVE", severity="critical",
                         message=f"Angajatorul {label} figurează inactiv la ANAF", evidence=ev)]
