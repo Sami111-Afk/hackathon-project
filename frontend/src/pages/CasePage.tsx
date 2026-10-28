@@ -194,6 +194,7 @@ function CaseView({ caseId }: { caseId: string }) {
             <section className="overflow-hidden rounded-md border border-line bg-surface">
               <VerdictCard verdict={state.verdict} />
               <DecisionPanel caseId={c.id} decision={state.decision} mock={mock} disabled={!state.verdict}
+                             recommendation={state.verdict?.recommendation}
                              onDecided={(d) => dispatch({ type: 'decided', decision: d })} />
             </section>
             <Panel title="Dovezi" aside={<span className="text-sm text-ink-3">{findings.filter((f) => f.finding.severity !== 'info').length}</span>} bodyClassName="p-0">

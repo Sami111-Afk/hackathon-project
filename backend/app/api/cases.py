@@ -119,6 +119,9 @@ async def decide(case_id: str, body: DecisionIn):
         raise HTTPException(400, "acțiune necunoscută")
     if not body.decided_by.strip():
         raise HTTPException(400, "decided_by e obligatoriu")
+    if body.action == "clear" and case.verdict and case.verdict.recommendation == "escalate" \
+            and len(body.notes.strip()) < 10:
+        raise HTTPException(422, "aprobarea unui dosar marcat pentru investigație cere un motiv scris")
     case.decision = Decision(action=body.action, decided_by=body.decided_by.strip()[:60], notes=body.notes,
                              corrections=body.corrections, decided_at=now_iso())
     case.status = DECISION_STATUS[body.action]

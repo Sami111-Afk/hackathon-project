@@ -163,3 +163,15 @@ def test_rerun_demo_replaces_previous_maria_run():
         wait_for_review(c, second)
         ids = [x["id"] for x in c.get("/api/cases", headers=AUTH).json()]
         assert second in ids and first not in ids
+
+
+def test_approving_escalated_case_requires_reason():
+    with TestClient(app) as c:
+        case_id = c.post("/api/admin/rerun-demo", headers=AUTH).json()["case_id"]
+        case = wait_for_review(c, case_id)
+        assert case["verdict"]["recommendation"] == "escalate"
+        r = c.post(f"/api/cases/{case_id}/decision", headers=AUTH, json={"action": "clear", "decided_by": "Ana"})
+        assert r.status_code == 422
+        r = c.post(f"/api/cases/{case_id}/decision", headers=AUTH,
+                   json={"action": "clear", "decided_by": "Ana", "notes": "Client verificat la ghișeu, acte originale"})
+        assert r.status_code == 200
