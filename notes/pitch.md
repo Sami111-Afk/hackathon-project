@@ -4,14 +4,14 @@ Scris de Samuel pe 28.10, ~15:30, din feedback-ul a 8 „jurați” independenț
 Consens: **tehnic suntem peste medie; pierdem dacă povestea e „fraudă + multă tehnologie”**. Tema Raiffeisen e
 *eficiență operațională: muncă repetitivă cu documente, date, verificare* → asta e povestea.
 
-**Fraza de deschidere:** „ORB face verificarea repetitivă a dosarelor de credit în 20 de secunde în loc de X minute —
+**Fraza de deschidere:** „ORB face verificarea repetitivă a dosarelor de credit în 20 de secunde în loc de 20 de minute —
 fără ca datele clienților să iasă din bancă. Fraudele prinse sunt bonusul.”
 
 ## Video — 3:00 (ce se vede · ce se spune)
 
 | Timp | Pe ecran | Text (idee) |
 |---|---|---|
-| 0:00–0:20 | Un analist cu 3 documente (buletin, fluturaș, extras) + cronometru | „Azi, un analist citește actele, recalculează taxele, caută firma la ANAF, compară cu extrasul. **Am cronometrat: X minute pe dosar.**” |
+| 0:00–0:20 | Un analist cu 3 documente (buletin, fluturaș, extras) + cronometru | „Azi, un analist citește actele, recalculează taxele, caută firma la ANAF, compară cu extrasul. **Am cronometrat: 20 de minute pe dosar.**” |
 | 0:20–0:40 | Dashboard → „Dosar nou” → încarcă un dosar **cinstit** → aprobat | „Un dosar normal: ORB verifică tot, analistul aprobă. 20 de secunde.” (eficiența = munca repetitivă scoasă) |
 | 0:40–1:40 | Dosarul Mariei, „Analizează din nou, live”: cei 6 agenți pornesc; dovezile apar pe document („Arată pe document”) | „Același flux pe Maria, 67 de ani: netul nu iese din brut (8.307 vs 8.500), firma e inactivă, soldul nu se adună, zona netului a fost editată.” |
 | 1:40–2:00 | Graful: Maria legată de alte 5 cereri prin același IBAN | „Ce nu vede un om dosar cu dosar: același cont în 6 cereri, pe 6 identități.” |
@@ -27,7 +27,7 @@ Excepție posibilă: 5–10 s de Arena la final („oricine poate încerca să-l
 
 | Ce | Valoare | Sursă / cum |
 |---|---|---|
-| Timp manual pe dosar | **X min** (de cronometrat: un coleg, 3 dosare) | cronometru; + cifra de la mentorii Raiffeisen |
+| Timp manual pe dosar | **~20 min** — cronometrat de noi pe dosarul Mariei (de completat: câte dosare, ce a ratat omul) | cronometru; context: în industrie, la ipotecare, se raportează ore per dosar (studii de vânzători: CoreLogic/Cotality, V7) |
 | Timp ORB pe dosar | **~13–20 s** cloud · **8–9 s** local (RTX 4060, Ollama — testat și pe linkul public) | dosarul Mariei; benchmark |
 | Cost AI pe dosar | **~0,005 $** (Haiku extrage, Sonnet rezumă) | `llm_usage` pe dosarul Mariei |
 | Date personale trimise la AI-ul din cloud | **0 din 40** (curat) · **0 din 20** (poze de telefon) | `scripts/benchmark_pipeline.py`, `data/benchmark/pipeline_results.json` |
