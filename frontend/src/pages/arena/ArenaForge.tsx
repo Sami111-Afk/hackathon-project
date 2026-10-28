@@ -7,19 +7,21 @@ import { cn } from '@/lib/utils'
 import { ArenaShell } from './ArenaShell'
 
 /** Previzualizarea fluturașului, desenată local (falsul real îl face serverul). */
-function PayslipPreview({ doc, tricks }: { doc: Record<string, string | number>; tricks: string[] }) {
-  const n = (v: string | number) => Number(v).toLocaleString('ro-RO', { minimumFractionDigits: 2 })
+function PayslipPreview({ doc, tricks, jobLabels }: {
+  doc: Record<string, string | number>; tricks: string[]; jobLabels?: Record<string, string>
+}) {
+  const n = (v: string | number) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2 })
   // cu „recalculează taxele”, serverul pune netul exact; aici arătăm aproximarea (CAS 25%, CASS 10%, impozit 10%)
   const recompute = tricks.includes('recompute_taxes')
   const net = recompute ? Math.round(Number(doc.gross_salary) * 0.585) : doc.net_salary
   return (
     <div className="relative rounded-sm bg-white p-5 text-[14px] leading-6 text-ink">
       <div className="text-center font-bold">Payslip</div>
-      <div className="text-center text-xs text-ink-3">month {String(doc.issue_date).slice(0, 7)}</div>
+      <div className="text-center text-xs text-ink-3">Period {String(doc.issue_date).slice(0, 7)}</div>
       <hr className="my-2 border-line" />
       <div>Employer: <b>{doc.employer}</b></div>
       <div>Employee: {doc.employee}</div>
-      <div>Job title: {doc.job_title}</div>
+      <div>Job title: {jobLabels?.[String(doc.job_title)] ?? doc.job_title}</div>
       <hr className="my-2 border-line" />
       <div className="flex justify-between"><span>Gross salary</span><b>{n(doc.gross_salary)}</b></div>
       <div className="flex justify-between"><span>Net salary</span><b>{recompute ? '≈ ' : ''}{n(net)}</b></div>
@@ -66,7 +68,7 @@ function Forge({ mission }: { mission: Mission }) {
       <h2 className="text-2xl font-semibold">{mission.title}</h2>
       <p className="mt-1 text-night-mute">{mission.brief}</p>
 
-      <div className="mt-4"><PayslipPreview doc={doc} tricks={tricks} /></div>
+      <div className="mt-4"><PayslipPreview doc={doc} tricks={tricks} jobLabels={mission.editable.job_title?.option_labels} /></div>
 
       <h3 className="mt-8 text-lg font-semibold">Edit the document</h3>
       <div className="mt-2 space-y-4">
@@ -78,7 +80,7 @@ function Forge({ mission }: { mission: Mission }) {
               <span className="text-base text-night-mute">{spec.label}{disabled && ' — calculated from gross'}</span>
               {spec.type === 'select' ? (
                 <select className={cls} value={String(doc[key])} onChange={(e) => set(key, e.target.value)}>
-                  {spec.options?.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {spec.options?.map((o) => <option key={o} value={o}>{spec.option_labels?.[o] ?? o}</option>)}
                 </select>
               ) : (
                 <input

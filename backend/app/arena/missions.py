@@ -21,6 +21,10 @@ COMPANIES = {
 }
 
 JOB_TITLES = sorted({r for c in COMPANIES.values() for r in c["role_medians"]})
+# Ce vede jucătorul (UI-ul e în engleză); valorile de mai sus rămân cheile folosite de arbitru.
+JOB_TITLE_EN = {"Operator date": "Data entry clerk", "Contabil": "Accountant", "Administrator": "Administrator",
+                "Programator": "Software developer", "Team lead": "Team lead", "Director": "Director",
+                "Consultant": "Consultant"}
 
 MISSIONS = {
     "payslip_9000": {
@@ -41,7 +45,7 @@ MISSIONS = {
             "gross_salary": {"type": "number", "label": "Gross salary (lei)", "min": 0, "max": 100000},
             "net_salary": {"type": "number", "label": "Net salary (lei)", "min": 0, "max": 100000},
             "employer": {"type": "select", "label": "Employer", "options": list(COMPANIES)},
-            "job_title": {"type": "select", "label": "Job title", "options": JOB_TITLES},
+            "job_title": {"type": "select", "label": "Job title", "options": JOB_TITLES, "option_labels": JOB_TITLE_EN},
             "issue_date": {"type": "date", "label": "Issue date"},
         },
         "tricks": {

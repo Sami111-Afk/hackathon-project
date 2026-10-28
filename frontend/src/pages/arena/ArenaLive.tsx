@@ -161,7 +161,7 @@ export function ArenaLive() {
                 <li key={r.rank} className="flex items-center gap-4 py-2.5 text-2xl">
                   <span className={cn('w-12 text-right font-condensed font-bold tabular-nums', r.rank <= 3 ? 'text-brand' : 'text-night-mute')}>{r.rank}</span>
                   <span className="flex-1 truncate">{r.nickname}</span>
-                  <span className="font-semibold tabular-nums">{r.points.toLocaleString('ro-RO')}</span>
+                  <span className="font-semibold tabular-nums">{r.points.toLocaleString('en-US')}</span>
                 </li>
               ))}
             </ol>
