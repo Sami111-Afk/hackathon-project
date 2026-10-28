@@ -1,7 +1,7 @@
 """🔍 Verificator — Stefan. Refacem calculele și verificăm coerența dosarului.
 
 Totul determinist, fără LLM (ARCHITECTURE.md §5):
-  fluturaș  → taxele refăcute (tax.py), NET_MISMATCH
+  fluturaș  → taxele refăcute (tax.py), NET_MISMATCH; cu HE_ENABLED pe date criptate (he_bank.py)
   extras    → soldurile rând cu rând + salariul ca încasare (statement.py)
   angajator → registrul demo, apoi ANAF real cu cache (anaf.py)
   dosar     → verificări românești pe valorile din seiful local (ro_checks.py)
@@ -10,15 +10,19 @@ Totul determinist, fără LLM (ARCHITECTURE.md §5):
 Citește doc.extracted + ctx.scratch["functionar"] (bbox-uri, rândurile extrasului).
 """
 import asyncio
+import logging
 from datetime import date
 
 from app.agents.stubs import StubAgent
-from app.agents.verificator import anaf, local_values, ro_checks
+from app.agents.verificator import anaf, he_bank, local_values, ro_checks
 from app.agents.verificator.ro_checks import parse_iso
 from app.agents.verificator.statement import check_balances, check_income
-from app.agents.verificator.tax import check_net
+from app.agents.verificator.tax import check_net, net_mismatch
+from app.config import settings
 from app.learning.engine import apply_rules
 from app.models import AgentResult, Case, Document, Evidence, Finding
+
+log = logging.getLogger("orb.verificator")
 
 SEVERITY_RISK = {"info": 0.0, "low": 0.1, "medium": 0.3, "high": 0.6, "critical": 0.85}
 
@@ -63,8 +67,10 @@ class Verificator:
         employment = slip or cert
         net = _val(slip, "net_salary")
 
+        artifacts: dict[str, str] = {}
         if slip:
-            findings += self._payslip(slip, scratch)
+            slip_findings, artifacts = await self._payslip(slip, scratch, ctx)
+            findings += slip_findings
         company = None
         if employment:
             cui = _val(employment, "employer_cui")
@@ -101,15 +107,28 @@ class Verificator:
         for f in findings:
             keep *= 1 - SEVERITY_RISK[f.severity]
         await ctx.emit("agent_progress", f"{len(findings)} verificări cu probleme")
-        return AgentResult(agent="verificator", status="done", risk=round(1 - keep, 4), findings=findings)
+        return AgentResult(agent="verificator", status="done", risk=round(1 - keep, 4), findings=findings,
+                           artifacts=artifacts)
 
     @staticmethod
-    def _payslip(slip: Document, scratch: dict) -> list[Finding]:
+    async def _payslip(slip: Document, scratch: dict, ctx) -> tuple[list[Finding], dict[str, str]]:
         gross, net = _val(slip, "gross_salary"), _val(slip, "net_salary")
         if not isinstance(gross, int | float) or not isinstance(net, int | float):
-            return []  # sumă lipsă sau neparsată → nu acuzăm pe baza ei
-        f = check_net(gross, net, evidence=_evidence(scratch, slip, "net_salary"), period=_val(slip, "period"))
-        return [f] if f else []
+            return [], {}  # sumă lipsă sau neparsată → nu acuzăm pe baza ei
+        evidence, period = _evidence(scratch, slip, "net_salary"), _val(slip, "period")
+        if settings.he_enabled and he_bank.available():
+            try:
+                report = await asyncio.to_thread(he_bank.bank.verify_nets,
+                                                 [he_bank.NetItem(slip.id, gross, net, period)])
+            except Exception:  # HE picat nu are voie să oprească verificarea → calculăm în clar
+                log.exception("verificarea pe date criptate a eșuat; trec pe calculul în clar")
+            else:
+                check = report.checks[0]
+                await ctx.emit("agent_progress", f"Taxe verificate pe date criptate (CKKS, {report.ms} ms)")
+                findings = [] if check.ok else [net_mismatch(check.computed_net, net, evidence)]
+                return findings, report.artifacts()
+        f = check_net(gross, net, evidence=evidence, period=period)
+        return ([f] if f else []), {}
 
     @staticmethod
     def _rule_doc(slip: Document, company) -> dict:
