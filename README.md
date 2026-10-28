@@ -44,7 +44,7 @@ The **analyst decides** (approving a file flagged for investigation requires a w
 | Cost | ~0.005 $ per application (Haiku extracts, Sonnet summarises); 0 in local mode | per-call usage in the audit |
 | Local mode (RTX 4060 laptop, Qwen 4B via Ollama) | ~8–9 s per application, same verdict as the cloud | `LLM_MODE=local` |
 
-Raw results: [`data/benchmark/pipeline_results.json`](data/benchmark/pipeline_results.json). Tests: `cd backend && .venv/bin/python -m pytest -q` (267 passing).
+Raw results: [`data/benchmark/pipeline_results.json`](data/benchmark/pipeline_results.json). Tests: `cd backend && .venv/bin/python -m pytest -q` (272 passing).
 
 ### Limits — said up front
 - **All data is synthetic** (generated documents, invented CNPs/IBANs/companies) and **the forgeries are ours**: the benchmark proves the
