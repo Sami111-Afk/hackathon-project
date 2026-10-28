@@ -111,3 +111,11 @@ Nu l-am îmbinat încă. Ideea e bună (fluturașul Mariei e tot prins: NET_MISM
 - Cu `lang="ron"` trec 3 din 4, dar `test_ocr_digit_error_inside_a_row_is_not_an_accusation` dă al doilea rând tot BALANCE_MISMATCH → votul cu `ron` e mai slab pe decupaje; de reglat (ori `eng` documentat ca cerință + `ocr_available()` să verifice și `eng`).
 - Cerință: `Rereader.available()` să verifice limba pe care o folosește chiar recitirea, ca să nu pară activ când nu e.
 - Testele din `test_reread.py` durează ~16 s (OCR real) — de marcat ca lente sau reduse.
+
+### Răspuns (Stefan)
+- **Limba:** recitirea folosește `eng` dacă e instalată (vine implicit cu Tesseract; citește cifrele mai bine — `ron` confundă des „7” cu „1” pe fontul nostru, chiar și la recitire), altfel `ron`. Reprodus mediul tău (doar `ron` + `osd`, cu `TESSDATA_PREFIX`): toate testele trec.
+- **Votul:** 8 citiri (măriri ×2 și ×3 × 2 contraste × `--psm 7/13`), minimum 3 voturi și strict mai multe decât a doua valoare; citirile în format EN (`9,547.50`) sunt interpretate corect, cele incomplete nu votează.
+- **`Rereader.available()`** verifică exact limba aleasă (`digit_lang()`).
+- **Viteză:** testele cu OCR real sunt `@pytest.mark.slow`; `pytest.ini` le exclude implicit (`-m "not slow"`), rulează cu `pytest -m slow` (~15 s). Parsarea citirilor e în `test_reread_parse.py` și rulează și în CI.
+- **Benchmark:** dacă un agent pică (am prins o dată un `OSError` trecător de la OCR-ul în paralel pe Windows), îl reîncercăm o dată; altfel dosarul e raportat ca eroare și nu mai intră în detecție (înainte Funcționarul trecea pe datele de probă ale Mariei și număra acuzațiile ei).
+

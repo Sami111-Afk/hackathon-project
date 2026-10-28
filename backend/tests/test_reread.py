@@ -8,7 +8,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 from app.agents.paznic.ocr import ocr_available
 
-pytestmark = pytest.mark.skipif(not ocr_available(), reason="Tesseract `ron` lipsește")
+# OCR real pe imagini (~15 s): rulează doar cu `pytest -m slow` (vezi pytest.ini)
+pytestmark = [pytest.mark.slow, pytest.mark.skipif(not ocr_available(), reason="Tesseract `ron` lipsește")]
 
 from app.agents.functionar import agent as functionar_agent  # noqa: E402
 from app.agents.functionar.agent import Functionar  # noqa: E402
@@ -134,12 +135,3 @@ def test_payslip_forgery_is_still_caught(monkeypatch):
     result = run_payslip(monkeypatch, printed="8.500,00", ocr_read="8.500,00")  # falsul Mariei, tipărit
     assert "NET_MISMATCH" in [f.code for f in result.findings]
 
-
-@pytest.mark.parametrize(("text", "value"), [
-    ("9.547,50", 9547.5), ("9,547.50", 9547.5), ("-1.240,50-", 1240.5), ("7952,52", 7952.52),
-    ("1.234.567,89", 1234567.89), ("95252,", None), ("7.95252", None), ("", None), ("8.307", None),
-])
-def test_parse_ocr_amount(text, value):
-    from app.agents.verificator.reread import parse_ocr_amount
-
-    assert parse_ocr_amount(text) == value

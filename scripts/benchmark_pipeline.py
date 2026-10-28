@@ -313,19 +313,27 @@ async def run_case(c: dict) -> dict:
 
     t0 = time.perf_counter()
     results = []
+    errors = []
     for agent in (Paznic(), Functionar(), Verificator(today=TODAY)):
-        try:
-            results.append(await agent.run(case, ctx(agent.name)))
-        except Exception as exc:  # un agent picat = rezultat de raportat, nu oprim benchmark-ul
+        for attempt in (1, 2):  # o reîncercare: pe Windows, OCR-ul în paralel mai dă câte un OSError trecător
+            try:
+                results.append(await agent.run(case, ctx(agent.name)))
+                break
+            except Exception as exc:  # un agent picat = rezultat de raportat, nu oprim benchmark-ul
+                errors.append(f"{agent.name}: {type(exc).__name__}: {str(exc)[:200]}")
+                print(f"   {c['id']}: {agent.name} a picat (încercarea {attempt}): {errors[-1]}")
+        else:
             results.append(None)
-            print(f"   {c['id']}: {agent.name} a picat: {type(exc).__name__}")
+            break  # ca în pipeline: fără agentul ăsta, următorii n-au pe ce lucra (altfel ar reda datele de probă)
+    results += [None] * (3 - len(results))
     ok = [r for r in results if r is not None]
     verdict, _ = score(ok)
     ver = results[2]
     codes = {f.code for f in ver.findings} if ver else set()
     return {
         "id": c["id"], "kind": c["kind"], "ms": int((time.perf_counter() - t0) * 1000),
-        "agents_ok": len(ok) == 3, "leaks": find_leaks(c, case, ok), "fields": field_checks(c, case, scratch),
+        "agents_ok": len(ok) == 3, "errors": errors, "leaks": find_leaks(c, case, ok),
+        "fields": field_checks(c, case, scratch),
         "codes": sorted(codes), "recommendation": verdict.recommendation, "risk": verdict.risk,
         "expected_caught": EXPECTED.get(c["kind"]) in codes if c["kind"] in EXPECTED else None,
     }
@@ -350,7 +358,8 @@ async def main_async(args) -> dict:
 
 
 def summarize(run: dict) -> dict:
-    cases = run["cases"]
+    failed = [r for r in run["cases"] if not r["agents_ok"]]
+    cases = [r for r in run["cases"] if r["agents_ok"]]  # un agent picat nu e „fals prins” sau „cinstit lovit”
     by_kind = defaultdict(list)
     for r in cases:
         by_kind[r["kind"]].append(r)
@@ -362,9 +371,10 @@ def summarize(run: dict) -> dict:
     honest = by_kind["honest"]
     perfect_signal = sum("SALARY_NOT_IN_STATEMENT" in r["codes"] for r in by_kind["perfect_fake"])
     summary = {
-        "dosare": len(cases),
+        "dosare": len(run["cases"]),
         "documente": 3 * len(cases),
-        "agenti_fara_erori": sum(r["agents_ok"] for r in cases),
+        "agenti_fara_erori": f"{len(cases)}/{len(run['cases'])}",
+        "erori_agenti": [r["errors"] for r in failed],
         "dosare_cu_scurgeri": len(leaky),
         "scurgeri_pe_tip": dict(Counter(k for r in cases for k in r["leaks"])),
         "extragere_corecta": {k: f"{v}/{len(cases)}" for k, v in field_ok.items()},
