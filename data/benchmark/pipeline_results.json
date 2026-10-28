@@ -9,8 +9,8 @@
       "extra_fakes": false,
       "save": null,
       "generate_only": false,
-      "llm": "mock",
-      "jobs": 5,
+      "llm": null,
+      "jobs": 4,
       "mode": "clean"
     },
     "summary": {
@@ -27,23 +27,16 @@
         "net": "39/40",
         "luna": "40/40",
         "data emiterii": "40/40",
-        "sold inițial": "39/40",
+        "sold inițial": "40/40",
         "sold final": "38/40",
         "rânduri extras": "40/40",
         "expirare buletin": "38/40",
         "sex": "40/40"
       },
-      "cinstiti_loviti": "1/8",
-      "cinstiti_trimisi_la_om": "1/8",
+      "cinstiti_loviti": "0/8",
+      "cinstiti_trimisi_la_om": "0/8",
       "cinstiti_acuzati": "0/8",
-      "cinstiti_loviti_detalii": [
-        [
-          "BALANCE_MISMATCH",
-          "DOCS_CLASSIFIED",
-          "EXTRACTION_RULES_ONLY",
-          "PII_REDACTED"
-        ]
-      ],
+      "cinstiti_loviti_detalii": [],
       "falsuri_prinse": {
         "forged_net": "8/8",
         "forged_balance": "8/8",
@@ -51,13 +44,13 @@
       },
       "fals_perfect_semnalat": "0/8 (limită cunoscută; doar prin extras)",
       "fals_perfect_cu_semnal_salariu": "8/8 (netul de pe fluturaș nu apare în extras)",
-      "ms_median_pe_dosar": 16701
+      "ms_median_pe_dosar": 4493
     },
     "cases": [
       {
         "id": "bench_000",
         "kind": "honest",
-        "ms": 14619,
+        "ms": 4740,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -75,7 +68,7 @@
       {
         "id": "bench_001",
         "kind": "forged_net",
-        "ms": 21040,
+        "ms": 7482,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -94,7 +87,7 @@
       {
         "id": "bench_002",
         "kind": "forged_balance",
-        "ms": 24483,
+        "ms": 7568,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -113,30 +106,26 @@
       {
         "id": "bench_003",
         "kind": "inactive_employer",
-        "ms": 20434,
+        "ms": 4735,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
         "leaks_to_cloud": [],
         "codes": [
-          "AMOUNT_UNCERTAIN",
           "COMPANY_INACTIVE",
           "DOCS_CLASSIFIED",
           "EXTRACTION_RULES_ONLY",
-          "PII_REDACTED",
-          "SALARY_NOT_IN_STATEMENT"
+          "PII_REDACTED"
         ],
         "recommendation": "escalate",
-        "risk": 0.9055,
+        "risk": 0.85,
         "expected_caught": true,
-        "fields_wrong": [
-          "net"
-        ]
+        "fields_wrong": []
       },
       {
         "id": "bench_004",
         "kind": "perfect_fake",
-        "ms": 13874,
+        "ms": 4068,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -155,7 +144,7 @@
       {
         "id": "bench_005",
         "kind": "honest",
-        "ms": 4635,
+        "ms": 3715,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -173,7 +162,7 @@
       {
         "id": "bench_006",
         "kind": "forged_net",
-        "ms": 16202,
+        "ms": 7279,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -192,7 +181,7 @@
       {
         "id": "bench_007",
         "kind": "forged_balance",
-        "ms": 24398,
+        "ms": 7574,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -211,7 +200,7 @@
       {
         "id": "bench_008",
         "kind": "inactive_employer",
-        "ms": 8960,
+        "ms": 4610,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -230,7 +219,7 @@
       {
         "id": "bench_009",
         "kind": "perfect_fake",
-        "ms": 9688,
+        "ms": 4272,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -249,7 +238,7 @@
       {
         "id": "bench_010",
         "kind": "honest",
-        "ms": 6412,
+        "ms": 4069,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -267,7 +256,7 @@
       {
         "id": "bench_011",
         "kind": "forged_net",
-        "ms": 19940,
+        "ms": 6728,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -286,7 +275,7 @@
       {
         "id": "bench_012",
         "kind": "forged_balance",
-        "ms": 25648,
+        "ms": 7330,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -305,7 +294,7 @@
       {
         "id": "bench_013",
         "kind": "inactive_employer",
-        "ms": 10981,
+        "ms": 4356,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -324,7 +313,7 @@
       {
         "id": "bench_014",
         "kind": "perfect_fake",
-        "ms": 11842,
+        "ms": 3914,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -343,7 +332,7 @@
       {
         "id": "bench_015",
         "kind": "honest",
-        "ms": 7985,
+        "ms": 3739,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -361,7 +350,7 @@
       {
         "id": "bench_016",
         "kind": "forged_net",
-        "ms": 19004,
+        "ms": 7341,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -380,7 +369,7 @@
       {
         "id": "bench_017",
         "kind": "forged_balance",
-        "ms": 24875,
+        "ms": 7315,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -401,7 +390,7 @@
       {
         "id": "bench_018",
         "kind": "inactive_employer",
-        "ms": 6873,
+        "ms": 3857,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -420,7 +409,7 @@
       {
         "id": "bench_019",
         "kind": "perfect_fake",
-        "ms": 6910,
+        "ms": 3739,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -439,28 +428,25 @@
       {
         "id": "bench_020",
         "kind": "honest",
-        "ms": 33453,
+        "ms": 3786,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
         "leaks_to_cloud": [],
         "codes": [
-          "AMOUNT_UNCERTAIN",
           "DOCS_CLASSIFIED",
           "EXTRACTION_RULES_ONLY",
           "PII_REDACTED"
         ],
         "recommendation": "clear",
-        "risk": 0.1,
+        "risk": 0.0,
         "expected_caught": null,
-        "fields_wrong": [
-          "sold inițial"
-        ]
+        "fields_wrong": []
       },
       {
         "id": "bench_021",
         "kind": "forged_net",
-        "ms": 25921,
+        "ms": 6873,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -479,7 +465,7 @@
       {
         "id": "bench_022",
         "kind": "forged_balance",
-        "ms": 25879,
+        "ms": 7214,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -498,7 +484,7 @@
       {
         "id": "bench_023",
         "kind": "inactive_employer",
-        "ms": 11484,
+        "ms": 4146,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -517,7 +503,7 @@
       {
         "id": "bench_024",
         "kind": "perfect_fake",
-        "ms": 7158,
+        "ms": 3597,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -536,7 +522,7 @@
       {
         "id": "bench_025",
         "kind": "honest",
-        "ms": 9347,
+        "ms": 3848,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -554,20 +540,20 @@
       {
         "id": "bench_026",
         "kind": "forged_net",
-        "ms": 43939,
+        "ms": 10101,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
         "leaks_to_cloud": [],
         "codes": [
-          "BALANCE_MISMATCH",
+          "AMOUNT_UNCERTAIN",
           "DOCS_CLASSIFIED",
           "EXTRACTION_RULES_ONLY",
           "NET_MISMATCH",
           "PII_REDACTED"
         ],
-        "recommendation": "escalate",
-        "risk": 0.84,
+        "recommendation": "review",
+        "risk": 0.64,
         "expected_caught": true,
         "fields_wrong": [
           "sold final"
@@ -576,7 +562,7 @@
       {
         "id": "bench_027",
         "kind": "forged_balance",
-        "ms": 33372,
+        "ms": 7458,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -597,7 +583,7 @@
       {
         "id": "bench_028",
         "kind": "inactive_employer",
-        "ms": 18285,
+        "ms": 3875,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -616,7 +602,7 @@
       {
         "id": "bench_029",
         "kind": "perfect_fake",
-        "ms": 23460,
+        "ms": 3828,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -635,7 +621,7 @@
       {
         "id": "bench_030",
         "kind": "honest",
-        "ms": 15025,
+        "ms": 3975,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -653,7 +639,7 @@
       {
         "id": "bench_031",
         "kind": "forged_net",
-        "ms": 22256,
+        "ms": 7161,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -672,7 +658,7 @@
       {
         "id": "bench_032",
         "kind": "forged_balance",
-        "ms": 20356,
+        "ms": 7068,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -691,7 +677,7 @@
       {
         "id": "bench_033",
         "kind": "inactive_employer",
-        "ms": 8552,
+        "ms": 3720,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -710,7 +696,7 @@
       {
         "id": "bench_034",
         "kind": "perfect_fake",
-        "ms": 8268,
+        "ms": 3734,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -729,38 +715,38 @@
       {
         "id": "bench_035",
         "kind": "honest",
-        "ms": 23554,
+        "ms": 3966,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
         "leaks_to_cloud": [],
         "codes": [
-          "BALANCE_MISMATCH",
           "DOCS_CLASSIFIED",
           "EXTRACTION_RULES_ONLY",
           "PII_REDACTED"
         ],
-        "recommendation": "review",
-        "risk": 0.6,
+        "recommendation": "clear",
+        "risk": 0.0,
         "expected_caught": null,
         "fields_wrong": []
       },
       {
         "id": "bench_036",
         "kind": "forged_net",
-        "ms": 19792,
+        "ms": 8582,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
         "leaks_to_cloud": [],
         "codes": [
+          "AMOUNT_UNCERTAIN",
           "DOCS_CLASSIFIED",
           "EXTRACTION_RULES_ONLY",
           "NET_MISMATCH",
           "PII_REDACTED"
         ],
         "recommendation": "review",
-        "risk": 0.6,
+        "risk": 0.64,
         "expected_caught": true,
         "fields_wrong": [
           "sold final"
@@ -769,7 +755,7 @@
       {
         "id": "bench_037",
         "kind": "forged_balance",
-        "ms": 16701,
+        "ms": 6772,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -788,7 +774,7 @@
       {
         "id": "bench_038",
         "kind": "inactive_employer",
-        "ms": 13913,
+        "ms": 4493,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -802,12 +788,14 @@
         "recommendation": "escalate",
         "risk": 0.85,
         "expected_caught": true,
-        "fields_wrong": []
+        "fields_wrong": [
+          "net"
+        ]
       },
       {
         "id": "bench_039",
         "kind": "perfect_fake",
-        "ms": 8633,
+        "ms": 3709,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1674,6 +1662,8 @@
         "sex": "17/40"
       },
       "cinstiti_loviti": "4/8",
+      "cinstiti_trimisi_la_om": "4/8",
+      "cinstiti_acuzati": "0/8",
       "cinstiti_loviti_detalii": [
         [
           "DOCS_CLASSIFIED",
@@ -1717,13 +1707,13 @@
       },
       "fals_perfect_semnalat": "4/8 (limită cunoscută; doar prin extras)",
       "fals_perfect_cu_semnal_salariu": "3/8 (netul de pe fluturaș nu apare în extras)",
-      "ms_median_pe_dosar": 8288
+      "ms_median_pe_dosar": 8512
     },
     "cases": [
       {
         "id": "bench_000",
         "kind": "honest",
-        "ms": 8452,
+        "ms": 8754,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1748,7 +1738,7 @@
       {
         "id": "bench_001",
         "kind": "forged_net",
-        "ms": 10679,
+        "ms": 11230,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1769,7 +1759,7 @@
       {
         "id": "bench_002",
         "kind": "forged_balance",
-        "ms": 10361,
+        "ms": 10823,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1794,7 +1784,7 @@
       {
         "id": "bench_003",
         "kind": "inactive_employer",
-        "ms": 4662,
+        "ms": 4815,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1821,7 +1811,7 @@
       {
         "id": "bench_004",
         "kind": "perfect_fake",
-        "ms": 4984,
+        "ms": 4910,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1848,7 +1838,7 @@
       {
         "id": "bench_005",
         "kind": "honest",
-        "ms": 8515,
+        "ms": 8807,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1866,7 +1856,7 @@
       {
         "id": "bench_006",
         "kind": "forged_net",
-        "ms": 8288,
+        "ms": 8540,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1887,7 +1877,7 @@
       {
         "id": "bench_007",
         "kind": "forged_balance",
-        "ms": 6008,
+        "ms": 6232,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1913,7 +1903,7 @@
       {
         "id": "bench_008",
         "kind": "inactive_employer",
-        "ms": 9560,
+        "ms": 10011,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1945,7 +1935,7 @@
       {
         "id": "bench_009",
         "kind": "perfect_fake",
-        "ms": 15482,
+        "ms": 16325,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1960,7 +1950,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9597,
         "expected_caught": null,
         "fields_wrong": [
@@ -1973,7 +1963,7 @@
       {
         "id": "bench_010",
         "kind": "honest",
-        "ms": 7168,
+        "ms": 7949,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -1995,7 +1985,7 @@
       {
         "id": "bench_011",
         "kind": "forged_net",
-        "ms": 7574,
+        "ms": 8400,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2020,7 +2010,7 @@
       {
         "id": "bench_012",
         "kind": "forged_balance",
-        "ms": 8470,
+        "ms": 9034,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2044,7 +2034,7 @@
       {
         "id": "bench_013",
         "kind": "inactive_employer",
-        "ms": 5619,
+        "ms": 5735,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2075,7 +2065,7 @@
       {
         "id": "bench_014",
         "kind": "perfect_fake",
-        "ms": 7351,
+        "ms": 7461,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2094,7 +2084,7 @@
       {
         "id": "bench_015",
         "kind": "honest",
-        "ms": 7739,
+        "ms": 7979,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2108,7 +2098,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.7732,
         "expected_caught": null,
         "fields_wrong": [
@@ -2123,7 +2113,7 @@
       {
         "id": "bench_016",
         "kind": "forged_net",
-        "ms": 12358,
+        "ms": 12317,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2149,7 +2139,7 @@
       {
         "id": "bench_017",
         "kind": "forged_balance",
-        "ms": 10076,
+        "ms": 10255,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2171,7 +2161,7 @@
       {
         "id": "bench_018",
         "kind": "inactive_employer",
-        "ms": 7552,
+        "ms": 7626,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2198,7 +2188,7 @@
       {
         "id": "bench_019",
         "kind": "perfect_fake",
-        "ms": 7825,
+        "ms": 7952,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2221,7 +2211,7 @@
       {
         "id": "bench_020",
         "kind": "honest",
-        "ms": 14550,
+        "ms": 14831,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2238,7 +2228,7 @@
           "SALARY_NOT_IN_STATEMENT",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9718,
         "expected_caught": null,
         "fields_wrong": [
@@ -2252,7 +2242,7 @@
       {
         "id": "bench_021",
         "kind": "forged_net",
-        "ms": 8379,
+        "ms": 8695,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2277,7 +2267,7 @@
       {
         "id": "bench_022",
         "kind": "forged_balance",
-        "ms": 10374,
+        "ms": 10508,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2298,7 +2288,7 @@
       {
         "id": "bench_023",
         "kind": "inactive_employer",
-        "ms": 3943,
+        "ms": 4048,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2324,7 +2314,7 @@
       {
         "id": "bench_024",
         "kind": "perfect_fake",
-        "ms": 7251,
+        "ms": 7320,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2350,7 +2340,7 @@
       {
         "id": "bench_025",
         "kind": "honest",
-        "ms": 8420,
+        "ms": 8357,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2374,7 +2364,7 @@
       {
         "id": "bench_026",
         "kind": "forged_net",
-        "ms": 8488,
+        "ms": 8512,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2388,7 +2378,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.856,
         "expected_caught": true,
         "fields_wrong": [
@@ -2402,7 +2392,7 @@
       {
         "id": "bench_027",
         "kind": "forged_balance",
-        "ms": 6493,
+        "ms": 6500,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2425,7 +2415,7 @@
       {
         "id": "bench_028",
         "kind": "inactive_employer",
-        "ms": 7722,
+        "ms": 7608,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2453,7 +2443,7 @@
       {
         "id": "bench_029",
         "kind": "perfect_fake",
-        "ms": 15857,
+        "ms": 16013,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2467,7 +2457,7 @@
           "PII_REDACTED",
           "SALARY_NOT_IN_STATEMENT"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9184,
         "expected_caught": null,
         "fields_wrong": [
@@ -2482,7 +2472,7 @@
       {
         "id": "bench_030",
         "kind": "honest",
-        "ms": 5327,
+        "ms": 5414,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2508,7 +2498,7 @@
       {
         "id": "bench_031",
         "kind": "forged_net",
-        "ms": 5942,
+        "ms": 6121,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2530,7 +2520,7 @@
       {
         "id": "bench_032",
         "kind": "forged_balance",
-        "ms": 12362,
+        "ms": 12670,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2545,7 +2535,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9637,
         "expected_caught": true,
         "fields_wrong": [
@@ -2557,7 +2547,7 @@
       {
         "id": "bench_033",
         "kind": "inactive_employer",
-        "ms": 9399,
+        "ms": 9684,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2586,7 +2576,7 @@
       {
         "id": "bench_034",
         "kind": "perfect_fake",
-        "ms": 8274,
+        "ms": 8512,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2609,7 +2599,7 @@
       {
         "id": "bench_035",
         "kind": "honest",
-        "ms": 8744,
+        "ms": 9007,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2633,7 +2623,7 @@
       {
         "id": "bench_036",
         "kind": "forged_net",
-        "ms": 7513,
+        "ms": 7771,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2659,7 +2649,7 @@
       {
         "id": "bench_037",
         "kind": "forged_balance",
-        "ms": 10570,
+        "ms": 10902,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2672,7 +2662,7 @@
           "OCR_LOW_QUALITY",
           "PII_REDACTED"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.8992,
         "expected_caught": true,
         "fields_wrong": [
@@ -2685,7 +2675,7 @@
       {
         "id": "bench_038",
         "kind": "inactive_employer",
-        "ms": 6292,
+        "ms": 6589,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -2712,7 +2702,7 @@
       {
         "id": "bench_039",
         "kind": "perfect_fake",
-        "ms": 5239,
+        "ms": 5214,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5443,6 +5433,8 @@
         "sex": "16/45"
       },
       "cinstiti_loviti": "5/5",
+      "cinstiti_trimisi_la_om": "5/5",
+      "cinstiti_acuzati": "0/5",
       "cinstiti_loviti_detalii": [
         [
           "DOCS_CLASSIFIED",
@@ -5489,13 +5481,13 @@
       },
       "fals_perfect_semnalat": "5/5 (limită cunoscută; doar prin extras)",
       "fals_perfect_cu_semnal_salariu": "1/5 (netul de pe fluturaș nu apare în extras)",
-      "ms_median_pe_dosar": 8800
+      "ms_median_pe_dosar": 8007
     },
     "cases": [
       {
         "id": "bench_000",
         "kind": "honest",
-        "ms": 11432,
+        "ms": 8756,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5520,7 +5512,7 @@
       {
         "id": "bench_001",
         "kind": "forged_net",
-        "ms": 14757,
+        "ms": 11082,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5541,7 +5533,7 @@
       {
         "id": "bench_002",
         "kind": "forged_balance",
-        "ms": 14058,
+        "ms": 10512,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5566,7 +5558,7 @@
       {
         "id": "bench_003",
         "kind": "inactive_employer",
-        "ms": 6403,
+        "ms": 4674,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5593,7 +5585,7 @@
       {
         "id": "bench_004",
         "kind": "perfect_fake",
-        "ms": 6592,
+        "ms": 5083,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5620,7 +5612,7 @@
       {
         "id": "bench_005",
         "kind": "bad_cnp",
-        "ms": 12667,
+        "ms": 8522,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5643,7 +5635,7 @@
       {
         "id": "bench_006",
         "kind": "mrz_mismatch",
-        "ms": 10268,
+        "ms": 6669,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5666,7 +5658,7 @@
       {
         "id": "bench_007",
         "kind": "doc_before_company",
-        "ms": 8952,
+        "ms": 5574,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5685,7 +5677,7 @@
       {
         "id": "bench_008",
         "kind": "prompt_injection",
-        "ms": 11043,
+        "ms": 7699,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5714,7 +5706,7 @@
       {
         "id": "bench_009",
         "kind": "honest",
-        "ms": 9730,
+        "ms": 7187,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5738,7 +5730,7 @@
       {
         "id": "bench_010",
         "kind": "forged_net",
-        "ms": 9714,
+        "ms": 7191,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5760,7 +5752,7 @@
       {
         "id": "bench_011",
         "kind": "forged_balance",
-        "ms": 13750,
+        "ms": 10681,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5774,7 +5766,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.856,
         "expected_caught": true,
         "fields_wrong": [
@@ -5786,7 +5778,7 @@
       {
         "id": "bench_012",
         "kind": "inactive_employer",
-        "ms": 11527,
+        "ms": 8677,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5814,7 +5806,7 @@
       {
         "id": "bench_013",
         "kind": "perfect_fake",
-        "ms": 17759,
+        "ms": 16441,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5828,7 +5820,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.8704,
         "expected_caught": null,
         "fields_wrong": [
@@ -5840,7 +5832,7 @@
       {
         "id": "bench_014",
         "kind": "bad_cnp",
-        "ms": 12365,
+        "ms": 11319,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5866,7 +5858,7 @@
       {
         "id": "bench_015",
         "kind": "mrz_mismatch",
-        "ms": 8800,
+        "ms": 8164,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5880,7 +5872,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.748,
         "expected_caught": false,
         "fields_wrong": [
@@ -5892,7 +5884,7 @@
       {
         "id": "bench_016",
         "kind": "doc_before_company",
-        "ms": 15620,
+        "ms": 15142,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5920,7 +5912,7 @@
       {
         "id": "bench_017",
         "kind": "prompt_injection",
-        "ms": 6917,
+        "ms": 6674,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5944,7 +5936,7 @@
       {
         "id": "bench_018",
         "kind": "honest",
-        "ms": 7950,
+        "ms": 7811,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5972,7 +5964,7 @@
       {
         "id": "bench_019",
         "kind": "forged_net",
-        "ms": 7517,
+        "ms": 7586,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -5998,7 +5990,7 @@
       {
         "id": "bench_020",
         "kind": "forged_balance",
-        "ms": 12653,
+        "ms": 12812,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6013,7 +6005,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9482,
         "expected_caught": true,
         "fields_wrong": [
@@ -6026,7 +6018,7 @@
       {
         "id": "bench_021",
         "kind": "inactive_employer",
-        "ms": 8141,
+        "ms": 8136,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6052,7 +6044,7 @@
       {
         "id": "bench_022",
         "kind": "perfect_fake",
-        "ms": 8939,
+        "ms": 9206,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6077,7 +6069,7 @@
       {
         "id": "bench_023",
         "kind": "bad_cnp",
-        "ms": 8172,
+        "ms": 8410,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6090,7 +6082,7 @@
           "OCR_LOW_QUALITY",
           "PII_REDACTED"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9424,
         "expected_caught": true,
         "fields_wrong": [
@@ -6105,7 +6097,7 @@
       {
         "id": "bench_024",
         "kind": "mrz_mismatch",
-        "ms": 10497,
+        "ms": 10680,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6134,7 +6126,7 @@
       {
         "id": "bench_025",
         "kind": "doc_before_company",
-        "ms": 8197,
+        "ms": 8109,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6161,7 +6153,7 @@
       {
         "id": "bench_026",
         "kind": "prompt_injection",
-        "ms": 6147,
+        "ms": 6161,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6189,7 +6181,7 @@
       {
         "id": "bench_027",
         "kind": "honest",
-        "ms": 5910,
+        "ms": 5901,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6215,7 +6207,7 @@
       {
         "id": "bench_028",
         "kind": "forged_net",
-        "ms": 8172,
+        "ms": 8007,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6244,7 +6236,7 @@
       {
         "id": "bench_029",
         "kind": "forged_balance",
-        "ms": 10154,
+        "ms": 9957,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6268,7 +6260,7 @@
       {
         "id": "bench_030",
         "kind": "inactive_employer",
-        "ms": 6014,
+        "ms": 5827,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6297,7 +6289,7 @@
       {
         "id": "bench_031",
         "kind": "perfect_fake",
-        "ms": 6079,
+        "ms": 5838,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6327,7 +6319,7 @@
       {
         "id": "bench_032",
         "kind": "bad_cnp",
-        "ms": 8501,
+        "ms": 8507,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6341,7 +6333,7 @@
           "OCR_LOW_QUALITY",
           "PII_REDACTED"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9673,
         "expected_caught": true,
         "fields_wrong": [
@@ -6357,7 +6349,7 @@
       {
         "id": "bench_033",
         "kind": "mrz_mismatch",
-        "ms": 6869,
+        "ms": 6993,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6370,7 +6362,7 @@
           "OCR_LOW_QUALITY",
           "PII_REDACTED"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.7732,
         "expected_caught": true,
         "fields_wrong": [
@@ -6386,7 +6378,7 @@
       {
         "id": "bench_034",
         "kind": "doc_before_company",
-        "ms": 10361,
+        "ms": 10449,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6400,7 +6392,7 @@
           "OCR_LOW_QUALITY",
           "PII_REDACTED"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.8704,
         "expected_caught": true,
         "fields_wrong": [
@@ -6413,7 +6405,7 @@
       {
         "id": "bench_035",
         "kind": "prompt_injection",
-        "ms": 7187,
+        "ms": 7359,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6440,7 +6432,7 @@
       {
         "id": "bench_036",
         "kind": "honest",
-        "ms": 13706,
+        "ms": 13979,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6453,7 +6445,7 @@
           "OCR_LOW_QUALITY",
           "PII_REDACTED"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.8992,
         "expected_caught": null,
         "fields_wrong": [
@@ -6464,7 +6456,7 @@
       {
         "id": "bench_037",
         "kind": "forged_net",
-        "ms": 6335,
+        "ms": 6433,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6493,7 +6485,7 @@
       {
         "id": "bench_038",
         "kind": "forged_balance",
-        "ms": 7350,
+        "ms": 7372,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6519,7 +6511,7 @@
       {
         "id": "bench_039",
         "kind": "inactive_employer",
-        "ms": 6906,
+        "ms": 7352,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6546,7 +6538,7 @@
       {
         "id": "bench_040",
         "kind": "perfect_fake",
-        "ms": 6600,
+        "ms": 6762,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6574,7 +6566,7 @@
       {
         "id": "bench_041",
         "kind": "bad_cnp",
-        "ms": 9254,
+        "ms": 9319,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6590,7 +6582,7 @@
           "PII_REDACTED",
           "SALARY_NOT_IN_STATEMENT"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.9746,
         "expected_caught": true,
         "fields_wrong": [
@@ -6607,7 +6599,7 @@
       {
         "id": "bench_042",
         "kind": "mrz_mismatch",
-        "ms": 6711,
+        "ms": 6804,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6635,7 +6627,7 @@
       {
         "id": "bench_043",
         "kind": "doc_before_company",
-        "ms": 6120,
+        "ms": 6137,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6662,7 +6654,7 @@
       {
         "id": "bench_044",
         "kind": "prompt_injection",
-        "ms": 8819,
+        "ms": 8831,
         "agents_ok": true,
         "errors": [],
         "leaks": [],
@@ -6677,7 +6669,7 @@
           "PII_REDACTED",
           "UNREDACTED_IDENTIFIER"
         ],
-        "recommendation": "escalate",
+        "recommendation": "review",
         "risk": 0.7959,
         "expected_caught": false,
         "fields_wrong": [
