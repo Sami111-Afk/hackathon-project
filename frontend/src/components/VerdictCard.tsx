@@ -8,7 +8,7 @@ export function VerdictCard({ verdict }: { verdict: Verdict | null }) {
   if (!verdict) {
     return (
       <div className="flex items-center gap-3 px-6 py-8 text-ink-2">
-        <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> The agents are still analysing the application.
+        <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> The agents are still analyzing the application.
       </div>
     )
   }
@@ -16,7 +16,7 @@ export function VerdictCard({ verdict }: { verdict: Verdict | null }) {
   const Icon = lvl.icon
   // 99,8 nu se rotunjește la 100: scorul nu e o certitudine
   const pct = verdict.risk * 100
-  const score = pct >= 99 && pct < 100 ? (Math.floor(pct * 10) / 10).toLocaleString('ro-RO') : Math.round(pct)
+  const score = pct >= 99 && pct < 100 ? (Math.floor(pct * 10) / 10).toLocaleString('en-GB') : Math.round(pct)
   const items = verdict.breakdown ?? []
   const critical = items.filter((i) => i.severity === 'critical').length
   return (
@@ -53,8 +53,8 @@ export function VerdictCard({ verdict }: { verdict: Verdict | null }) {
               }, { rows: [], keep: 1 }).rows.map(({ item, cum }, i) => (
                 <tr key={i} className="border-t border-line align-top">
                   <td className="py-1.5 pr-2 text-ink">{item.message}{item.hard_override && <span className="ml-1 text-xs font-semibold text-danger">(mandatory escalation)</span>}</td>
-                  <td className="py-1.5 text-right tabular-nums text-ink-2">{item.weight.toLocaleString('ro-RO')}</td>
-                  <td className="py-1.5 text-right tabular-nums text-ink-2">{(cum * 100).toLocaleString('ro-RO', { maximumFractionDigits: 1 })}</td>
+                  <td className="py-1.5 text-right tabular-nums text-ink-2">{item.weight.toLocaleString('en-GB')}</td>
+                  <td className="py-1.5 text-right tabular-nums text-ink-2">{(cum * 100).toLocaleString('en-GB', { maximumFractionDigits: 1 })}</td>
                 </tr>
               ))}
             </tbody>

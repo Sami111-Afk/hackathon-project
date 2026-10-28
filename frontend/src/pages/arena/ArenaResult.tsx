@@ -85,7 +85,7 @@ export function ArenaResult() {
             <div className="rounded-md border border-night-danger/70 bg-night-danger/10 p-6">
               <div className="text-3xl font-bold">{pick(CAUGHT_TITLES, s.id)}</div>
               <div className="mt-1 text-base text-night-mute">
-                {catchers.length === 1 ? 'Only one agent caught you, it was close. ' : ''}+{s.points} points for trying
+                {catchers.length === 1 ? 'Only one agent caught you. That was close. ' : ''}+{s.points} points for trying
               </div>
 
               <h3 className="mt-5 text-base font-semibold">Why we caught you</h3>
