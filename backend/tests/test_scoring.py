@@ -57,3 +57,25 @@ def test_verdict_explains_its_score():
     for i in verdict.breakdown:
         keep *= 1 - i.weight
     assert abs(verdict.risk - (1 - keep)) < 1e-3
+
+
+def test_blurry_photo_caps_ocr_born_signals_at_review():
+    # benchmark --phone: cinstit escaladat doar din semnale născute din OCR pe o poză neclară
+    v, _ = score([res("paznic", ("OCR_LOW_QUALITY", "low"), ("MRZ_INVALID", "high"),
+                      ("IBAN_CHECKSUM_INVALID", "medium"),
+                      ("CNP_CHECKSUM_INVALID", "high")),
+                  res("verificator", ("BALANCE_MISMATCH", "high"))])
+    assert v.risk >= 0.7 and v.recommendation == "review"
+
+
+def test_blurry_photo_still_escalates_on_signals_not_from_ocr():
+    v, _ = score([res("paznic", ("OCR_LOW_QUALITY", "low")), res("verificator", ("COMPANY_INACTIVE", "critical"))])
+    assert v.recommendation == "escalate"
+    v, _ = score([res("paznic", ("OCR_LOW_QUALITY", "low")), res("detectiv", ("SHARED_IBAN", "high")),
+                  res("verificator", ("NET_MISMATCH", "high"), ("BALANCE_MISMATCH", "high"))])
+    assert v.recommendation == "escalate"
+
+
+def test_clear_photo_unchanged():
+    v, _ = score([res("verificator", ("NET_MISMATCH", "high"), ("BALANCE_MISMATCH", "high"))])
+    assert v.recommendation == "escalate"
