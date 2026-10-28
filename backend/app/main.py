@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.agents.paznic.vault import vault
 from app.api import admin, arena, cases, rules, system
 from app.config import settings
 from app.core.store import store
@@ -13,6 +14,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname
 @asynccontextmanager
 async def lifespan(_app):
     store.load()
+    vault.load_into_gate()  # poarta anti-PII cunoaște valorile dosarelor existente și după restart
     yield
 
 

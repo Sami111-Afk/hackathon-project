@@ -77,13 +77,14 @@ def case_report(case_id: str):
 
 
 @router.get("/cases/{case_id}/documents/{doc_id}/image")
-def get_image(case_id: str, doc_id: str, view: str = "original"):
-    if view != "original":
-        raise HTTPException(404, f"vederea '{view}' nu e încă disponibilă")  # redacted/ela: Narcis
+def get_image(case_id: str, doc_id: str, view: str = "original", page: int = 1):
+    if view not in ("original", "redacted"):
+        raise HTTPException(404, f"vederea '{view}' nu e încă disponibilă")  # ela: Narcis
     if not store.get(case_id):
         raise HTTPException(404, "dosar inexistent")
     try:
-        data = load_decrypted(case_id, doc_id)
+        # imaginea redactată e salvată de Paznic per pagină: <doc_id>_redacted_p<page>
+        data = load_decrypted(case_id, doc_id if view == "original" else f"{doc_id}_redacted_p{page}")
     except ValueError:
         data = None
     if not data:
