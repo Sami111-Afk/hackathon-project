@@ -11,7 +11,8 @@
     "summary": {
       "dosare": 40,
       "documente": 120,
-      "agenti_fara_erori": 40,
+      "agenti_fara_erori": "40/40",
+      "erori_agenti": [],
       "dosare_cu_scurgeri": 0,
       "scurgeri_pe_tip": {},
       "extragere_corecta": {
@@ -35,14 +36,15 @@
       },
       "fals_perfect_semnalat": "0/8 (limită cunoscută; doar prin extras)",
       "fals_perfect_cu_semnal_salariu": "8/8 (netul de pe fluturaș nu apare în extras)",
-      "ms_median_pe_dosar": 3320
+      "ms_median_pe_dosar": 4209
     },
     "cases": [
       {
         "id": "bench_000",
         "kind": "honest",
-        "ms": 3054,
+        "ms": 4140,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -53,8 +55,9 @@
       {
         "id": "bench_001",
         "kind": "forged_net",
-        "ms": 3414,
+        "ms": 6765,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -67,8 +70,9 @@
       {
         "id": "bench_002",
         "kind": "forged_balance",
-        "ms": 3559,
+        "ms": 7129,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -81,8 +85,9 @@
       {
         "id": "bench_003",
         "kind": "inactive_employer",
-        "ms": 3559,
+        "ms": 4135,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -95,8 +100,9 @@
       {
         "id": "bench_004",
         "kind": "perfect_fake",
-        "ms": 3268,
+        "ms": 3944,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -109,8 +115,9 @@
       {
         "id": "bench_005",
         "kind": "honest",
-        "ms": 3468,
+        "ms": 4131,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -121,8 +128,9 @@
       {
         "id": "bench_006",
         "kind": "forged_net",
-        "ms": 3320,
+        "ms": 7298,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -135,8 +143,9 @@
       {
         "id": "bench_007",
         "kind": "forged_balance",
-        "ms": 3320,
+        "ms": 7126,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -149,8 +158,9 @@
       {
         "id": "bench_008",
         "kind": "inactive_employer",
-        "ms": 3554,
+        "ms": 4031,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -163,8 +173,9 @@
       {
         "id": "bench_009",
         "kind": "perfect_fake",
-        "ms": 3136,
+        "ms": 3842,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -177,8 +188,9 @@
       {
         "id": "bench_010",
         "kind": "honest",
-        "ms": 2762,
+        "ms": 3857,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -189,8 +201,9 @@
       {
         "id": "bench_011",
         "kind": "forged_net",
-        "ms": 3268,
+        "ms": 7530,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -203,8 +216,9 @@
       {
         "id": "bench_012",
         "kind": "forged_balance",
-        "ms": 3850,
+        "ms": 7701,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -217,8 +231,9 @@
       {
         "id": "bench_013",
         "kind": "inactive_employer",
-        "ms": 3261,
+        "ms": 4556,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -231,8 +246,9 @@
       {
         "id": "bench_014",
         "kind": "perfect_fake",
-        "ms": 3663,
+        "ms": 4266,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -245,8 +261,9 @@
       {
         "id": "bench_015",
         "kind": "honest",
-        "ms": 3211,
+        "ms": 4146,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -257,8 +274,9 @@
       {
         "id": "bench_016",
         "kind": "forged_net",
-        "ms": 3339,
+        "ms": 7535,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -271,8 +289,9 @@
       {
         "id": "bench_017",
         "kind": "forged_balance",
-        "ms": 3596,
+        "ms": 7271,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -287,8 +306,9 @@
       {
         "id": "bench_018",
         "kind": "inactive_employer",
-        "ms": 3294,
+        "ms": 3797,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -301,8 +321,9 @@
       {
         "id": "bench_019",
         "kind": "perfect_fake",
-        "ms": 3295,
+        "ms": 4209,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -315,8 +336,9 @@
       {
         "id": "bench_020",
         "kind": "honest",
-        "ms": 3686,
+        "ms": 3647,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -327,8 +349,9 @@
       {
         "id": "bench_021",
         "kind": "forged_net",
-        "ms": 2733,
+        "ms": 7144,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -341,8 +364,9 @@
       {
         "id": "bench_022",
         "kind": "forged_balance",
-        "ms": 2923,
+        "ms": 7391,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -355,8 +379,9 @@
       {
         "id": "bench_023",
         "kind": "inactive_employer",
-        "ms": 3219,
+        "ms": 4242,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -369,8 +394,9 @@
       {
         "id": "bench_024",
         "kind": "perfect_fake",
-        "ms": 3227,
+        "ms": 3980,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -383,8 +409,9 @@
       {
         "id": "bench_025",
         "kind": "honest",
-        "ms": 3233,
+        "ms": 3874,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -395,15 +422,16 @@
       {
         "id": "bench_026",
         "kind": "forged_net",
-        "ms": 3314,
+        "ms": 9877,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
-          "BALANCE_MISMATCH",
+          "AMOUNT_UNCERTAIN",
           "NET_MISMATCH"
         ],
-        "recommendation": "escalate",
-        "risk": 0.84,
+        "recommendation": "review",
+        "risk": 0.64,
         "expected_caught": true,
         "fields_wrong": [
           "sold final"
@@ -412,8 +440,9 @@
       {
         "id": "bench_027",
         "kind": "forged_balance",
-        "ms": 3091,
+        "ms": 7636,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -428,8 +457,9 @@
       {
         "id": "bench_028",
         "kind": "inactive_employer",
-        "ms": 3322,
+        "ms": 4091,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -442,8 +472,9 @@
       {
         "id": "bench_029",
         "kind": "perfect_fake",
-        "ms": 3178,
+        "ms": 3851,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -456,8 +487,9 @@
       {
         "id": "bench_030",
         "kind": "honest",
-        "ms": 3501,
+        "ms": 3876,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -468,8 +500,9 @@
       {
         "id": "bench_031",
         "kind": "forged_net",
-        "ms": 3300,
+        "ms": 6858,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -482,8 +515,9 @@
       {
         "id": "bench_032",
         "kind": "forged_balance",
-        "ms": 3385,
+        "ms": 7200,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -496,8 +530,9 @@
       {
         "id": "bench_033",
         "kind": "inactive_employer",
-        "ms": 3624,
+        "ms": 3772,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -510,8 +545,9 @@
       {
         "id": "bench_034",
         "kind": "perfect_fake",
-        "ms": 3286,
+        "ms": 3974,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -524,8 +560,9 @@
       {
         "id": "bench_035",
         "kind": "honest",
-        "ms": 3268,
+        "ms": 3521,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -536,15 +573,16 @@
       {
         "id": "bench_036",
         "kind": "forged_net",
-        "ms": 4327,
+        "ms": 8849,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
-          "BALANCE_MISMATCH",
+          "AMOUNT_UNCERTAIN",
           "NET_MISMATCH"
         ],
-        "recommendation": "escalate",
-        "risk": 0.84,
+        "recommendation": "review",
+        "risk": 0.64,
         "expected_caught": true,
         "fields_wrong": [
           "sold final"
@@ -553,8 +591,9 @@
       {
         "id": "bench_037",
         "kind": "forged_balance",
-        "ms": 3923,
+        "ms": 6763,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -567,8 +606,9 @@
       {
         "id": "bench_038",
         "kind": "inactive_employer",
-        "ms": 4308,
+        "ms": 3641,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -583,8 +623,9 @@
       {
         "id": "bench_039",
         "kind": "perfect_fake",
-        "ms": 4306,
+        "ms": 3668,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -608,7 +649,8 @@
     "summary": {
       "dosare": 40,
       "documente": 120,
-      "agenti_fara_erori": 40,
+      "agenti_fara_erori": "40/40",
+      "erori_agenti": [],
       "dosare_cu_scurgeri": 0,
       "scurgeri_pe_tip": {},
       "extragere_corecta": {
@@ -632,14 +674,15 @@
       },
       "fals_perfect_semnalat": "0/8 (limită cunoscută; doar prin extras)",
       "fals_perfect_cu_semnal_salariu": "8/8 (netul de pe fluturaș nu apare în extras)",
-      "ms_median_pe_dosar": 4136
+      "ms_median_pe_dosar": 4205
     },
     "cases": [
       {
         "id": "bench_000",
         "kind": "honest",
-        "ms": 4223,
+        "ms": 3675,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -650,8 +693,9 @@
       {
         "id": "bench_001",
         "kind": "forged_net",
-        "ms": 4635,
+        "ms": 5786,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -664,8 +708,9 @@
       {
         "id": "bench_002",
         "kind": "forged_balance",
-        "ms": 4637,
+        "ms": 5832,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -678,8 +723,9 @@
       {
         "id": "bench_003",
         "kind": "inactive_employer",
-        "ms": 4262,
+        "ms": 3682,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -692,8 +738,9 @@
       {
         "id": "bench_004",
         "kind": "perfect_fake",
-        "ms": 4112,
+        "ms": 2874,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -706,8 +753,9 @@
       {
         "id": "bench_005",
         "kind": "honest",
-        "ms": 4772,
+        "ms": 3390,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -718,8 +766,9 @@
       {
         "id": "bench_006",
         "kind": "forged_net",
-        "ms": 4136,
+        "ms": 7341,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -732,8 +781,9 @@
       {
         "id": "bench_007",
         "kind": "forged_balance",
-        "ms": 4672,
+        "ms": 7161,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -746,8 +796,9 @@
       {
         "id": "bench_008",
         "kind": "inactive_employer",
-        "ms": 3897,
+        "ms": 4228,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -760,8 +811,9 @@
       {
         "id": "bench_009",
         "kind": "perfect_fake",
-        "ms": 5015,
+        "ms": 4523,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -774,8 +826,9 @@
       {
         "id": "bench_010",
         "kind": "honest",
-        "ms": 3990,
+        "ms": 3655,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -786,8 +839,9 @@
       {
         "id": "bench_011",
         "kind": "forged_net",
-        "ms": 4235,
+        "ms": 7198,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -800,8 +854,9 @@
       {
         "id": "bench_012",
         "kind": "forged_balance",
-        "ms": 4575,
+        "ms": 7576,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -814,8 +869,9 @@
       {
         "id": "bench_013",
         "kind": "inactive_employer",
-        "ms": 4116,
+        "ms": 4178,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -830,8 +886,9 @@
       {
         "id": "bench_014",
         "kind": "perfect_fake",
-        "ms": 4202,
+        "ms": 3845,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -844,8 +901,9 @@
       {
         "id": "bench_015",
         "kind": "honest",
-        "ms": 4272,
+        "ms": 4001,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -856,8 +914,9 @@
       {
         "id": "bench_016",
         "kind": "forged_net",
-        "ms": 3896,
+        "ms": 6969,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -870,8 +929,9 @@
       {
         "id": "bench_017",
         "kind": "forged_balance",
-        "ms": 3799,
+        "ms": 6981,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -886,8 +946,9 @@
       {
         "id": "bench_018",
         "kind": "inactive_employer",
-        "ms": 3967,
+        "ms": 3581,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -900,8 +961,9 @@
       {
         "id": "bench_019",
         "kind": "perfect_fake",
-        "ms": 4455,
+        "ms": 3910,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -914,8 +976,9 @@
       {
         "id": "bench_020",
         "kind": "honest",
-        "ms": 3803,
+        "ms": 3875,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -928,8 +991,9 @@
       {
         "id": "bench_021",
         "kind": "forged_net",
-        "ms": 4201,
+        "ms": 7598,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -942,8 +1006,9 @@
       {
         "id": "bench_022",
         "kind": "forged_balance",
-        "ms": 4037,
+        "ms": 7223,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -956,8 +1021,9 @@
       {
         "id": "bench_023",
         "kind": "inactive_employer",
-        "ms": 4192,
+        "ms": 4247,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -970,8 +1036,9 @@
       {
         "id": "bench_024",
         "kind": "perfect_fake",
-        "ms": 4017,
+        "ms": 3735,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -984,8 +1051,9 @@
       {
         "id": "bench_025",
         "kind": "honest",
-        "ms": 4020,
+        "ms": 3992,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -996,8 +1064,9 @@
       {
         "id": "bench_026",
         "kind": "forged_net",
-        "ms": 4155,
+        "ms": 7556,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -1010,8 +1079,9 @@
       {
         "id": "bench_027",
         "kind": "forged_balance",
-        "ms": 4217,
+        "ms": 7576,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -1024,8 +1094,9 @@
       {
         "id": "bench_028",
         "kind": "inactive_employer",
-        "ms": 4238,
+        "ms": 4102,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -1040,8 +1111,9 @@
       {
         "id": "bench_029",
         "kind": "perfect_fake",
-        "ms": 4062,
+        "ms": 3883,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -1054,8 +1126,9 @@
       {
         "id": "bench_030",
         "kind": "honest",
-        "ms": 3848,
+        "ms": 3815,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -1066,8 +1139,9 @@
       {
         "id": "bench_031",
         "kind": "forged_net",
-        "ms": 4106,
+        "ms": 7066,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -1080,8 +1154,9 @@
       {
         "id": "bench_032",
         "kind": "forged_balance",
-        "ms": 3955,
+        "ms": 7172,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -1094,8 +1169,9 @@
       {
         "id": "bench_033",
         "kind": "inactive_employer",
-        "ms": 4256,
+        "ms": 4205,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -1108,8 +1184,9 @@
       {
         "id": "bench_034",
         "kind": "perfect_fake",
-        "ms": 4378,
+        "ms": 4179,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
@@ -1122,8 +1199,9 @@
       {
         "id": "bench_035",
         "kind": "honest",
-        "ms": 3596,
+        "ms": 3417,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [],
         "recommendation": "clear",
@@ -1137,8 +1215,9 @@
       {
         "id": "bench_036",
         "kind": "forged_net",
-        "ms": 3960,
+        "ms": 6877,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "NET_MISMATCH"
@@ -1151,8 +1230,9 @@
       {
         "id": "bench_037",
         "kind": "forged_balance",
-        "ms": 3965,
+        "ms": 6970,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "BALANCE_MISMATCH"
@@ -1165,8 +1245,9 @@
       {
         "id": "bench_038",
         "kind": "inactive_employer",
-        "ms": 3791,
+        "ms": 3888,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "COMPANY_INACTIVE"
@@ -1179,8 +1260,9 @@
       {
         "id": "bench_039",
         "kind": "perfect_fake",
-        "ms": 3640,
+        "ms": 3705,
         "agents_ok": true,
+        "errors": [],
         "leaks": [],
         "codes": [
           "SALARY_NOT_IN_STATEMENT"
