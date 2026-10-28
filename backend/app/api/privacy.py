@@ -41,7 +41,8 @@ def privacy(case_id: str):
 
     # 2. ce a văzut AI-ul: doar text redactat; fiecare apel trece prin poarta anti-PII și e auditat
     calls = [e for e in audit.recent(5000) if e.get("case_id") == case.id and e.get("kind") == "llm"]
-    redacted = next((d.redacted_text for d in case.documents if d.redacted_text), None)
+    # doar un document care chiar putea pleca spre AI: buletinul nu pleacă niciodată în cloud, deci nu-l arătăm aici
+    redacted = next((d.redacted_text for d in case.documents if d.redacted_text and d.type != "id_card"), None)
     ai = {"llm_calls": len(calls),
           "local_calls": sum(1 for e in calls if e.get("outcome") == "local"),  # rămase pe calculatorul băncii
           "with_pii": sum(1 for e in calls if e.get("pii_detected") and e.get("outcome") == "sent"),
