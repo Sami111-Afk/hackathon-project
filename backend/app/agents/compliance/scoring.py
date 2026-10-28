@@ -12,12 +12,15 @@ SEVERITY_WEIGHT = {"info": 0.0, "low": 0.1, "medium": 0.3, "high": 0.6, "critica
 
 SOFT_SIGNALS = {"ELA_ANOMALY": 0.3, "AI_IMAGE_SUSPECTED": 0.3, "EXIF_EDITOR": 0.2}
 
-HARD_OVERRIDES = {"CNP_CHECKSUM_INVALID", "COMPANY_INACTIVE", "MRZ_INVALID", "COMPANY_NOT_FOUND",
+# MRZ_INVALID nu e override: pe o poză de telefon, OCR-ul strică ușor cifrele de control din MRZ
+# (benchmark: un buletin cinstit escaladat doar din asta). Rămâne dovadă „ridicată” → minim verificare umană.
+HARD_OVERRIDES = {"CNP_CHECKSUM_INVALID", "COMPANY_INACTIVE", "COMPANY_NOT_FOUND",
                   "PROMPT_INJECTION_SUSPECTED", "PII_GATE_BLOCKED"}
 
 FORGERY_CODES = {"NET_MISMATCH", "ELA_ANOMALY", "PDF_EDITOR_PRODUCER", "PDF_INCREMENTAL_UPDATE",
                  "BALANCE_MISMATCH", "AI_IMAGE_SUSPECTED", "MRZ_INVALID", "CNP_CHECKSUM_INVALID"}
 RING_CODES = {"FRAUD_RING_SUSPECTED", "SHARED_IBAN"}
+REVIEW_OVERRIDES = {"OCR_LOW_QUALITY", "MRZ_INVALID"}  # nu acuză pe nimeni, dar un om trebuie să se uite
 
 ESCALATE_AT = 0.70  # de recalibrat pe benchmark: 0 fals pozitive pe dosarele legitime
 REVIEW_AT = 0.35
@@ -42,7 +45,7 @@ def score(results: list[AgentResult]) -> tuple[Verdict, list[Finding]]:
     soft_strong = any(f.code in SOFT_SIGNALS and SEVERITY_WEIGHT[f.severity] >= 0.3 for f in findings)
     if risk >= ESCALATE_AT or hard:
         recommendation = "escalate"
-    elif risk >= REVIEW_AT or incomplete or soft_strong:
+    elif risk >= REVIEW_AT or incomplete or soft_strong or codes & REVIEW_OVERRIDES:
         recommendation = "review"
     else:
         recommendation = "clear"

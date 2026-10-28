@@ -25,6 +25,7 @@ class Word:
     text: str
     page: int
     bbox: tuple[float, float, float, float]  # x0, y0, x1, y1 în pixeli
+    conf: float = 100.0                       # încrederea Tesseract (0–100); 100 pentru stratul de text PDF
 
 
 @dataclass
@@ -40,6 +41,14 @@ class Extraction:
     char_word: list[int]                     # pentru fiecare caracter din text: indexul cuvântului sau -1
     pages: list[PageImage] = field(default_factory=list)
     source: str = "ocr"                      # "pdf_text" | "ocr"
+
+    def quality(self) -> float:
+        """Încrederea medie a OCR-ului (0–100), ponderată cu lungimea cuvintelor. PDF digital = 100."""
+        if self.source == "pdf_text":
+            return 100.0
+        scored = [(w.conf, len(w.text)) for w in self.words if any(c.isalnum() for c in w.text)]
+        total = sum(n for _, n in scored)
+        return round(sum(c * n for c, n in scored) / total, 1) if total else 0.0
 
     def words_for_span(self, start: int, end: int) -> list[Word]:
         idx = sorted({self.char_word[i] for i in range(start, min(end, len(self.char_word))) if self.char_word[i] >= 0})
@@ -133,7 +142,7 @@ def _ocr_lines(img: Image.Image, page: int) -> list[list[Word]]:
             continue
         x, y, w, h = (d[k][i] / factor for k in ("left", "top", "width", "height"))
         key = (d["block_num"][i], d["par_num"][i], d["line_num"][i])
-        grouped.setdefault(key, []).append(Word(text, page, (x, y, x + w, y + h)))
+        grouped.setdefault(key, []).append(Word(text, page, (x, y, x + w, y + h), float(d["conf"][i])))
     return [grouped[k] for k in sorted(grouped)]
 
 

@@ -144,9 +144,11 @@ class Functionar:
         text = doc.redacted_text or "\n".join(line.text for line in lines)
 
         doc_type = "id_card" if paznic.get("is_id_card") else classify_by_keywords(text)
-        if not doc_type:
+        offline = bool(paznic.get("cloud_blocked"))  # poză neclară: Paznicul nu garantează redactarea → fără cloud
+        if not doc_type and not offline:
             r = await calls.ask(case_id, system=SYSTEM_CLASSIFY, prompt=text, json_schema=ClassifyOut, max_tokens=50)
             doc_type = r.doc_type if r else "unknown"
+        doc_type = doc_type or "unknown"
         doc.type = doc_type
         schema = SCHEMAS.get(doc_type)
         if not schema:
@@ -154,8 +156,9 @@ class Functionar:
             return [], {"fields": {}, "statement": None}
 
         by_labels = extract_by_labels(doc_type, lines)
-        llm = await calls.ask(case_id, system=SYSTEM_EXTRACT.format(label=DOC_LABELS[doc_type]),
-                              prompt=text, json_schema=schema, max_tokens=1500)
+        llm = None if offline else await calls.ask(
+            case_id, system=SYSTEM_EXTRACT.format(label=DOC_LABELS[doc_type]),
+            prompt=text, json_schema=schema, max_tokens=1500)
 
         findings: list[Finding] = []
         extracted: dict[str, ExtractedValue] = {}

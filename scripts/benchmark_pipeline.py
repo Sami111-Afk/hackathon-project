@@ -299,11 +299,32 @@ def pii_needles(c: dict) -> dict[str, str]:
             "STRADA": street, "MRZ_1": c["mrz"][0][5:20], "MRZ_2": c["mrz"][1][13:28]}
 
 
-def find_leaks(c: dict, case: Case, results) -> list[str]:
-    """Valorile personale care ies din seif: text redactat (→ LLM), câmpuri extrase, mesaje (→ API, UI)."""
+def cloud_docs(case: Case, scratch: dict) -> set[str]:
+    """Documentele al căror text ar pleca spre AI-ul din cloud (aceeași regulă ca Paznicul în mod bedrock/cloud)."""
+    from app.agents.paznic.agent import OCR_CLOUD_MIN, OCR_ID_MIN
+    pz = scratch.get("paznic") or {}
+    keep = set()
+    for d in case.documents:
+        info = pz.get(d.id) or {}
+        q = info.get("ocr_quality", 100.0)
+        if not info.get("is_id_card") and q >= OCR_CLOUD_MIN:
+            keep.add(d.id)
+    _ = OCR_ID_MIN
+    return keep
+
+
+def find_leaks(c: dict, case: Case, results, only_docs: set[str] | None = None) -> list[str]:
+    """Valorile personale care ies din seif: text redactat (→ LLM), câmpuri extrase, mesaje (→ API, UI).
+    Cu `only_docs`: doar textul care ar pleca în cloud (documentele neblocate de Paznic)."""
+    if only_docs is not None:
+        return _leaks_in(c, [d.redacted_text or "" for d in case.documents if d.id in only_docs])
     out = [d.redacted_text or "" for d in case.documents]
     out += [str(v.value) + " " + str(v.source_text) for d in case.documents for v in (d.extracted or {}).values()]
     out += [f.message for r in results for f in r.findings]
+    return _leaks_in(c, out)
+
+
+def _leaks_in(c: dict, out: list[str]) -> list[str]:
     hay = " " + _norm(" ".join(out)) + " "
     hay_compact = hay.replace(" ", "")
     leaks = []
@@ -373,6 +394,7 @@ async def run_case(c: dict) -> dict:
     return {
         "id": c["id"], "kind": c["kind"], "ms": int((time.perf_counter() - t0) * 1000),
         "agents_ok": len(ok) == 3, "errors": errors, "leaks": find_leaks(c, case, ok),
+        "leaks_to_cloud": find_leaks(c, case, ok, only_docs=cloud_docs(case, scratch)),
         "fields": field_checks(c, case, scratch),
         "codes": sorted(codes), "recommendation": verdict.recommendation, "risk": verdict.risk,
         "expected_caught": EXPECTED.get(c["kind"]) in codes if c["kind"] in EXPECTED else None,
@@ -432,6 +454,7 @@ def summarize(run: dict) -> dict:
         for k, ok in r["fields"].items():
             field_ok[k] += ok
     leaky = [r for r in cases if r["leaks"]]
+    leaky_cloud = [r for r in cases if r.get("leaks_to_cloud")]
     honest = by_kind["honest"]
     perfect_signal = sum("SALARY_NOT_IN_STATEMENT" in r["codes"] for r in by_kind["perfect_fake"])
     summary = {
@@ -440,6 +463,7 @@ def summarize(run: dict) -> dict:
         "agenti_fara_erori": f"{len(cases)}/{len(run['cases'])}",
         "erori_agenti": [r["errors"] for r in failed],
         "dosare_cu_scurgeri": len(leaky),
+        "dosare_cu_scurgeri_spre_cloud": len(leaky_cloud),
         "scurgeri_pe_tip": dict(Counter(k for r in cases for k in r["leaks"])),
         "extragere_corecta": {k: f"{v}/{len(cases)}" for k, v in field_ok.items()},
         "cinstiti_loviti": f"{sum(r['recommendation'] != 'clear' for r in honest)}/{len(honest)}",

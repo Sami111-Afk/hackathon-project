@@ -101,3 +101,22 @@ def test_garbled_bilingual_label_does_not_hide_the_label_instead_of_the_name():
     text = "Prenume/Prenoni/First nane\nELENA\nCetățenie/Nationalité/Nationality\nRomână / ROU"
     names = [text[s.start:s.end] for s in detect.find_anchored(text) if s.kind == "PERSOANA"]
     assert names == ["ELENA"]
+
+
+@pytest.mark.parametrize("line", [
+    "IBAN: RO1 0RZBR9999000000000010",   # spațiu în locul greșit
+    "IBAN: ROBORZBR9999000000000011",    # „0” citit „O”, cifra de control pierdută
+    "IBAN RO58RZB R9999000000000019",
+])
+def test_garbled_iban_after_label_is_hidden(line):
+    from app.agents.paznic.detect import find_all
+    spans = find_all(line)
+    assert spans and all(s.kind in ("IBAN", "CONT") for s in spans)
+    assert "9999000000000" not in "".join(line[:s.start] + line[s.end:] for s in spans)
+
+
+def test_long_digit_runs_hidden_but_amounts_and_phones_kept():
+    from app.agents.paznic.detect import find_all
+    kinds = {s.value: s.kind for s in find_all("Cont 9999 0000 0000 0001. Sold 26.480,00. Tel 0722 123 456")}
+    assert kinds.get("9999 0000 0000 0001") == "CONT"
+    assert "26.480,00" not in kinds and kinds.get("0722 123 456") == "TELEFON"

@@ -18,6 +18,11 @@ from app.core import pii_gate
 from app.core.files import save_derived, sniff
 from app.models import AgentResult, Evidence, Finding, PageInfo
 
+# Încrederea medie a OCR-ului (Tesseract) sub care documentul e „greu de citit” — calibrat pe benchmark:
+# fluturaș/extras curate ≥ 84, poze proaste de telefon 66–80; buletinul curat 74–83.
+OCR_CLOUD_MIN = 82.0
+OCR_ID_MIN = 72.0
+
 log = logging.getLogger("orb.paznic")
 
 KIND_RO = {"PERSOANA": "nume", "CNP": "CNP", "IBAN": "IBAN", "ADRESA": "adresă", "MRZ": "MRZ", "CUI": "CUI",
@@ -104,7 +109,19 @@ class Paznic:
             for page_no, img in enumerate(redacted, start=1):
                 png = await asyncio.to_thread(images.to_png, img)
                 save_derived(case.id, doc.id, "redacted", page_no, png)
-            scratch[doc.id] = {"source": ext.source, "is_id_card": id_card,
+            quality = ext.quality()
+            # Buletinul nu pleacă niciodată în cloud (MRZ + etichete ajung pentru extragere).
+            # Restul: poză neclară → nu putem garanta că am ascuns tot → documentul NU pleacă spre cloud.
+            low = quality < (OCR_ID_MIN if id_card else OCR_CLOUD_MIN)
+            cloud_blocked = (id_card or low) and settings.llm_mode in ("bedrock", "cloud")
+            if low:
+                findings.append(Finding(
+                    code="OCR_LOW_QUALITY", severity="low", evidence=Evidence(doc_id=doc.id),
+                    message=f"Document greu de citit (încredere OCR {quality:.0f}%)"
+                            + (": nu a fost trimis la AI-ul din cloud; verificare umană recomandată"
+                               if cloud_blocked else "; verificare umană recomandată")))
+            scratch[doc.id] = {"source": ext.source, "is_id_card": id_card, "ocr_quality": quality,
+                               "cloud_blocked": cloud_blocked,
                                "words": redacted_words(doc.id, ext, replacements)}
 
         values = dict(redactor.vault)
