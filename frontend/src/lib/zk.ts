@@ -21,7 +21,7 @@ export interface ZkStep {
 
 export interface ZkDemoResult {
   ok: boolean
-  answer: 'YES' | 'NO' | 'DA' | 'NU' // backend-ul vechi trimite DA/NU
+  answer: 'DA' | 'NU' | 'YES' | 'NO' // valoare-mașină DA/NU; afișată ca YES/NO
   reason: string
   attack: ZkAttack
   steps: ZkStep[]
@@ -84,23 +84,23 @@ export function mockZkDemo(body: ZkDemoRequest): ZkDemoResult {
     { actor: 'employer', action: 'attests', detail: 'commitment + ECDSA signature (the salary goes only to the client)' },
   ]
   const base = { employer, threshold_ron: threshold, installment_ron: body.installment_ron, attack: body.attack, verify_ms: 41 }
-  const no = (reason: string): ZkDemoResult => ({ ...base, ok: false, answer: 'NO', reason, steps })
+  const no = (reason: string): ZkDemoResult => ({ ...base, ok: false, answer: 'NU', reason, steps })
 
   // Ca în circuit: clientul nu poate genera dovada dacă afirmația e falsă.
   const proven = body.attack === 'lower_threshold' ? threshold / 2 : threshold
   if (body.attack === 'lie_salary' || body.net_salary_ron < proven) {
     const reason = 'the circuit refuses: the salary does not match the commitment or is below the threshold'
-    steps.push({ actor: 'client', action: 'cannot generate proof', detail: reason })
+    steps.push({ actor: 'customer', action: 'cannot generate proof', detail: reason })
     return no(`the client cannot prove it: ${reason}`)
   }
-  steps.push({ actor: 'client', action: 'generates proof', detail: `${proofBytes} bytes in 1840 ms` })
+  steps.push({ actor: 'customer', action: 'generates proof', detail: `${proofBytes} bytes in 1840 ms` })
   const bank_saw = { cui: body.cui, period: body.period, commitment, proof_bytes: proofBytes }
 
   let res: ZkDemoResult
   if (body.attack === 'lower_threshold') res = no('the ZK proof is not valid for the bank\'s threshold and request')
   else if (body.attack === 'fake_signature') res = no('the employer\'s signature is not valid')
-  else res = { ...base, ok: true, answer: 'YES', reason: 'net income ≥ threshold, attested by the employer; the salary was never seen', steps }
-  steps.push({ actor: 'bank', action: 'verifies', detail: `${res.answer} — ${res.reason}` })
+  else res = { ...base, ok: true, answer: 'DA', reason: 'net income ≥ threshold, attested by the employer; the salary was never seen', steps }
+  steps.push({ actor: 'bank', action: 'verifies', detail: `${normAnswer(res.answer)} — ${res.reason}` })
 
   if (body.attack === 'replay') {
     res = no('nonce unknown, expired or already used')
@@ -110,7 +110,7 @@ export function mockZkDemo(body: ZkDemoRequest): ZkDemoResult {
 }
 
 // Backend-ul poate trimite încă text românesc (DA/NU, actori, motive); îl afișăm în engleză.
-const ACTOR_EN: Record<string, string> = { 'bancă': 'bank', angajator: 'employer', client: 'client', atacator: 'attacker' }
+const ACTOR_EN: Record<string, string> = { 'bancă': 'bank', angajator: 'employer', client: 'customer', atacator: 'attacker' }
 export const normActor = (a: string) => ACTOR_EN[a] ?? a
 export const normAnswer = (a: string) => (a === 'DA' ? 'YES' : a === 'NU' ? 'NO' : a)
 const REASON_EN: Record<string, string> = {

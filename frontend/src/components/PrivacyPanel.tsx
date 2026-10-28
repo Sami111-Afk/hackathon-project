@@ -123,7 +123,7 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
             : 'The payslip had no readable amounts for the encrypted check.'}
         </Card>
 
-        <Card icon={<ShieldCheck className="h-4 w-4" />} title="Income proved without seeing it" ok={zk ? normAnswer(zk.answer) === 'YES' : null}
+        <Card icon={<ShieldCheck className="h-4 w-4" />} title="Income proved without seeing it" ok={zk ? zk.answer === 'DA' || zk.answer === 'YES' : null}
           status={zk ? `ZK answer: ${normAnswer(zk.answer)}` : 'not requested yet'}>
           {zk
             ? <>{normText(zk.reason)}{zk.threshold_ron ? ` (threshold ${zk.threshold_ron.toLocaleString('ro-RO')} lei` : ''}{zk.employer ? `, attested by ${zk.employer})` : zk.threshold_ron ? ')' : ''}.</>
