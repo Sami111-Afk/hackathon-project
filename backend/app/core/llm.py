@@ -185,7 +185,7 @@ def _extract_json(text: str) -> Any:
 
 
 def _schema_instruction(schema: type[BaseModel]) -> str:
-    return ("\n\nRăspunde DOAR cu un obiect JSON valid, fără alt text, conform acestei scheme JSON:\n"
+    return ("\n\nReply ONLY with a valid JSON object, no other text, matching this JSON schema:\n"
             + json.dumps(schema.model_json_schema(), ensure_ascii=False))
 
 
@@ -209,7 +209,7 @@ async def chat(task: str, *, prompt: str, system: str = "", case_id: str | None 
         if hit:
             return _finish(hit["text"], json_schema, LLMUsage(provider="cache", model="cache"), cached=True)
         if mode == "mock":
-            raise LLMUnavailable(f"mod mock: niciun răspuns salvat pentru sarcina '{task}'")
+            raise LLMUnavailable(f"mock mode: no saved response for task '{task}'")
 
     if mode in ("bedrock", "cloud"):
         _gate(prompt + "\n" + full_system, images, images_redacted, case_id, mode)
@@ -236,9 +236,9 @@ async def chat(task: str, *, prompt: str, system: str = "", case_id: str | None 
             return resp
         except (json.JSONDecodeError, ValidationError) as exc:
             last_error = exc
-            prompt = (f"{prompt}\n\nRăspunsul tău anterior nu a fost JSON valid conform schemei "
-                      f"({type(exc).__name__}). Încearcă din nou, DOAR JSON.")
-    raise LLMUnavailable(f"JSON invalid după 2 încercări: {type(last_error).__name__}")
+            prompt = (f"{prompt}\n\nYour previous reply was not valid JSON for the schema "
+                      f"({type(exc).__name__}). Try again, JSON ONLY.")
+    raise LLMUnavailable(f"invalid JSON after 2 attempts: {type(last_error).__name__}")
 
 
 def _gate(text, images, images_redacted, case_id, mode):

@@ -23,7 +23,7 @@ def limit(request: Request) -> None:
     while q and now - q[0] > 60:
         q.popleft()
     if len(q) >= settings.arena_rate_limit_per_min:
-        raise HTTPException(429, "prea multe încercări — mai așteaptă un minut")
+        raise HTTPException(429, "too many attempts — wait a minute")
     q.append(now)
     if len(_hits) > 5000:  # curățăm IP-urile inactive
         for k in [k for k, v in _hits.items() if not v or now - v[-1] > 60]:

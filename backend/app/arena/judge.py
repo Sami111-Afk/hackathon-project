@@ -24,25 +24,27 @@ def check(doc: dict) -> list[AgentResult]:
     if mismatch := check_net(gross, net, period=doc["issue_date"][:7]):  # calculul real al Verificatorului (Stefan)
         verificator.append(mismatch)
     if company is None:
-        verificator.append(Finding(code="COMPANY_NOT_FOUND", severity="critical", message="Angajatorul nu există"))
+        verificator.append(Finding(code="COMPANY_NOT_FOUND", severity="critical",
+                                   message="The employer does not exist"))
     else:
         if not company["active"]:
             verificator.append(Finding(code="COMPANY_INACTIVE", severity="critical",
-                                       message="Angajatorul figurează inactiv la ANAF"))
+                                       message="The employer is listed as inactive at ANAF"))
         if issued < company["founded"]:
             verificator.append(Finding(code="DOC_BEFORE_COMPANY", severity="high",
-                                       message="Documentul e emis înainte de înființarea firmei"))
+                                       message="The document was issued before the company was founded"))
         if company["median_gross"] and gross > 2.5 * company["median_gross"] and company["employees"] < 50:
             verificator.append(Finding(code="SALARY_IMPLAUSIBLE", severity="medium",
-                                       message=f"Brut de {gross} lei la o firmă cu {company['employees']} angajați"))
+                                       message=f"Gross salary of {gross} lei at a company with "
+                                               f"{company['employees']} employees"))
     if issued > TODAY:
-        verificator.append(Finding(code="DOC_FUTURE_DATE", severity="high", message="Data emiterii e în viitor"))
+        verificator.append(Finding(code="DOC_FUTURE_DATE", severity="high", message="The issue date is in the future"))
     if "hide_injection" in doc["tricks"]:
         paznic.append(Finding(code="PROMPT_INJECTION_SUSPECTED", severity="critical",
-                              message="Text ascuns care încearcă să manipuleze AI-ul"))
+                              message="Hidden text trying to manipulate the AI"))
     if "ai_photo" in doc["tricks"]:
         detector.append(Finding(code="AI_IMAGE_SUSPECTED", severity="medium",
-                                message="Ștampila pare generată cu AI"))
+                                message="The stamp looks AI-generated"))
 
     from app.learning.engine import apply_rules  # reguli învățate (self-learning)
     verificator += apply_rules(doc)

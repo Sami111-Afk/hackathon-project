@@ -25,8 +25,8 @@ JOB_TITLES = sorted({r for c in COMPANIES.values() for r in c["role_medians"]})
 MISSIONS = {
     "payslip_9000": {
         "id": "payslip_9000",
-        "title": "Fluturașul de 9.000",
-        "brief": "Banca cere un venit net de minimum 9.000 lei. Fă un fluturaș care să treacă de verificare.",
+        "title": "The 9,000 payslip",
+        "brief": "The bank requires a net income of at least 9,000 lei. Forge a payslip that passes verification.",
         "doc_type": "payslip",
         "target": {"field": "net_salary", "min": 9000},
         "template": {
@@ -38,22 +38,22 @@ MISSIONS = {
             "issue_date": "2026-09-30",
         },
         "editable": {
-            "gross_salary": {"type": "number", "label": "Salariu brut (lei)", "min": 0, "max": 100000},
-            "net_salary": {"type": "number", "label": "Salariu net (lei)", "min": 0, "max": 100000},
-            "employer": {"type": "select", "label": "Angajator", "options": list(COMPANIES)},
-            "job_title": {"type": "select", "label": "Funcția", "options": JOB_TITLES},
-            "issue_date": {"type": "date", "label": "Data emiterii"},
+            "gross_salary": {"type": "number", "label": "Gross salary (lei)", "min": 0, "max": 100000},
+            "net_salary": {"type": "number", "label": "Net salary (lei)", "min": 0, "max": 100000},
+            "employer": {"type": "select", "label": "Employer", "options": list(COMPANIES)},
+            "job_title": {"type": "select", "label": "Job title", "options": JOB_TITLES},
+            "issue_date": {"type": "date", "label": "Issue date"},
         },
         "tricks": {
-            "recompute_taxes": "Refă calculul taxelor (netul se calculează din brut)",
-            "hide_injection": "Ascunde un text care încearcă să păcălească AI-ul",
-            "ai_photo": "Schimbă ștampila cu una generată cu AI",
+            "recompute_taxes": "Recompute the taxes (net is calculated from gross)",
+            "hide_injection": "Hide a text that tries to fool the AI",
+            "ai_photo": "Replace the stamp with an AI-generated one",
         },
     },
     "payslip_ceo": {
         "id": "payslip_ceo",
-        "title": "Directorul fantomă",
-        "brief": "Pretinde că ești director cu un net de minimum 20.000 lei. Treci de verificare.",
+        "title": "The ghost director",
+        "brief": "Pretend to be a director with a net income of at least 20,000 lei. Pass verification.",
         "doc_type": "payslip",
         "target": {"field": "net_salary", "min": 20000},
         "template": {

@@ -30,14 +30,14 @@ def _hex(v: int) -> str:
 
 def _require_tools() -> None:
     if not tools.available():
-        raise HTTPException(503, "ZK indisponibil pe acest server (nargo/bb lipsesc, vezi zk/README.md)")
+        raise HTTPException(503, "ZK unavailable on this server (nargo/bb missing, see zk/README.md)")
 
 
 async def _call(fn, *args, **kw):
     try:
         return await asyncio.to_thread(fn, *args, **kw)
     except tools.ZkUnavailable as e:
-        raise HTTPException(503, f"ZK indisponibil: {e}") from e
+        raise HTTPException(503, f"ZK unavailable: {e}") from e
 
 
 class NonceIn(BaseModel):
@@ -83,7 +83,7 @@ def status():
     ok = tools.available()
     return {"available": ok, "scheme": "UltraHonk (Barretenberg)", "circuit": tools.MAIN,
             "nargo": "1.0.0-beta.13", "bb": "1.2.0", "dsti": bank.DSTI,
-            "statement": "venit net (atestat de angajator, pentru această cerere) ≥ rată / 0,40"}
+            "statement": "net income (attested by the employer, for this application) ≥ installment / 0.40"}
 
 
 @router.get("/registry")
@@ -105,7 +105,7 @@ async def attest(body: AttestIn):
     try:
         a = await _call(employer.attest, body.cui, body.period, _bani(body.net_salary_ron), _int(body.nonce))
     except KeyError:
-        raise HTTPException(404, "angajator necunoscut") from None
+        raise HTTPException(404, "unknown employer") from None
     return {"client": {"net_salary_ron": a.salary_bani / 100, "salt": _hex(a.salt)}, "for_bank": a.for_bank(),
             "nonce": body.nonce}
 
@@ -119,7 +119,7 @@ async def prove(body: ProveIn):
         proof = await _call(tools.prove, _bani(body.net_salary_ron), _int(body.salt), _bani(body.threshold_ron),
                             _int(body.commitment), _int(body.nonce))
     except ValueError as e:
-        raise HTTPException(422, f"nu se poate genera dovada: {e}") from None
+        raise HTTPException(422, f"cannot generate the proof: {e}") from None
     return {"proof_b64": base64.b64encode(proof).decode(), "proof_bytes": len(proof),
             "prove_ms": round((time.perf_counter() - t0) * 1000)}
 
@@ -131,7 +131,7 @@ async def verify(body: VerifyIn):
     try:
         proof = base64.b64decode(body.proof_b64, validate=True)
     except ValueError:
-        raise HTTPException(422, "proof_b64 invalid") from None
+        raise HTTPException(422, "invalid proof_b64") from None
     return await _call(bank.verify, nonce=_int(body.nonce), cui=body.cui, period=body.period,
                        commitment=_int(body.commitment), signature=body.signature, proof=proof)
 
@@ -142,14 +142,14 @@ async def demo(body: DemoIn):
     _require_tools()
     steps: list[dict] = []
     ch = bank.new_challenge(_bani(body.installment_ron), body.case_id)
-    detail = f"rată {body.installment_ron:.2f} lei → prag {ch.threshold_bani / 100:.2f} lei, nonce unic"
-    steps.append({"actor": "bancă", "action": "cere dovadă", "detail": detail})
+    detail = f"installment {body.installment_ron:.2f} lei → threshold {ch.threshold_bani / 100:.2f} lei, unique nonce"
+    steps.append({"actor": "bank", "action": "requests proof", "detail": detail})
     try:
         a = await _call(employer.attest, body.cui, body.period, _bani(body.net_salary_ron), ch.nonce)
     except KeyError:
-        raise HTTPException(404, "angajator necunoscut") from None
-    steps.append({"actor": "angajator", "action": "atestă",
-                  "detail": "angajament + semnătură ECDSA (salariul merge doar la client)"})
+        raise HTTPException(404, "unknown employer") from None
+    steps.append({"actor": "employer", "action": "attests",
+                  "detail": "commitment + ECDSA signature (the salary goes only to the customer)"})
     for_bank = a.for_bank()
 
     salary, threshold = a.salary_bani, ch.threshold_bani
@@ -167,19 +167,19 @@ async def demo(body: DemoIn):
         proof = await _call(tools.prove, salary, a.salt, threshold, a.commitment, ch.nonce)
     except ValueError as e:
         bank.consume(ch.nonce)
-        steps.append({"actor": "client", "action": "nu poate genera dovada", "detail": str(e)})
-        return {"answer": "NU", "ok": False, "reason": f"clientul nu poate dovedi: {e}", "steps": steps,
+        steps.append({"actor": "customer", "action": "cannot generate proof", "detail": str(e)})
+        return {"answer": "NU", "ok": False, "reason": f"the customer cannot prove it: {e}", "steps": steps,
                 "attack": body.attack}
-    steps.append({"actor": "client", "action": "generează dovada",
-                  "detail": f"{len(proof)} octeți în {round((time.perf_counter() - t0) * 1000)} ms"})
+    steps.append({"actor": "customer", "action": "generates proof",
+                  "detail": f"{len(proof)} bytes in {round((time.perf_counter() - t0) * 1000)} ms"})
 
     res = await _call(bank.verify, nonce=ch.nonce, cui=for_bank["cui"], period=for_bank["period"],
                       commitment=_int(for_bank["commitment"]), signature=for_bank["signature"], proof=proof)
-    steps.append({"actor": "bancă", "action": "verifică", "detail": f"{res['answer']} — {res['reason']}"})
+    steps.append({"actor": "bank", "action": "verifies", "detail": f"{res['answer']} — {res['reason']}"})
     if body.attack == "replay":
         res = await _call(bank.verify, nonce=ch.nonce, cui=for_bank["cui"], period=for_bank["period"],
                           commitment=_int(for_bank["commitment"]), signature=for_bank["signature"], proof=proof)
-        steps.append({"actor": "atacator", "action": "retrimite aceeași dovadă",
+        steps.append({"actor": "attacker", "action": "resends the same proof",
                       "detail": f"{res['answer']} — {res['reason']}"})
     return {**res, "steps": steps, "attack": body.attack,
             "bank_saw": {k: v for k, v in for_bank.items() if k != "signature"} | {"proof_bytes": len(proof)}}

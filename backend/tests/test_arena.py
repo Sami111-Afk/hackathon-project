@@ -64,10 +64,10 @@ def test_bad_nickname_and_rate_limit():
 
 
 def test_learned_rule_catches_the_trick_after_approval(monkeypatch):
-    rule = {"description": "Brut peste 2× medianul funcției", "then": {
-        "code": "GROSS_ABOVE_ROLE", "severity": "medium", "message": "Brut mult peste medianul funcției"},
+    rule = {"description": "Gross above 2× the job-title median", "then": {
+        "code": "GROSS_ABOVE_ROLE", "severity": "medium", "message": "Gross far above the job-title median"},
         "when": {"left": "doc.gross_salary", "op": "ratio_gt", "right": ["company.role_median", 2.0]}}
-    bad_rule = {**rule, "description": "Prea largă", "when": {"left": "doc.gross_salary", "op": "gt", "right": 0}}
+    bad_rule = {**rule, "description": "Too broad", "when": {"left": "doc.gross_salary", "op": "gt", "right": 0}}
 
     class Fake:
         data = proposer.Proposal(reasoning="test", rules=[proposer.ProposedRule(**bad_rule),
@@ -81,14 +81,14 @@ def test_learned_rule_catches_the_trick_after_approval(monkeypatch):
     with TestClient(app) as c:
         sub = post(c, WIN).json()
         rules = c.post(f"/api/rules/learn/{sub['id']}", headers=AUTH).json()
-        assert rules[0]["status"] == "rejected" and "legitimi" in rules[0]["vetting"]
+        assert rules[0]["status"] == "rejected" and "legitimate" in rules[0]["vetting"]
         good = rules[1]
         assert good["status"] == "proposed" and good["backtest"]["false_positives"] == 0
         c.post(f"/api/rules/{good['id']}/approve", headers=AUTH, json={"decided_by": "Andrei"})
         assert len(engine.RULES) == 1
         retry = post(c, {**WIN, "nickname": "Vlad2", "edits": {**WIN["edits"], "gross_salary": 16100}}).json()
         assert retry["outcome"] == "caught"
-        assert any("funcției" in x for x in retry["reasons"])
+        assert any("job-title" in x for x in retry["reasons"])
         # un programator cu salariu normal la aceeași firmă trece în continuare
         honest = post(c, {"nickname": "Ion", "mission_id": "payslip_ceo", "tricks": ["recompute_taxes"],
                           "edits": {"gross_salary": 34500, "job_title": "Director"}}).json()
@@ -97,7 +97,7 @@ def test_learned_rule_catches_the_trick_after_approval(monkeypatch):
 
 def test_rule_engine_rejects_unknown_fields():
     ok, why, _ = proposer.vet({"when": {"left": "doc.cnp", "op": "eq", "right": 1}}, {}, [])
-    assert not ok and "necunoscute" in why
+    assert not ok and "unknown fields" in why
     asyncio.run(asyncio.sleep(0))
 
 
@@ -133,4 +133,4 @@ def test_review_regressions():
            "job_title": "Operator date", "issue_date": "2026-09-30", "tricks": []}
     ok, why, _ = proposer.vet({"when": {"left": "doc.issue_date", "op": "eq", "right": "2026-09-30"}}, doc,
                               proposer.legit_dataset())
-    assert not ok and "specifică" in why
+    assert not ok and "too specific" in why

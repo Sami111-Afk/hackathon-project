@@ -45,10 +45,10 @@ class ArenaError(ValueError):
 def clean_nickname(raw: str) -> str:
     nick = re.sub(r"[^\w .-]", "", (raw or "").strip(), flags=re.UNICODE)[:20].strip()
     if len(nick) < 2:
-        raise ArenaError("pseudonim prea scurt")
+        raise ArenaError("nickname too short")
     tokens = set(re.split(r"[\s._-]+", nick.casefold()))
     if tokens & BAD_WORDS or nick.casefold().replace(" ", "") in RESERVED:
-        raise ArenaError("alege alt pseudonim")
+        raise ArenaError("choose another nickname")
     return nick
 
 
@@ -64,11 +64,11 @@ def submit(nickname: str, mission_id: str, edits: dict, tricks: list[str]) -> di
 def _submit(nick: str, mission_id: str, edits: dict, tricks: list[str]) -> dict:
     mission = MISSIONS.get(mission_id)
     if not mission:
-        raise ArenaError("misiune inexistentă")
+        raise ArenaError("mission not found")
     try:
         doc = apply_edits(mission["template"], edits, mission["editable"], tricks or [])
     except (TypeError, ValueError, OverflowError) as exc:
-        raise ArenaError("câmpuri invalide") from exc
+        raise ArenaError("invalid fields") from exc
 
     changed = {k for k in mission["template"] if doc.get(k) != mission["template"][k]} | set(doc["tricks"])
     target = mission["target"]
@@ -126,10 +126,10 @@ def announce(public: dict) -> None:
 
 def _feed_line(p: dict) -> str:
     if p["outcome"] == "passed":
-        return f"{p['nickname']} a păcălit agenții! +{p['points']}"
+        return f"{p['nickname']} fooled the agents! +{p['points']}"
     if p["outcome"] == "caught":
-        return f"{p['nickname']} prins de {', '.join(p['caught_by'])}"
-    return f"{p['nickname']}: fals invalid (ținta nu e atinsă)"
+        return f"{p['nickname']} caught by {', '.join(p['caught_by'])}"
+    return f"{p['nickname']}: invalid forgery (target not reached)"
 
 
 def get(sid: str) -> dict | None:

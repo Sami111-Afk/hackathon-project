@@ -51,10 +51,10 @@ def test_honest_client_gets_yes_and_bank_never_sees_salary():
 
 @needs_tools
 @pytest.mark.parametrize(("attack", "reason"), [
-    ("lie_salary", "angajament invalid"),
-    ("lower_threshold", "dovada ZK nu e validă"),
-    ("fake_signature", "semnătura angajatorului"),
-    ("replay", "deja folosit"),
+    ("lie_salary", "invalid commitment"),
+    ("lower_threshold", "the ZK proof is not valid"),
+    ("fake_signature", "employer signature"),
+    ("replay", "already used"),
 ])
 def test_attacks_are_rejected(attack, reason):
     body = client.post("/api/zk/demo", json={"attack": attack}, headers=AUTH).json()
@@ -64,7 +64,7 @@ def test_attacks_are_rejected(attack, reason):
 @needs_tools
 def test_income_below_threshold_cannot_be_proven():
     body = client.post("/api/zk/demo", json={"net_salary_ron": 3000, "installment_ron": 2500}, headers=AUTH).json()
-    assert body["answer"] == "NU" and "venit sub prag" in body["reason"]
+    assert body["answer"] == "NU" and "income below threshold" in body["reason"]
 
 
 @needs_tools
