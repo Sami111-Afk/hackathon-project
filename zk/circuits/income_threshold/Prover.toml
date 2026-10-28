@@ -1,0 +1,5 @@
+salary_bani = "850000"
+salt = "42"
+threshold_bani = "500000"
+commitment = "0x21031e0423b70da95868155f2c92782d593dfbe778ff73e7f836bf726dae862e"
+case_nonce = "7"

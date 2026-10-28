@@ -286,47 +286,28 @@ toleranță: ±2 lei (rotunjiri pe fiecare componentă)
 
 **Pragul** nu e arbitrar: banca îl calculează din rată și limita de grad de îndatorare (DSTI, Regulamentul BNR 17/2012: 40%) → `prag = rata / 0,40`. În pitch spunem deschis că, în realitate, BNR cere venitul exact pentru dosarul de credit — ZK e util pentru **pre-eligibilitate**, înainte ca clientul să-și dea datele.
 
-### Actori
-1. **Angajatorul** — **serviciu separat** (alt proces/port, cheia lui privată), nu backend-ul băncii. Pagina „angajator” din demo semnează `H(salariu_bani, case_nonce, perioadă)`. Salariul ajunge doar la angajator (care oricum îl știe) și la client.
-2. **Registrul de angajatori** — banca are `CUI → cheie publică`. În realitate: atestare prin sisteme ANAF (REVISAL/D112); în demo: un fișier JSON.
-3. **Clientul (browser)** — primește atestarea, generează dovada local (`noir_js` + `bb.js`). Salariul nu pleacă din browser către bancă.
-4. **Banca** — emite `case_nonce` (random `Field`) per cerere; la verificare **reconstruiește singură inputurile publice** (prag, cheia angajatorului din registru pentru CUI-ul extras de Funcționar, perioada, nonce) și respinge orice nepotrivire. Nonce-ul se folosește o singură dată (anti-replay).
+### Ce am implementat (✅ pe `main`, Samuel) — varianta „commitment semnat”
+1. **Banca** — `POST /api/zk/nonce {installment_ron}` → `nonce` aleator de 128 biți, unic per cerere, TTL 15 min, cu **pragul fixat de bancă** (`ceil(rată / 0,40)`).
+2. **Angajatorul** (simulat, `app/zk/employer.py`; în realitate alt sistem, cu cheia lui) — generează `salt`, calculează
+   `C = pedersen_hash([salariu_bani, salt, nonce])` rulând **același cod Noir** (`zk/circuits/commitment`), semnează **ECDSA P-256**
+   mesajul `orb-zk-v1|CUI|perioadă|C|nonce`. Salariul + salt-ul merg doar la client; banca primește `C` + semnătura.
+   Registrul public `CUI → cheie publică` (`GET /api/zk/registry`); cheile private în `data/zk/` (ignorat de git).
+3. **Clientul** — dovedește cu circuitul `zk/circuits/income_threshold`:
+   privat `salary_bani, salt`; public `threshold_bani, commitment, case_nonce`;
+   `assert(pedersen_hash([salary, salt, nonce]) == commitment)` și `assert(salary >= threshold)`.
+   În demo rulează pe server (`POST /api/zk/client/prove`, ~0,3 s, dovadă de 16 KB); în producție pe telefon cu `noir_js` + `bb.js` aceleași versiuni.
+4. **Banca verifică** (`POST /api/zk/verify`): consumă nonce-ul la **prima** încercare (anti-replay și anti-grinding) → cheia angajatorului din registru →
+   semnătura ECDSA în Python → **reconstruiește singură inputurile publice** (pragul ei, `C`, nonce-ul ei) → `bb verify` (~15 ms) → `DA`/`NU` + audit.
+   Banca nu vede niciodată salariul.
+5. **Demo pe un buton:** `POST /api/zk/demo {net_salary_ron, installment_ron, cui, attack}` cu atacurile
+   `lie_salary` (clientul pretinde alt salariu → nu poate genera dovada), `lower_threshold` (dovadă pe prag mai mic → NU),
+   `fake_signature` (semnat cu cheie din afara registrului → NU), `replay` (a doua trimitere → NU). Întoarce pașii pentru UI.
+6. Teste: `nargo test` în circuit (3) + `backend/tests/test_zk.py` (11; se sar în CI dacă `nargo`/`bb` lipsesc).
 
-### Circuit (schiță — numele funcțiilor de verificat pe versiunea fixată de Noir)
-```rust
-fn main(
-    salary_bani: u64,               // privat
-    signature: [u8; 64],            // privat
-    threshold_bani: pub u64,
-    employer_pubkey_x: pub [u8; 32],
-    employer_pubkey_y: pub [u8; 32],
-    case_nonce: pub Field,
-    period: pub u32,
-) {
-    let msg = hash_fixed_layout(salary_bani, case_nonce, period); // blake2s sau sha256
-    assert(ecdsa_secp256k1_verify(employer_pubkey_x, employer_pubkey_y, signature, msg));
-    assert(salary_bani >= threshold_bani);
-}
-```
+**De ce nu semnătura în circuit:** varianta „commitment semnat” e la fel de solidă (semnătura leagă `C` de angajator și de cerere,
+circuitul leagă `C` de salariu și prag) și mult mai rapidă. Verificarea cu `bb` CLI (aceeași versiune ca prover-ul) în loc de Node.
 
-### Hash identic în Python și Noir
-Layout fix: `salary_bani` (8 bytes big-endian) ‖ `case_nonce` (32 bytes) ‖ `period` (4 bytes) → `blake2s` (sau sha256, ce oferă versiunea fixată). Python: `hashlib.blake2s` + `ecdsa` cu `sign_digest(..., sigencode=sigencode_string_canonize)` (low-S, semnătură `r‖s` de 64 bytes). **Vector de test scris în prima oră.**
-
-### Browser și verificare
-- Proving **single-threaded** (circuit mic) → nu avem nevoie de headerele COOP/COEP pe Vercel.
-- Vite: `@noir-lang/*` și `@aztec/bb.js` excluse din `optimizeDeps`.
-- `nargo`, `noir_js`, `bb.js` cu versiuni **compatibile, fixate** în `zk/README.md`.
-- Verificarea: script **Node cu aceeași versiune de bb.js**, apelat din `/api/zk/verify` (nu CLI `bb` — poate avea alt format). Verificarea în browser-ul clientului nu înseamnă nimic pentru bancă.
-
-### Fallback (dacă semnătura în circuit nu merge până la ora 3,5)
-Angajatorul semnează ECDSA un commitment `C = H(salary, salt, nonce)`; **Python verifică semnătura normal**, în afara circuitului; circuitul dovedește doar că știi `salary, salt` pentru `C` și `salary ≥ threshold`. La fel de solid, mult mai simplu.
-
-### Calea în 5h
-1. Ora 1: versiuni fixate; circuit doar cu `salary >= threshold`, dovadă în browser, verificare în Node.
-2. Ora 2–3: serviciul angajatorului (Python ECDSA + blake2s), registrul, vectorul de test.
-3. Ora 3: `case_nonce` + verificarea semnăturii în circuit (sau fallback la 3,5).
-4. Ora 4: `/api/zk/verify` — verificare Node + inputuri publice reconstruite + cheie din registru + nonce nefolosit + perioadă recentă.
-5. Ora 5: demo — salariul nu pleacă din device; semnătură falsă și prag modificat → respinse.
+**Limite spuse deschis în pitch:** angajatorul e simulat; în realitate atestarea ar veni din REVISAL/D112 (ANAF). Pre-eligibilitate, nu dosarul final de credit.
 
 ## 8. Self-learning și motorul de reguli
 
@@ -397,7 +378,7 @@ Un **fuzzer** (fără LLM — Claude a refuzat rolul de falsificator, iar un alg
 2. **Arena pe mobil** (Forge Studio) + **`/arena/live`** pe proiector.
 3. **Dashboard** — 4 carduri de cifre + 1 grafic.
 
-**Opționale (P2):** pagină separată de Birou animat, hartă, pagina de reguli. **Pagina ZK** o face Lorena.
+**Opționale (P2):** pagină separată de Birou animat, hartă, pagina de reguli. **Pagina ZK** o face Lorena (UI peste `/api/zk/demo`).
 
 **State:** un reducer per dosar, cheiat pe `seq` (ignoră duplicate), reconectare cu `Last-Event-ID`, snapshot din TanStack Query la încărcare.
 
@@ -453,9 +434,9 @@ Valorile presupuse se afișează ca **presupuneri configurabile**, nu ca fapte.
 | ✅ POST | `/api/admin/rerun-demo` · `seed-demo` · `seed-arena` · `reset` · `attacker/start` · GET `attacker/status` | demo | admin |
 | ⏳ GET | `/api/graph?case_id=` | noduri + muchii (Erin, cu Detectivul) | bancă |
 | ⏳ GET | `/api/cases/{id}/he-preview` | ciphertext ilustrativ (Stefan) | bancă |
-| ⏳ POST | `/api/zk/nonce` · `/api/zk/verify` | ZK (Lorena) | public |
+| ✅ POST | `/api/zk/nonce` · `/api/zk/verify` · `/api/zk/demo` · `/api/zk/employer/attest` · `/api/zk/client/prove` · GET `/api/zk/status` · `/api/zk/registry` | ZK (Samuel) | bancă |
 
-Serviciul angajatorului (`/employer/attest`) rulează **separat**, cu cheia lui.
+Angajatorul și portofelul clientului sunt simulate pe server pentru demo (vezi §7).
 
 ## 13. Clientul LLM: bedrock / cloud / local / mock
 
@@ -598,11 +579,10 @@ hackathon-project/
 │   │   │   └── compliance/      scoring, summary, report                [Samuel]
 │   │   ├── learning/            engine (reguli JSON), proposer (LLM + backtest) [Samuel; în Verificator: Stefan]
 │   │   ├── arena/               missions, forge, judge, service, attacker, ratelimit [Samuel]
-│   │   └── zk/                  nonce, verify bridge                    [Lorena]
+│   │   └── zk/                  tools (nargo/bb), employer, bank        [Samuel]
 │   └── tests/
-├── employer/                    serviciul separat al angajatorului (ZK)   [Lorena]
 ├── frontend/                    React + Vite + TS + Tailwind + shadcn    [Erin; pagina ZK: Lorena]
-├── zk/                          circuite Noir, verificator Node, versiuni [Lorena]
+├── zk/                          circuite Noir + versiuni fixate          [Samuel]
 ├── data/
 │   ├── generator/ [Lorena] · attacker/ [Samuel] · demo/
 │   └── llm_cache/               local, ignorat de git
