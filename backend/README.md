@@ -50,7 +50,7 @@ r.data.net_salary   # validat
 - Fiecare apel extern intră în jurnalul de audit (`GET /api/audit`).
 
 ## API (rute „bancă” cer `Authorization: Bearer <BANK_UI_TOKEN>`)
-`POST /api/admin/seed-demo` (rețeaua + 10 dosare legitime, pentru dashboard și graf) · `POST /api/admin/seed-arena` (clasament pre-populat) · `POST /api/cases` · `GET /api/cases` · `GET /api/cases/{id}` · `GET /api/cases/{id}/events` (SSE) · `GET /api/cases/{id}/documents/{doc}/image` · `POST /api/cases/{id}/decision` · `GET /api/events` · `GET|POST /api/settings` · `GET /api/dashboard/stats` · `GET /api/audit` · `POST /api/admin/rerun-demo` · `POST /api/admin/reset`
+`POST /api/admin/seed-demo` (rețeaua + 10 dosare legitime, pentru dashboard și graf) · `POST /api/admin/seed-arena` (clasament pre-populat) · `POST /api/cases` · `GET /api/cases` · `GET /api/cases/{id}` · `GET /api/cases/{id}/events` (SSE) · `GET /api/cases/{id}/report` (raport de anchetă HTML → „Salvează ca PDF”) · `GET /api/cases/{id}/documents/{doc}/image` · `POST /api/cases/{id}/decision` · `GET /api/events` · `GET|POST /api/settings` · `GET /api/dashboard/stats` · `GET /api/audit` · `POST /api/admin/rerun-demo` · `POST /api/admin/reset`
 
 ## Arena (PUBLICĂ, fără token) — pentru Erin
 - `GET /api/arena/missions` — misiunile: `template` (fluturașul de pornire), `editable` (câmpurile de pus în formular: number/select/date), `tricks` (bife), `target`.
