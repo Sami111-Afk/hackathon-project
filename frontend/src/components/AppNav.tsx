@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { LocalModeToggle } from '@/components/LocalModeToggle'
 import { Button } from '@/components/ui/button'
 import { logout } from '@/lib/auth'
 import { isMock } from '@/lib/config'
@@ -24,7 +25,14 @@ export function AppNav() {
           {l.label}
         </NavLink>
       ))}
-      <span className="ml-auto text-sm text-slate-400">{mock ? 'mod demo (fără backend)' : ''}</span>
+      <span className="ml-auto" />
+      {mock ? (
+        <a href="?mock=0" className="rounded-full bg-amber-400 px-4 py-1.5 text-base font-bold text-slate-950" title="Ieși din modul demo">
+          ⚠️ DATE DE DEMO · ieși
+        </a>
+      ) : (
+        <LocalModeToggle />
+      )}
       {!mock && (
         <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white" onClick={() => { logout(); window.location.assign('/login') }}>
           Ieșire

@@ -140,3 +140,17 @@ def test_graph_labels_never_show_fingerprints():
 def test_same_name_without_cnp_is_same_person():
     findings, _ = analyze(mk("a", phone="P", name="N"), [mk(f"b{i}", phone="P", name="N") for i in range(3)], NOW)
     assert findings == []
+
+
+def test_colleague_with_same_employer_is_not_a_ring(monkeypatch):
+    """Același CUI (angajator) la alt om: nimic semnalat, fără animație de graf, nod CUI neroșu."""
+    me, colleague = mk("me", cui="FIRMA", cnp="C1"), mk("col", cui="FIRMA", cnp="C2")
+    findings, stats = analyze(me, [colleague], NOW)
+    assert findings == [] and stats["linked_cases"] == 0
+    monkeypatch.setattr("app.agents.detectiv.agent.store.list", lambda: [me, colleague])
+    ctx = FakeCtx()
+    asyncio.run(Detectiv().run(me, ctx))
+    assert ctx.events == []
+    g = graph_payload(build_graph([me, colleague, mk("x", phone="P"), mk("y", phone="P")]))
+    cui = next(n for n in g["nodes"] if n["id"] == "fp:cui:FIRMA")
+    assert cui["in_cluster"] is False
