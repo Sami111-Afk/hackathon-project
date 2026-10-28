@@ -23,7 +23,7 @@ PRIORITY = {"MRZ": 0, "IBAN": 1, "CNP": 2, "CUI": 3, "SERIE": 4, "NR": 4, "EMAIL
             "ADRESA": 7, "FIRMA": 8, "PERSOANA": 9}
 
 CNP_RX = re.compile(r"(?<!\d)[1-9]\d{12}(?!\d)")
-# CNP scris cu separatori („259 031 229 0171”) — acceptat doar dacă cifra de control e validă (altfel ar prinde sume)
+# CNP scris cu separatori („259 031 229 0006”) — acceptat doar dacă cifra de control e validă (altfel ar prinde sume)
 CNP_SPACED_RX = re.compile(r"(?<![\d.])[1-9](?:[ .\-]?\d){12}(?!\d)")
 IBAN_RX = re.compile(r"\bRO\d{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]{4}){4}\b", re.I)
 CUI_RX = re.compile(r"\b(?:CUI|CIF|C\.U\.I\.|cod fiscal|cod unic de [îi]nregistrare)\s*[:.]?\s*((?:RO)?\s?\d{2,10})\b",

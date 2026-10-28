@@ -14,7 +14,7 @@ from app.core.llm import LLMUnavailable
 from tests.test_functionar_agent import PAYSLIP, STATEMENT, Ctx, maria_case, paznic_scratch
 
 TODAY = date(2026, 10, 28)
-MARIA_VAULT = {"[CNP_1]": ["2590312290171"], "[IBAN_1]": ["RO54RZBR0000060012345678"], "[CUI_1]": ["RO9402119372"],
+MARIA_VAULT = {"[CNP_1]": ["2590312290006"], "[IBAN_1]": ["RO59RZBR9999000000000001"], "[CUI_1]": ["RO9402119372"],
                "[SERIE_1]": ["PH"], "[ADRESA_1]": ["Str. Florilor nr. 12, Ploiești, jud. Prahova"]}
 
 
@@ -80,7 +80,7 @@ def honest_scratch():
 
 def test_honest_case_is_cleared(no_llm, monkeypatch):
     # Bitwave, activă; 36 ani
-    vault = dict(MARIA_VAULT, **{"[CUI_1]": ["RO9341910290"], "[CNP_1]": ["2900312290171"]})
+    vault = dict(MARIA_VAULT, **{"[CUI_1]": ["RO9341910290"], "[CNP_1]": ["2900312290008"]})
     result = run_both(maria_case(), honest_scratch(), monkeypatch, vault)
     assert [f.code for f in result.findings if f.severity != "info"] == []
     verdict, _ = score([result])
@@ -118,7 +118,7 @@ def test_statement_row_chain_break_points_to_the_row():
 
 @pytest.mark.parametrize(
     ("cnp", "birth", "sex"),
-    [("2590312290171", date(1959, 3, 12), "F"), ("1900101400000", date(1990, 1, 1), "M"),
+    [("2590312290006", date(1959, 3, 12), "F"), ("1900101400000", date(1990, 1, 1), "M"),
      ("5010203400000", date(2001, 2, 3), "M"), ("6991302400000", None, "F"), ("123", None, None)],
 )
 def test_cnp_parsing(cnp, birth, sex):
@@ -126,14 +126,14 @@ def test_cnp_parsing(cnp, birth, sex):
 
 
 def test_romanian_checks():
-    assert ro_checks.check_card_sex("2590312290171", "M", "d").code == "CNP_SEX_MISMATCH"
-    assert ro_checks.check_card_sex("2590312290171", "F", "d") is None
+    assert ro_checks.check_card_sex("2590312290006", "M", "d").code == "CNP_SEX_MISMATCH"
+    assert ro_checks.check_card_sex("2590312290006", "F", "d") is None
     assert ro_checks.check_id_validity("2026-01-01", TODAY, "d").code == "ID_EXPIRED"
     assert ro_checks.check_series_county("CJ", "Str. X 1, Ploiești, jud. Prahova", "d").code == "SERIES_COUNTY_MISMATCH"
     assert ro_checks.check_series_county("PH", "Str. X 1, Ploiești, Județul Prahova", "d") is None
     assert ro_checks.check_series_county("ZZ", "jud. Prahova", "d") is None  # prefix necunoscut → nu ghicim
     assert ro_checks.check_iban_bank("RO49BTRL0000000000001234", "Raiffeisen BANK", "d").code == "IBAN_BANK_MISMATCH"
-    assert ro_checks.check_iban_bank("RO54RZBR0000060012345678", "Raiffeisen BANK", "d") is None
+    assert ro_checks.check_iban_bank("RO59RZBR9999000000000001", "Raiffeisen BANK", "d") is None
     codes = [f.code for f in ro_checks.check_dates("2027-01-01", date(2027, 6, 1), TODAY, "d")]
     assert codes == ["DOC_FUTURE_DATE", "DOC_BEFORE_COMPANY"]
 
