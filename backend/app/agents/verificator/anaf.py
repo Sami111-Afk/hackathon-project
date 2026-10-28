@@ -206,5 +206,7 @@ def check_company(company: Company | None, source: Source, doc_id: str, label: s
                         evidence=ev)]
     if not company.active:
         return [Finding(code="COMPANY_INACTIVE", severity="critical",
-                        message=f"Angajatorul {label} figurează inactiv la ANAF", evidence=ev)]
+                        message=(f"Angajatorul {label} figurează inactiv la ANAF" if source in ("anaf", "cache")
+                                 else f"Angajatorul {label} figurează inactiv (registru demo, nu ANAF real)"),
+                        evidence=ev)]
     return []

@@ -57,6 +57,13 @@ class CaseStore:
             conn.execute("INSERT OR REPLACE INTO cases VALUES (?, ?, ?)", (case_id, created_at, payload))
             conn.commit()
 
+    def delete(self, case_id: str) -> None:
+        self._cases.pop(case_id, None)
+        with self._lock:
+            conn = self._connect()
+            conn.execute("DELETE FROM cases WHERE id = ?", (case_id,))
+            conn.commit()
+
     def reset(self) -> None:
         self._cases.clear()
         self._connect().execute("DELETE FROM cases")

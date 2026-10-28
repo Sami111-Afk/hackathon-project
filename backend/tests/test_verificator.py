@@ -47,7 +47,7 @@ def test_maria_is_caught_on_every_axis(no_llm, monkeypatch):
 
     assert f["NET_MISMATCH"].message == "Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)"
     assert f["NET_MISMATCH"].evidence.bbox[1] == 900 and f["NET_MISMATCH"].evidence.field == "net_salary"
-    assert f["COMPANY_INACTIVE"].message == "Angajatorul [CUI_1] figurează inactiv la ANAF"
+    assert f["COMPANY_INACTIVE"].message == "Angajatorul [CUI_1] figurează inactiv (registru demo, nu ANAF real)"
     assert f["BALANCE_MISMATCH"].message == "Soldul final (26.480 lei) nu iese din tranzacții (2.851,50 lei)"
     assert f["AGE_EMPLOYMENT_MISMATCH"].message == "Solicitant de 67 de ani declarat angajat activ"
     assert {"SALARY_NOT_IN_STATEMENT", "PENSION_INCOME"} <= set(f)
@@ -143,3 +143,31 @@ def test_anaf_lookup_and_unknown_company_is_not_a_hard_override():
     assert anaf.lookup(name="AGRO PRAHOVA DISTRIBUTIE S.R.L").active is False
     f = anaf.check_company(None, "unavailable", "d", "[CUI_1]")
     assert f[0].code == "COMPANY_UNVERIFIED" and f[0].severity == "info"
+
+
+def test_learned_rule_uses_real_anaf_company(no_llm, monkeypatch):
+    # firmă care NU e în registrul demo, găsită la ANAF real; regula aprobată: document emis înainte de înființare
+    from app.learning import engine
+
+    rule = {"id": "rule_t", "status": "approved",
+            "when": {"left": "doc.issue_date", "op": "lt", "right": "company.founded"},
+            "then": {"code": "DOC_BEFORE_COMPANY_RULE", "severity": "high", "message": "Emis înainte de firmă"}}
+    real = anaf.Company("FIRMA REALA SRL", "123456", True, date(2026, 10, 1), source="anaf")
+    monkeypatch.setattr(verificator_agent.anaf, "resolve", lambda *a, **k: (real, "anaf"))
+    monkeypatch.setattr(verificator_agent.anaf, "check_company", lambda *a, **k: [])
+    engine.add_rule(rule)
+    try:
+        result = run_both(maria_case(), paznic_scratch(), monkeypatch, {})
+    finally:
+        engine.clear()
+    f = next(f for f in result.findings if f.code == "DOC_BEFORE_COMPANY_RULE")
+    assert f.rule_id == "rule_t"  # fluturașul e emis 30.09.2026, firma înființată 01.10.2026
+
+
+def test_demo_registry_still_feeds_rules():
+    from app.learning import engine
+
+    rule = {"id": "r", "status": "approved", "when": {"left": "company.active", "op": "eq", "right": False},
+            "then": {"code": "X", "severity": "low", "message": "inactivă"}}
+    assert engine.apply_rules({"employer": "Agro Prahova Distribuție SRL"}, [rule])
+    assert not engine.apply_rules({"employer": "Agro Prahova Distribuție SRL"}, [rule], company={"active": True})

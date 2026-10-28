@@ -104,3 +104,10 @@ recitire calculul iese, marchează „de verificat”, nu „fals”. Și oricum
 
 **„Merge pe documente reale?”** — Am testat pe documente sintetice cu layout cunoscut; pentru alte layout-uri,
 LLM-ul face extragerea, iar extrasele ar avea nevoie de parsarea pe coloane per bancă.
+
+## Review PR #25
+Nu l-am îmbinat încă. Ideea e bună (fluturașul Mariei e tot prins: NET_MISMATCH 8.307 vs 8.500, verdict escalate; HE rămâne în uz; nicio sumă recitită nu e logată sau trimisă la LLM; `ai_saw.with_pii == 0`; recitirea rulează în `asyncio.to_thread`), dar:
+- **Teste picate (4)**: `recitire` apelează `pytesseract.image_to_string` fără `lang`, deci cere `eng`. README/ARCHITECTURE cer doar `ron` (la mine există doar `ron` + `osd`) → `TesseractError`, recitirea eșuează în tăcere (`except Exception` → rămâne citirea inițială) și testele din `tests/test_reread.py` pică (`test_read_amount_from_crop`, cele două cu AMOUNT_UNCERTAIN pe sold, cea pe fluturaș).
+- Cu `lang="ron"` trec 3 din 4, dar `test_ocr_digit_error_inside_a_row_is_not_an_accusation` dă al doilea rând tot BALANCE_MISMATCH → votul cu `ron` e mai slab pe decupaje; de reglat (ori `eng` documentat ca cerință + `ocr_available()` să verifice și `eng`).
+- Cerință: `Rereader.available()` să verifice limba pe care o folosește chiar recitirea, ca să nu pară activ când nu e.
+- Testele din `test_reread.py` durează ~16 s (OCR real) — de marcat ca lente sau reduse.

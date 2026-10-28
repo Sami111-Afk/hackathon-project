@@ -4,7 +4,9 @@ risk = 1 − Π(1 − wᵢ)   (noisy-OR pe ponderile finding-urilor)
 - semnalele slabe (ELA, AI-detector) sunt plafonate
 - override-urile dure împing recomandarea minim la "escalate"
 """
-from app.models import AgentResult, Finding, Verdict
+import re
+
+from app.models import AgentResult, Finding, ScoreItem, Verdict
 
 SEVERITY_WEIGHT = {"info": 0.0, "low": 0.1, "medium": 0.3, "high": 0.6, "critical": 0.85}
 
@@ -60,8 +62,10 @@ def score(results: list[AgentResult]) -> tuple[Verdict, list[Finding]]:
         label = "suspicious"
 
     top = sorted(findings, key=finding_weight, reverse=True)
+    breakdown = [ScoreItem(code=f.code, severity=f.severity, weight=finding_weight(f), message=f.message,
+                           hard_override=f.code in HARD_OVERRIDES) for f in top if finding_weight(f) > 0]
     return Verdict(risk=risk, label=label, recommendation=recommendation, incomplete=incomplete,
-                   summary=template_summary(top, recommendation, incomplete)), top
+                   breakdown=breakdown, summary=template_summary(top, recommendation, incomplete)), top
 
 
 def template_summary(top: list[Finding], recommendation: str, incomplete: bool) -> str:
@@ -72,3 +76,21 @@ def template_summary(top: list[Finding], recommendation: str, incomplete: bool) 
     reasons = "; ".join(f.message for f in top[:3] if SEVERITY_WEIGHT[f.severity] > 0)
     note = " Atenție: un agent nu a terminat, verdictul e incomplet." if incomplete else ""
     return f"{reasons + '. ' if reasons else ''}{action}{note}"
+
+
+_NUM = re.compile(r"\d[\d.,]*\d|\d")
+_LABEL = re.compile(r"\[[A-Z_]+_\d+\]")
+
+
+def _digits(text: str) -> set[str]:
+    return {re.sub(r"\D", "", m).lstrip("0") or "0" for m in _NUM.findall(text)}
+
+
+def unsupported_claims(summary: str, evidence: str, risk: float) -> list[str]:
+    """Cifrele și etichetele din rezumatul LLM care NU apar în dovezi = halucinații. Gol = rezumat fidel."""
+    allowed = _digits(evidence) | {str(round(risk * 100)), str(round(risk * 1000)), str(round(risk * 100, 1)),
+                                  str(round(risk, 2)).replace("0.", "").lstrip("0") or "0"}
+    allowed |= {str(i) for i in range(0, 11)}  # „2–3 propoziții”, „5 cereri” — numere mici, inofensive
+    bad = [n for n in _digits(summary) if n not in allowed]
+    bad += [lab for lab in _LABEL.findall(summary) if lab not in evidence]
+    return bad
