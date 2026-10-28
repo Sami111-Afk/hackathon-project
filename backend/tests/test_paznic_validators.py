@@ -13,7 +13,7 @@ from app.agents.paznic.validators import (
     valid_iban,
 )
 
-MARIA_CNP = "2590314290011"  # F, 14.03.1959, Prahova (29)
+MARIA_CNP = "2590314290001"  # F, 14.03.1959, Prahova (29)
 ICAO_TD2_LINE2 = "D231458907UTO7408122F1204159<<<<<<<6"  # specimenul din ICAO 9303
 
 
