@@ -18,7 +18,7 @@ export function ArenaTop() {
           <li key={r.rank} className={cn('flex items-center gap-4 px-4 py-4 text-lg', r.nickname.toLowerCase() === me ? 'bg-brand/10' : 'bg-night-2')}>
             <span className={cn('w-8 text-right font-condensed text-2xl font-bold tabular-nums', r.rank <= 3 ? 'text-brand' : 'text-night-mute')}>{r.rank}</span>
             <span className="flex-1 truncate font-medium">{r.nickname}{r.nickname.toLowerCase() === me && <span className="ml-2 text-sm text-brand">you</span>}</span>
-            <span className="font-semibold tabular-nums">{r.points.toLocaleString('ro-RO')}</span>
+            <span className="font-semibold tabular-nums">{r.points.toLocaleString('en-US')}</span>
           </li>
         ))}
       </ol>
