@@ -8,6 +8,7 @@ import sqlite3
 import threading
 
 from app.config import settings
+from app.core.events import bus
 from app.models import Case
 
 
@@ -30,7 +31,10 @@ class CaseStore:
             self._conn.execute("CREATE TABLE IF NOT EXISTS cases (id TEXT PRIMARY KEY, created_at TEXT, json TEXT)")
             for (raw,) in self._conn.execute("SELECT json FROM cases"):
                 case = Case.model_validate_json(raw)
+                if case.status in ("received", "processing"):
+                    case.status = "error"  # serverul a repornit în timpul procesării
                 self._cases[case.id] = case
+                bus.continue_after_restart(case.id)
         return self._conn
 
     def load(self) -> None:

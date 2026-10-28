@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     llm_max_concurrency: int = 2
     llm_timeout_s: int = 30
     demo_cache: bool = False
+    llm_record: bool = False  # true = salvează răspunsurile în data/llm_cache (pt. demo offline)
 
     hmac_secret: str = ""
     arena_hmac_secret: str = ""

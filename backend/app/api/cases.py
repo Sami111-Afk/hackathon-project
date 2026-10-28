@@ -3,7 +3,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 
 from app.api.deps import require_bank
@@ -29,7 +29,7 @@ async def create_case(files: list[UploadFile] = File(...),
     case_id = f"case_{uuid.uuid4().hex[:8]}"
     max_bytes = settings.arena_max_file_mb * 1024 * 1024
     documents, originals = [], {}
-    for i, f in enumerate(files, start=1):
+    for i, f in enumerate(files, start=1):  # 1. validăm toate fișierele
         data = await f.read(max_bytes + 1)
         if len(data) > max_bytes:
             raise HTTPException(413, f"fișier prea mare (max {settings.arena_max_file_mb} MB)")
@@ -37,10 +37,11 @@ async def create_case(files: list[UploadFile] = File(...),
         if not kind:
             raise HTTPException(415, "doar PNG, JPG sau PDF")
         doc_id = f"doc_{i}"
-        save_encrypted(case_id, doc_id, data)
         originals[doc_id] = data
         documents.append(Document(id=doc_id, filename=f"document_{i}.{kind[0]}"))
 
+    for doc_id, data in originals.items():  # 2. abia apoi le salvăm
+        save_encrypted(case_id, doc_id, data)
     case = Case(id=case_id, created_at=now_iso(), requested_amount_ron=requested_amount_ron, documents=documents)
     await store.save(case)
     bus.publish(case_id, "case_created", message=f"Dosar nou: {len(documents)} documente")
@@ -69,20 +70,23 @@ def get_case(case_id: str):
 def get_image(case_id: str, doc_id: str, view: str = "original"):
     if view != "original":
         raise HTTPException(404, f"vederea '{view}' nu e încă disponibilă")  # redacted/ela: Narcis
+    if not store.get(case_id):
+        raise HTTPException(404, "dosar inexistent")
     try:
         data = load_decrypted(case_id, doc_id)
     except ValueError:
         data = None
     if not data:
         raise HTTPException(404, "document inexistent")
-    return Response(data, media_type=sniff(data)[1], headers={"Cache-Control": "no-store"})
+    return Response(data, media_type=sniff(data)[1],
+                    headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
 
 
 class DecisionIn(BaseModel):
     action: str
-    decided_by: str
-    notes: str = ""
-    corrections: dict = {}
+    decided_by: str = Field(max_length=60)
+    notes: str = Field(default="", max_length=2000)
+    corrections: dict = Field(default_factory=dict)
 
 
 @router.post("/cases/{case_id}/decision")
@@ -90,7 +94,7 @@ async def decide(case_id: str, body: DecisionIn):
     case = store.get(case_id)
     if not case:
         raise HTTPException(404, "dosar inexistent")
-    if case.status == "processing":
+    if case.status in ("received", "processing"):
         raise HTTPException(409, "dosarul încă e în lucru")
     if body.action not in DECISION_STATUS:
         raise HTTPException(400, "acțiune necunoscută")

@@ -37,22 +37,25 @@ def score(results: list[AgentResult]) -> tuple[Verdict, list[Finding]]:
 
     codes = {f.code for f in findings}
     hard = codes & HARD_OVERRIDES
+    soft_strong = any(f.code in SOFT_SIGNALS and SEVERITY_WEIGHT[f.severity] >= 0.3 for f in findings)
     if risk >= ESCALATE_AT or hard:
         recommendation = "escalate"
-    elif risk >= REVIEW_AT or incomplete:
+    elif risk >= REVIEW_AT or incomplete or soft_strong:
         recommendation = "review"
     else:
         recommendation = "clear"
 
     forged, ring = bool(codes & FORGERY_CODES), bool(codes & RING_CODES)
-    if ring and forged:
+    if recommendation == "clear":
+        label = "clean"
+    elif recommendation == "review":
+        label = "suspicious"
+    elif ring and forged:
         label = "identity_fraud"
     elif ring:
         label = "fraud_ring"
-    elif forged and recommendation == "escalate":
+    elif forged:
         label = "forged"
-    elif recommendation == "clear":
-        label = "clean"
     else:
         label = "suspicious"
 
