@@ -124,7 +124,8 @@ def net_mismatch(computed: float, declared_net: float, evidence: Evidence | None
     return Finding(
         code="NET_MISMATCH",
         severity="high",
-        message=f"Netul calculat ({format_ron(computed)} lei) diferă de cel declarat ({format_ron(declared_net)} lei)",
+        message=f"Calculated net pay ({format_ron(computed)} lei) differs from "
+                f"the declared one ({format_ron(declared_net)} lei)",
         evidence=evidence,
     )
 

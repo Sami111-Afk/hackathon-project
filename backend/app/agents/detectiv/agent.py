@@ -32,11 +32,11 @@ MAX_LIVE_LINKS = 12  # câte legături animăm live în frontend
 def _since(oldest: datetime, now: datetime) -> str:
     days = max(1, round((now - oldest).total_seconds() / 86400))
     if days <= 1:
-        return "în ultima zi"
+        return "in the last day"
     if days < 7:
-        return f"în ultimele {days} zile"
+        return f"in the last {days} days"
     weeks = round(days / 7)
-    return "în ultima săptămână" if weeks <= 1 else f"în ultimele {weeks} săptămâni"
+    return "in the last week" if weeks <= 1 else f"in the last {weeks} weeks"
 
 
 def analyze(case: Case, others: list[Case], now: datetime | None = None) -> tuple[list[Finding], dict]:
@@ -62,26 +62,28 @@ def analyze(case: Case, others: list[Case], now: datetime | None = None) -> tupl
         identities = {identity_of(c) for c in linked}
         k, n = len(identities), len(linked)
         when = _since(min(parse_ts(c.created_at) for c in linked), now)
-        cereri = "o altă cerere" if n == 1 else f"alte {n} cereri"
+        cereri = "another application" if n == 1 else f"{n} other applications"
         if kind in ("phone", "email"):
-            what = "Telefonul" if kind == "phone" else "Adresa de email"
+            what = "The phone number" if kind == "phone" else "The email address"
             if k >= 2:
                 findings.append(Finding(
                     code="FRAUD_RING_SUSPECTED", severity="critical" if k >= 3 else "high",
-                    message=f"{what} din cerere apare în {cereri}, pe {k} identități diferite, {when}"))
+                    message=f"{what} in this application also appears in {cereri}, "
+                            f"under {k} different identities, {when}"))
             else:
                 findings.append(Finding(
                     code="SHARED_CONTACT", severity="medium",
-                    message=f"{what} din cerere apare și la o altă persoană ({when}) — poate fi un membru al familiei"))
+                    message=f"{what} in this application also appears for another person ({when}) "
+                            "— may be a family member"))
         elif kind == "iban":
             findings.append(Finding(
                 code="SHARED_IBAN", severity="high",
-                message=f"Contul IBAN din cerere apare în {cereri}, pe "
-                        f"{'o altă identitate' if k == 1 else f'{k} identități diferite'}, {when}"))
+                message=f"The IBAN in this application also appears in {cereri}, under "
+                        f"{'another identity' if k == 1 else f'{k} different identities'}, {when}"))
         elif kind == "address" and k >= 3:
             findings.append(Finding(
                 code="SHARED_ADDRESS", severity="medium",
-                message=f"Adresa din cerere apare la {k} persoane diferite, {when}"))
+                message=f"The address in this application appears for {k} different people, {when}"))
 
     # doar legăturile care pot forma o rețea (un coleg cu același angajator nu pornește animația grafului)
     strong = [c for (kind, _v), cs in users.items() if kind in STRONG_KINDS for c in cs]
@@ -99,7 +101,7 @@ def noisy_or(findings: list[Finding]) -> float:
 
 class Detectiv:
     name = "detectiv"
-    start_message = "Compar cu alte dosare"
+    start_message = "Comparing with other applications"
 
     async def run(self, case: Case, ctx) -> AgentResult:
         now = datetime.now(UTC)
@@ -116,7 +118,8 @@ class Detectiv:
 
         if not findings:
             findings = [Finding(code="NO_LINKS", severity="info",
-                                message=f"Nicio legătură cu alte {len(others)} dosare din ultimele {WINDOW_DAYS} zile")]
+                                message=f"No links to the other {len(others)} applications "
+                                        f"from the last {WINDOW_DAYS} days")]
         return AgentResult(agent=self.name, status="done", risk=noisy_or(findings), findings=findings,
                            artifacts={"graph": f"/api/graph?case_id={case.id}"})
 
@@ -128,7 +131,7 @@ class Detectiv:
         first = [nodes[focus]] + [nodes[fp_node(k, v)] for k, vs in case.fingerprints.items() for v in vs
                                   if fp_node(k, v) in nodes]
         sent = {n["id"] for n in first}
-        await ctx.emit("agent_progress", "Construiesc graful", data={"graph_delta": {
+        await ctx.emit("agent_progress", "Building the graph", data={"graph_delta": {
             "nodes": first, "links": [lk for lk in payload["links"] if lk["source"] == focus]}})
         delay = 0 if settings.env == "test" else 0.15
         others = [n for n in payload["nodes"] if n["type"] == "case" and n["id"] != focus]
@@ -139,11 +142,11 @@ class Detectiv:
             new_nodes = [cn] + [nodes[lk["target"]] for lk in links if lk["target"] not in sent]
             sent.update(n["id"] for n in new_nodes)
             await asyncio.sleep(delay)
-            await ctx.emit("agent_progress", f"Legătură găsită: {cn['label']}",
+            await ctx.emit("agent_progress", f"Link found: {cn['label']}",
                            data={"graph_delta": {"nodes": new_nodes, "links": links}})
         if rest:  # restul, dintr-o bucată
             rest_ids = {n["id"] for n in rest}
             links = [lk for lk in payload["links"] if lk["source"] in rest_ids]
             new_nodes = rest + [nodes[t] for t in {lk["target"] for lk in links} if t not in sent]
-            await ctx.emit("agent_progress", f"Încă {len(rest)} dosare legate",
+            await ctx.emit("agent_progress", f"{len(rest)} more linked applications",
                            data={"graph_delta": {"nodes": new_nodes, "links": links}})

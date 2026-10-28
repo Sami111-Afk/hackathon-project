@@ -127,7 +127,7 @@ def ocr_available() -> bool:
 
 def _ocr_lines(img: Image.Image, page: int) -> list[list[Word]]:
     if not ocr_available():
-        raise OCRUnavailable("Tesseract nu e instalat, nu are limba „ron” sau TESSERACT_CMD e greșit")
+        raise OCRUnavailable("Tesseract is not installed, lacks the \"ron\" language, or TESSERACT_CMD is wrong")
     import pytesseract
 
     factor = max(1.0, OCR_MIN_WIDTH / img.width)
