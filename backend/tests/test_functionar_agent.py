@@ -236,3 +236,13 @@ def test_identifier_missed_by_paznic_never_reaches_extracted(no_llm):
     assert "iban" not in stmt.extracted and stmt.extracted["account_holder"].value == "[PERSOANA_1]"
     f = next(f for f in result.findings if f.code == "UNREDACTED_IDENTIFIER")
     assert "RO54" not in f.message and f.evidence.doc_id == "doc_3"
+
+
+def test_slightly_rotated_scan_keeps_rows_together():
+    # 0,8° pe 1.000 px ≈ 14 px: eticheta și suma aceluiași rând au înălțimi diferite
+    tilt = 0.014
+    words = [dict(w, bbox=[w["bbox"][0], w["bbox"][1] + w["bbox"][0] * tilt,
+                           w["bbox"][2], w["bbox"][3] + w["bbox"][0] * tilt]) for w in STATEMENT]
+    texts = [line.text for line in group_lines(words)]
+    assert "Sold final 26.480,00" in texts
+    assert len(parse_statement(group_lines(words)).rows) == 4
