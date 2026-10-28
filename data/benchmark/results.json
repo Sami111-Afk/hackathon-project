@@ -1,0 +1,39 @@
+{
+  "n": 40,
+  "seed": 2026,
+  "note": "Date sintetice; falsurile sunt create de noi pe tipurile pe care verificările le țintesc. Arată că regulile funcționează corect pe aceste cazuri, nu acuratețea pe fraude reale. Falsul 'perfect' nu se poate prinde doar din fluturaș.",
+  "înainte de self-learning": {
+    "recall_per_type": {
+      "net umflat (fără taxe refăcute)": 1.0,
+      "brut umflat la firmă mică": 1.0,
+      "firmă inactivă": 1.0,
+      "emis înainte de înființarea firmei": 1.0,
+      "dată în viitor": 1.0,
+      "text ascuns pentru AI (prompt injection)": 1.0,
+      "ștampilă generată cu AI": 1.0,
+      "salariu umflat față de funcție (firmă mare)": 0.0,
+      "fals „perfect” (salariu plauzibil, taxe corecte)": 0.0
+    },
+    "recall_catchable": 0.875,
+    "false_positives": 0,
+    "legit_total": 240,
+    "ms_per_doc": 0.03420000030018855
+  },
+  "după self-learning": {
+    "recall_per_type": {
+      "net umflat (fără taxe refăcute)": 1.0,
+      "brut umflat la firmă mică": 1.0,
+      "firmă inactivă": 1.0,
+      "emis înainte de înființarea firmei": 1.0,
+      "dată în viitor": 1.0,
+      "text ascuns pentru AI (prompt injection)": 1.0,
+      "ștampilă generată cu AI": 1.0,
+      "salariu umflat față de funcție (firmă mare)": 1.0,
+      "fals „perfect” (salariu plauzibil, taxe corecte)": 0.0
+    },
+    "recall_catchable": 1.0,
+    "false_positives": 0,
+    "legit_total": 240,
+    "ms_per_doc": 0.041501500163576566
+  }
+}
