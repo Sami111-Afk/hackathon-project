@@ -2,11 +2,11 @@
 
 > Hackathon · **Raiffeisen Bank: Operational Efficiency** — *"Explore how AI agents can reduce repetitive work involving documents, data, and verification."*
 
-**Live demo:** https://orb-raiffeisen.vercel.app (the bank login token is provided to the jury separately) · **Arena (no login, works on a phone):** https://orb-raiffeisen.vercel.app/arena
+**Live demo:** https://orb-raiffeisen.vercel.app (the bank login token is provided to the jury separately; the backend runs on our demo laptop behind ngrok — if it is down, `?mock=1` shows the demo without a backend) · **Arena (no login, works on a phone):** https://orb-raiffeisen.vercel.app/arena
 
 ## The problem
 
-For every consumer-loan application, a back-office analyst reads the ID card, the payslip and the bank statement, recalculates the
+For every consumer-loan application, a credit analyst reads the ID card, the payslip and the bank statement, recalculates the
 taxes on the payslip, looks the employer up at ANAF (the Romanian tax authority), checks that the salary actually arrives in the
 statement — and only rarely has time to check whether the same IBAN or phone number appears in other applications.
 That is **~20 minutes of repetitive work per application** (our informal test + a step-by-step estimate of 14–21 min; vendor
@@ -97,8 +97,9 @@ cp .env.example .env
 # generate the four required secrets (the app refuses to start without them):
 python3 -c "import secrets;from cryptography.fernet import Fernet;print(f'HMAC_SECRET={secrets.token_hex(32)}\nARENA_HMAC_SECRET={secrets.token_hex(32)}\nVAULT_KEY={Fernet.generate_key().decode()}\nBANK_UI_TOKEN={secrets.token_urlsafe(24)}')" >> .env
 cd backend && python3.11 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-core.txt && uvicorn app.main:app --port 8000
-cd ../frontend && npm install && npm run dev      # http://localhost:5173  (?mock=1 = demo without backend)
+pip install -r requirements-core.txt && uvicorn app.main:app --port 8000   # keep it running
+# second terminal, from the repo root:
+cd frontend && npm install && npm run dev        # http://localhost:5173  (?mock=1 = demo without backend)
 ```
 (`cryptography` is installed by `requirements-core.txt`; run the secrets line after `pip install` if it is missing.)
 

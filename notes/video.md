@@ -1,4 +1,45 @@
-# Video 3:00 — VARIANTA 6 (după juriul Raiffeisen simulat: șef AI, director de risc, design de servicii, inginer AI) — DE LUCRU
+# Video 3:00 — VARIANTA 7 (după juriul Opus + verificarea pe slide-urile organizatorilor) — DE FILMAT
+
+> Variantele 6–1 sunt mai jos, ca istoric. Vocea: AI (Chatterbox, varianta expresivă aleasă de Samuel), generată din `notes/voce.md`.
+
+## Ce s-a schimbat față de varianta 6
+- **Limitele spuse în video** (scena 12) — slide-urile 41 și 50 le cer explicit; lipseau complet.
+- **„Why this shape?”** spune și **uneltele** (tabele de taxe, registrul firmelor, analiza imaginii) — criteriul de 25%.
+- **Decizia omului dusă până la capăt** (refuz → motiv → trimis la investigație → salvat în audit).
+- **Modul local spus cinstit:** „tested on our laptop, ~9 s/file” + pe ecran „switch shown only”.
+- **Etichete pe ecran de la început** (SYNTHETIC DATA, 2×, tăieturi între dosare, simulated phone photos, demo registry, AWS us-west-2).
+- **Scoasă** fraza cu ANAF (nu o putem susține). „ORB” scris „Orb” în textul vocii (altfel AI-ul spune „or B”).
+- Pe cardul final: „ORB checks documents, not creditworthiness · voice: AI-generated”.
+- Juriu Opus pe v6: ~61/90, locul 2–6 din 28, ~45–50% top 3.
+
+## Structura (180 s)
+
+| # | Timp | Durată | Pe ecran | Vocea (engleză) | Text pe ecran |
+|---|---|---|---|---|---|
+| 0 | 0:00–0:04 | 4 s | Intro animat ORB (text scurt: „Loan-document checks for credit analysts. A human always decides.”) | — (muzică) |  |
+| 1 | 0:04–0:17 | 13 s | Zoom pe netul de pe fluturașul Mariei: 8.500 → „should be 8,307” cu roșu · insignă „SYNTHETIC DATA · DEMO” de aici până la 2:46 | "This payslip says 8,500 lei net. Romanian payroll rules say 8,307. Today a credit analyst catches that by hand: read, recalculate, cross-check. About twenty minutes a file, by our own timing." | „~20 min per file · our timing, not bank data” |
+| 2 | 0:17–0:30 | 13 s | Ecranul „New application”, zoom lent · „User: credit analyst” | "We built Orb to help credit analysts check loan documents. Today that's slow: every payslip, statement and employer is checked by hand, and fraud rings hide across files. Orb flags exactly what's wrong." | „User: credit analyst” · „Screen recording · 2× while agents run · cuts between files” |
+| 3 | 0:30–0:40 | 10 s | Documentele Mariei → zoom pe nume → [PERSOANA_1] în vederea „What the AI saw” | "Watch the names. Maria's application: three synthetic documents. Before any AI sees them, the Guard swaps every name and ID number for a label." |  |
+| 4 | 0:40–1:06 | 26 s | Agenții live („2× SPEED”) → dovezile, zoom pe fiecare când e numită → click = chenar pe fluturaș | "Six agents, one job each, and only two of them use AI. The Clerk extracts the fields; any value it can't point to in the document is discarded. Watch the box. The Verifier recomputes the tax: net should be 8,307, not 8,500. The employer, in our demo registry: inactive. And the salary never arrives in her statement." | „2× SPEED” · „DEMO REGISTRY · real ANAF API for real companies” · „8,307 ≠ 8,500 lei” |
+| 5 | 1:06–1:15 | 9 s | „Edit map” pe fluturaș → graful: contul → 6 cereri | "The Detector marks the edited pixels. The Detective finds the same bank account in six applications, under six names." | „1 account · 6 names” |
+| 6 | 1:15–1:32 | 17 s | Risc „Very high” → „Why this score?” → Approve → refuzat (1 s, „ping”) → analistul scrie motivul → „Send for investigation” → salvat | "Watch the button. The risk comes from fixed rules, every finding listed; the AI only writes the summary, and a summary quoting an unverified number is rejected. Approve? Refused without a written reason. The analyst sends it for investigation, and the decision goes into the audit." | „summary with an unverified number = rejected” |
+| 7 | 1:32–1:48 | 16 s | Card „SECOND FILE” → dosarul cu poze neclare: „not sent to the cloud AI”, recomandare „review”, risc mic | "Different file now: blurry phone photos. Orb can't guarantee it hid everything, so their text never goes to the cloud AI. A person gets the file, and nobody is accused on a photo we can't read." | „simulated phone photos” · „no cloud call” |
+| 8 | 1:48–2:04 | 16 s | Schema celor 6 pași; cei doi cu AI evidențiați; uneltele lângă ceilalți | "Why this shape? Audits need identical steps, so the order is fixed in code. AI only reads and summarises; the rest is rules and tools: tax tables, the company registry, image forensics. If a step fails, the file is never shown as clean." | „AI: read · summarise — rules & tools: everything else” |
+| 9 | 2:04–2:14 | 10 s | Dosarul cinstit: clear, click pe o valoare = sursa ei | "Most files are honest: clean in seconds, every value linked to its source. Twenty minutes becomes about a minute of review, our estimate." | „~20 min → ~1 min review (estimate) · 1 in 4 honest files still goes to a human” |
+| 10 | 2:14–2:26 | 12 s | Privacy: textul exact primit de AI → butonul „Local”, apoi înapoi | "Built for a bank: the cloud AI sees only labels, and a second gate blocks any request still carrying a name. Local mode, tested on our laptop: about nine seconds a file." | „switch shown only · local run tested on our demo laptop, ~9 s/file · demo cloud: AWS us-west-2” |
+| 11 | 2:26–2:44 | 18 s | Cardul cu cifrele | "Sixty synthetic files, real cloud AI: no name or ID number left the bank. None of twelve honest applicants flagged high-risk; three went to a human. All thirty-six simple forgeries caught, and all twelve perfect ones sent to a human. The forgeries are ours." | (cardul plin) |
+| 12 | 2:44–2:56 | 12 s | Terminal curat: `pytest -q` → 275 passed · README „Verify it in 5 minutes” | "Limits: synthetic data and our own forgeries, so real-fraud accuracy is untested; a forger who also fakes the statement would pass. Next: a pilot on a hundred real files, in-house." | „275 tests · one command · runs without an API key (rules-only fallback)” |
+| 13 | 2:56–3:00 | 4 s | Outro animat ORB + rând mic: „ORB checks documents, not creditworthiness · voice: AI-generated” | "Orb does the checking. Your people decide." |  |
+
+### Înainte de filmare (checklist din slide-ul 51)
+- seed-demo + rerun-demo; toate ecranele deschise o dată înainte (cache cald);
+- notificările oprite; în terminalul din scena 12: shell curat, fără `.env`, fără token-uri, fără istoric;
+- Tesseract cu `ron` pe laptopul de filmare (altfel Paznicul ar rula pe varianta înregistrată);
+- baza de date locală curată (dosarul cinstit încărcat o singură dată, altfel apar legături false între încărcările repetate).
+
+---
+
+# Varianta 6 (istoric)
 
 > Variantele 5–1 sunt mai jos, ca istoric. Urmează structura recomandată de organizatori și criteriile Raiffeisen.
 
