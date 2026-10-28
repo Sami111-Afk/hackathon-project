@@ -141,7 +141,8 @@ async def _call_bedrock(model, system, prompt, images, max_tokens):
     return text, r.usage.input_tokens, r.usage.output_tokens
 
 
-async def _call_openai(mode, model, system, prompt, images, max_tokens, json_mode):
+async def _call_openai(mode, model, system, prompt, images, max_tokens,
+                       json_mode: type[BaseModel] | None):
     user: list[dict] = [{"type": "image_url",
                          "image_url": {"url": f"data:{mt};base64,{base64.b64encode(b).decode()}"}}
                         for b, mt in images]
@@ -150,7 +151,13 @@ async def _call_openai(mode, model, system, prompt, images, max_tokens, json_mod
                     "messages": ([{"role": "system", "content": system}] if system else [])
                     + [{"role": "user", "content": user if images else prompt}]}
     if json_mode:
-        kwargs["response_format"] = {"type": "json_object"}
+        if mode == "local" and isinstance(json_mode, type):
+            # Ollama primește schema completă → decodare constrânsă. Fără ea, Qwen 4B copiază forma schemei
+            # din prompt ({"properties": {"summary": ...}}) și validarea pică de două ori.
+            kwargs["response_format"] = {"type": "json_schema", "json_schema": {
+                "name": json_mode.__name__, "schema": json_mode.model_json_schema()}}
+        else:
+            kwargs["response_format"] = {"type": "json_object"}
     if mode == "local":
         kwargs["extra_body"] = {"options": {"num_ctx": 8192}, "think": False}
     r = await _openai(mode).chat.completions.create(**kwargs)
@@ -211,7 +218,7 @@ async def chat(task: str, *, prompt: str, system: str = "", case_id: str | None 
     for _attempt in range(2):  # a doua încercare: JSON invalid → retrimitem cu eroarea
         try:
             text, usage = await _dispatch(mode, task, full_system, prompt, images, max_tokens,
-                                          json_mode=json_schema is not None, case_id=case_id)
+                                          json_mode=json_schema, case_id=case_id)
         except Exception as exc:
             if mode == "bedrock" and _is_auth_error(exc) and settings.featherless_api_key:
                 log.warning("Bedrock indisponibil (%s) → trec pe Featherless", type(exc).__name__)
@@ -219,7 +226,7 @@ async def chat(task: str, *, prompt: str, system: str = "", case_id: str | None 
                 _gate(prompt + "\n" + full_system, images, images_redacted, case_id, "cloud")
                 mode = "cloud"
                 text, usage = await _dispatch(mode, task, full_system, prompt, images, max_tokens,
-                                              json_mode=json_schema is not None, case_id=case_id)
+                                              json_mode=json_schema, case_id=case_id)
             else:
                 raise LLMUnavailable(f"{mode}: {type(exc).__name__}") from exc
         try:
