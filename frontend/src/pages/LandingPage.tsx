@@ -16,8 +16,8 @@ const DEMO_CASE = '/cases/case_maria?mock=1' // merge fără cont și fără bac
 const AGENTS: [AgentName, string][] = [
   ['paznic', 'Before any AI sees a document, names, CNP, IBAN, phone numbers and addresses become labels like [PERSOANA_1]. Blurry photos and ID cards never go to the cloud.'],
   ['functionar', 'Reads the ID card, payslip and bank statement and turns them into fields: employer, gross and net pay, monthly income.'],
-  ['verificator', 'Recomputes the net pay from the gross with Romanian tax rules and checks that the employer is active in the ANAF registry.'],
-  ['detector', 'Looks for edited numbers, pasted text and AI-generated images in the scanned documents.'],
+  ['verificator', 'Recomputes the net pay from the gross with Romanian tax rules and checks that the employer is active in the ANAF registry (a demo registry for this demo's fictional companies).'],
+  ['detector', 'Looks for signs of editing in the scans and PDFs: image analysis of edited areas, PDF edit traces, metadata.'],
   ['detectiv', 'Compares phone, IBAN and address with other applications, to find one person applying under several identities.'],
   ['compliance', 'Weighs all the evidence into a risk level and a recommendation. Every point is marked on the document.'],
 ]
@@ -26,7 +26,7 @@ const STEPS = [
   { title: 'Upload', text: 'The analyst uploads the ID card, payslip and bank statement: scans or phone photos.' },
   { title: 'Hide personal data', text: 'The Guard swaps personal data for labels. The AI sees [PERSOANA_1], never the name.' },
   { title: 'Check', text: 'The agents read, recompute, check ANAF, and look for edits and links to other applications.' },
-  { title: 'Decide', text: 'The analyst gets a risk level with the evidence marked on each document, and decides in about a minute.' },
+  { title: 'Decide', text: 'The analyst gets a risk level with the evidence marked on each document, and decides with all the evidence in front of them.' },
 ]
 
 // Cifre măsurate: scripts/benchmark_pipeline.py --n 60 --llm bedrock (data/benchmark/pipeline_results.json, clean_bedrock).
@@ -70,7 +70,7 @@ export function LandingPage() {
                 <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />For bank credit teams
               </p>
               <h1 className="mt-6 text-5xl font-bold leading-[1.04] tracking-tight sm:text-display">
-                Loan files checked in <span className="text-brand">20&nbsp;seconds</span>, not 20&nbsp;minutes
+                Loan files checked in <span className="text-brand">seconds</span>, not ~20&nbsp;minutes
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-night-mute sm:text-xl">
                 AI agents read the ID card, payslip and bank statement, redo the tax math, check the employer and look for edits.
@@ -89,7 +89,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        <Section id="problem" eyebrow="The problem" title="An analyst spends about 20 minutes on every application"
+        <Section id="problem" eyebrow="The problem" title="An analyst spends roughly 20 minutes on every application (our estimate)"
           intro="Read the ID card, recompute the taxes on the payslip, look the employer up at ANAF, compare it all with the bank statement. It is repetitive and slow, a well-made fake still slips through, and nobody checks whether the same phone number is on five other applications."
           className="bg-night-2/40">
           <div className="reveal relative mx-auto mt-16 flex h-64 max-w-lg items-center justify-center" aria-hidden>
@@ -120,7 +120,7 @@ export function LandingPage() {
         </Section>
 
         <Section id="results" eyebrow="Results" title="Measured, not estimated"
-          intro="A benchmark of generated loan applications, run through the full pipeline with the real cloud model (Claude Haiku on Amazon Bedrock).">
+          intro="A benchmark of generated loan applications, run through the full pipeline with the real cloud model (Claude Haiku on Amazon Bedrock). Synthetic data, and the forgeries are ours: it shows the pipeline is correct on the cases we designed, not accuracy on real-world fraud.">
           <StatBand stats={STATS} />
           <p className="reveal mt-6 max-w-3xl text-sm leading-relaxed text-night-mute">
             Known limit, said openly: a fake that is perfect on paper still passes 9 times out of 12. Catching it needs the bank&apos;s own
