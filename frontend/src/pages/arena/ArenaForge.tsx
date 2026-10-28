@@ -8,6 +8,9 @@ import { ArenaShell } from './ArenaShell'
 /** Previzualizarea fluturașului, desenată local (falsul real îl face serverul). */
 function PayslipPreview({ doc, tricks }: { doc: Record<string, string | number>; tricks: string[] }) {
   const n = (v: string | number) => Number(v).toLocaleString('ro-RO', { minimumFractionDigits: 2 })
+  // cu „recalculează taxele”, serverul pune netul exact; aici arătăm aproximarea (CAS 25%, CASS 10%, impozit 10%)
+  const recompute = tricks.includes('recompute_taxes')
+  const net = recompute ? Math.round(Number(doc.gross_salary) * 0.585) : doc.net_salary
   return (
     <div className="relative rounded-lg bg-white p-4 font-mono text-[13px] leading-6 text-slate-900 shadow-lg">
       <div className="text-center font-bold tracking-wide">FLUTURAȘ DE SALARIU</div>
@@ -18,7 +21,7 @@ function PayslipPreview({ doc, tricks }: { doc: Record<string, string | number>;
       <div>Funcția: {doc.job_title}</div>
       <hr className="my-2 border-slate-300" />
       <div className="flex justify-between"><span>Salariu brut</span><b>{n(doc.gross_salary)}</b></div>
-      <div className="flex justify-between"><span>Salariu net</span><b>{n(doc.net_salary)}</b></div>
+      <div className="flex justify-between"><span>Salariu net</span><b>{recompute ? '≈ ' : ''}{n(net)}</b></div>
       <div className="mt-2 text-xs text-slate-500">Emis la {doc.issue_date}</div>
       {tricks.includes('ai_photo') && (
         <div className="absolute bottom-3 right-3 flex h-14 w-14 rotate-[-12deg] items-center justify-center rounded-full border-2 border-blue-700 text-[9px] font-bold text-blue-700">
@@ -38,7 +41,8 @@ function Forge({ mission }: { mission: Mission }) {
   const [error, setError] = useState<string | null>(null)
   const recompute = tricks.includes('recompute_taxes')
   const target = mission.target
-  const targetMet = recompute || Number(doc[target.field]) >= target.min
+  const shownNet = recompute ? Math.round(Number(doc.gross_salary) * 0.585) : Number(doc[target.field])
+  const targetMet = shownNet >= target.min
 
   const set = (k: string, v: string | number) => setDoc((d) => ({ ...d, [k]: v }))
   const toggle = (t: string) => setTricks((ts) => (ts.includes(t) ? ts.filter((x) => x !== t) : [...ts, t]))
