@@ -13,10 +13,19 @@ from app.models import Case
 STRONG_KINDS = {"phone", "iban", "email"}
 # Adresa poate fi comună legitim (familie, bloc) → semnal slab, nu extinde clusterul.
 WEAK_KINDS = {"address"}
-# CNP-ul identifică persoana → nu e „legătură”, e aceeași identitate.
-IDENTITY_KINDS = {"cnp"}
+# CNP-ul și numele identifică persoana → nu sunt „legături”, ci aceeași identitate.
+# CUI-ul (angajatorul) e comun legitim între colegi → apare în graf, dar nu leagă dosare.
+IDENTITY_KINDS = {"cnp", "name"}
 
-KIND_LABEL = {"phone": "telefon", "iban": "cont IBAN", "email": "email", "address": "adresă", "cnp": "CNP"}
+KIND_LABEL = {"phone": "telefon", "iban": "cont IBAN", "email": "email", "address": "adresă", "cnp": "CNP",
+              "name": "nume", "cui": "angajator"}
+
+
+def case_label(applicant: str | None, case_id: str) -> str:
+    """Eticheta pe graf: pseudonimul [PERSOANA_X] dacă există, altfel ID-ul dosarului (niciodată o amprentă)."""
+    if applicant and applicant.startswith("["):
+        return applicant
+    return case_id
 
 
 def case_node(case_id: str) -> str:
@@ -92,7 +101,7 @@ def cluster_of(g: nx.Graph, case_id: str) -> set[str]:
 def node_payload(g: nx.Graph, node: str, cluster: set[str], focus: str | None) -> dict:
     a = g.nodes[node]
     if a["type"] == "case":
-        return {"id": node, "type": "case", "case_id": a["case_id"], "label": a["applicant"] or a["case_id"],
+        return {"id": node, "type": "case", "case_id": a["case_id"], "label": case_label(a["applicant"], a["case_id"]),
                 "status": a["status"], "risk": a["risk"], "created_at": a["created_at"],
                 "in_cluster": a["case_id"] in cluster, "is_focus": a["case_id"] == focus}
     shared = g.degree(node)
