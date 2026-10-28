@@ -30,7 +30,9 @@ export default function App() {
       <BrowserRouter>
         <Suspense fallback={<div className="p-8 text-lg text-slate-500">Loading…</div>}>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Pagina de prezentare: ascunsă (nu are link), păstrată pentru mai târziu */}
+            <Route path="/about" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
             <Route path="/zk" element={<RequireAuth><ZkPage /></RequireAuth>} />
@@ -41,7 +43,7 @@ export default function App() {
             <Route path="/arena/r/:sid" element={<ArenaResult />} />
             <Route path="/arena/top" element={<ArenaTop />} />
             <Route path="/arena/live" element={<ArenaLive />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
