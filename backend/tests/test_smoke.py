@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from tests.conftest import AUTH
+from tests.test_detectiv import save_ring
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
 
@@ -49,6 +50,7 @@ def test_rejects_non_documents():
 def test_maria_end_to_end():
     """Dosarul Mariei (agenți de probă) ajunge la awaiting_review cu recomandarea escalate."""
     with TestClient(app) as c:
+        save_ring("case_test_ring")  # istoricul cu rețeaua (același telefon ca Maria), găsit de Detectiv
         r = c.post("/api/cases", headers=AUTH, data={"requested_amount_ron": "45000"},
                    files=[("files", (f"d{i}.png", io.BytesIO(PNG), "image/png")) for i in range(3)])
         case_id = r.json()["case_id"]

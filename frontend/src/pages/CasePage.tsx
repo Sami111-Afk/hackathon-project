@@ -1,13 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
 import { DecisionPanel } from '@/components/DecisionPanel'
 import { DocumentViewer } from '@/components/DocumentViewer'
 import { FindingsList } from '@/components/FindingsList'
+import { NetworkGraph } from '@/components/NetworkGraph'
 import { VerdictCard } from '@/components/VerdictCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCaseLive } from '@/hooks/useCaseLive'
+import { getGraph } from '@/lib/api'
 import { logout } from '@/lib/auth'
 import { AGENT_INFO } from '@/lib/labels'
 import { AGENTS, type AgentName, type Finding } from '@/lib/types'
@@ -33,6 +35,14 @@ export function CasePage() {
   )
   const allFindings = findings.map((f) => f.finding)
   const lastDebate = [...state.feed].reverse().find((e) => e.type === 'debate')
+
+  // Dosar deschis după ce Detectivul a terminat → n-am prins graful live, îl cerem o dată.
+  const detectivDone = state.agents.detectiv.status === 'done'
+  const graphEmpty = state.graph.nodes.length === 0
+  useEffect(() => {
+    if (mock || !detectivDone || !graphEmpty) return
+    getGraph(caseId).then((graph) => dispatch({ type: 'graph', graph })).catch(() => {})
+  }, [mock, detectivDone, graphEmpty, caseId, dispatch])
 
   if (snapshot.isLoading) return <div className="p-8 text-xl">Se încarcă dosarul…</div>
   if (snapshot.isError || !snapshot.data) {
@@ -72,6 +82,10 @@ export function CasePage() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_420px]">
           <section className="space-y-8">
+            <Card>
+              <CardHeader><CardTitle className="text-xl">🕵️ Rețeaua Detectivului</CardTitle></CardHeader>
+              <CardContent><NetworkGraph graph={state.graph} /></CardContent>
+            </Card>
             {docs.map((d) => (
               <Card key={d.id}>
                 <CardContent className="pt-6">
