@@ -116,11 +116,15 @@ def check_net(
     candidates = [compute_payslip(gross, d, min_wage, period) for d in options]
     if any(abs(declared_net - t.net) <= NET_TOLERANCE_RON for t in candidates):
         return None
-    taxes = candidates[0]
+    return net_mismatch(candidates[0].net, declared_net, evidence)
+
+
+def net_mismatch(computed: float, declared_net: float, evidence: Evidence | None = None) -> Finding:
+    """Același mesaj pe calea în clar și pe cea criptată (he_bank)."""
     return Finding(
         code="NET_MISMATCH",
         severity="high",
-        message=f"Netul calculat ({format_ron(taxes.net)} lei) diferă de cel declarat ({format_ron(declared_net)} lei)",
+        message=f"Netul calculat ({format_ron(computed)} lei) diferă de cel declarat ({format_ron(declared_net)} lei)",
         evidence=evidence,
     )
 
