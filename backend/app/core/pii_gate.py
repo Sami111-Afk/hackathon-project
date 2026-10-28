@@ -35,6 +35,11 @@ def register_vault_values(case_id: str, values: list[str]) -> None:
             _vault[case_id].add(n)
 
 
+def known_values(case_id: str | None) -> int:
+    """Câte valori personale ale dosarului caută poarta (pentru audit: arată că verificarea nu e goală)."""
+    return len(_vault.get(case_id, ())) if case_id else 0
+
+
 def forget_case(case_id: str) -> None:
     _vault.pop(case_id, None)
 

@@ -44,6 +44,8 @@ def privacy(case_id: str):
     redacted = next((d.redacted_text for d in case.documents if d.redacted_text), None)
     ai = {"llm_calls": len(calls),
           "with_pii": sum(1 for e in calls if e.get("pii_detected")),
+          # câte valori personale ale dosarului a căutat poarta în fiecare payload (0 = verificare goală)
+          "pii_values_checked": max((e.get("pii_values_checked", 0) for e in calls), default=0),
           "blocked": sum(1 for e in calls if e.get("outcome") == "blocked"),
           "destinations": sorted({e.get("destination") for e in calls if e.get("destination")}),
           "models": sorted({e.get("model") for e in calls if e.get("model")}),
