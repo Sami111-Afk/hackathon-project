@@ -125,7 +125,7 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-brand" />This application</span>
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#F04438]" />Suspicious ring ({Math.max(0, ringSize - 1)} applications)</span>
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#98A2B3]" />Other applications</span>
-        <span className="text-[#98A2B3]">phone, IBAN, addr, CNP: shared data, kept as fingerprints. Hover over an application.</span>
+        <span className="text-[#98A2B3]">phone, IBAN, addr (address), CNP (personal ID number): shared data, kept only as fingerprints. Hover over an application to see it.</span>
       </div>
     </div>
   )

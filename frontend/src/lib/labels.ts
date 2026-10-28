@@ -7,9 +7,9 @@ import type { AgentName, DecisionAction, DocType, Severity, Verdict } from './ty
 export const AGENT_INFO: Record<AgentName, { label: string; icon: LucideIcon; role: string }> = {
   paznic: { label: 'Guard', icon: ShieldCheck, role: 'Hides personal data' },
   functionar: { label: 'Clerk', icon: FileText, role: 'Extracts data from documents' },
-  verificator: { label: 'Verifier', icon: Calculator, role: 'Redoes the math, checks ANAF' },
+  verificator: { label: 'Verifier', icon: Calculator, role: 'Redoes the math, checks the tax registry (ANAF)' },
   detector: { label: 'Detector', icon: ScanSearch, role: 'Looks for edits and AI images' },
-  detectiv: { label: 'Detective', icon: Network, role: 'Links the application to other requests' },
+  detectiv: { label: 'Detective', icon: Network, role: 'Links the application to other applications' },
   compliance: { label: 'Compliance', icon: Scale, role: 'Weighs the evidence' },
 }
 

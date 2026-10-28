@@ -14,7 +14,7 @@ const ACTOR_ICON: Record<string, typeof Landmark> = {
   bank: Landmark, employer: Building2, customer: Smartphone, attacker: ShieldAlert,
 }
 
-const ron = (n: number) => `${n.toLocaleString('ro-RO', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} lei`
+const ron = (n: number) => `${n.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} lei`
 
 function lastMonth(): string {
   const d = new Date()
@@ -77,7 +77,7 @@ function BankSaw({ r }: { r: ZkDemoResult }) {
     ['Employer (CUI)', s.cui],
     ['Period', s.period],
     ['Commitment', `${s.commitment.slice(0, 14)}…${s.commitment.slice(-6)}`],
-    ['Proof', `${s.proof_bytes.toLocaleString('ro-RO')} bytes`],
+    ['Proof', `${s.proof_bytes.toLocaleString('en-GB')} bytes`],
   ]
   return (
     <div className="space-y-4">
@@ -159,7 +159,7 @@ export function ZkPage() {
             </div>
             {installmentN > 0 && (
               <p className="text-base text-ink-2">
-                Threshold required by the bank: installment / {DSTI.toLocaleString('ro-RO')} = <span className="font-semibold text-ink">{ron(Math.round(installmentN / DSTI * 100) / 100)}</span>
+                Threshold required by the bank: installment / {DSTI.toLocaleString('en-GB')} = <span className="font-semibold text-ink">{ron(Math.round(installmentN / DSTI * 100) / 100)}</span>
               </p>
             )}
 

@@ -22,7 +22,7 @@ interface Privacy {
   prompt_injection_detected: boolean
 }
 
-const kb = (n: number) => `${Math.round(n / 1024).toLocaleString('ro-RO')} KB`
+const kb = (n: number) => `${Math.round(n / 1024).toLocaleString('en-GB')} KB`
 
 function Card({ icon, title, status, ok, children, proof }: {
   icon: ReactNode; title: string; status: string; ok: boolean | null; children: ReactNode; proof?: ReactNode
@@ -126,7 +126,7 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
         <Card icon={<ShieldCheck className="h-4 w-4" />} title="Income proved without seeing it" ok={zk ? zk.answer === 'DA' || zk.answer === 'YES' : null}
           status={zk ? `ZK answer: ${normAnswer(zk.answer)}` : 'not requested yet'}>
           {zk
-            ? <>{normText(zk.reason)}{zk.threshold_ron ? ` (threshold ${zk.threshold_ron.toLocaleString('ro-RO')} lei` : ''}{zk.employer ? `, attested by ${zk.employer})` : zk.threshold_ron ? ')' : ''}.</>
+            ? <>{normText(zk.reason)}{zk.threshold_ron ? ` (threshold ${zk.threshold_ron.toLocaleString('en-GB')} lei` : ''}{zk.employer ? `, attested by ${zk.employer})` : zk.threshold_ron ? ')' : ''}.</>
             : 'The client can prove their income clears the required threshold without showing it to the bank (zero-knowledge).'}
           <button type="button" onClick={askZk} disabled={zkBusy}
             className="mt-3 flex h-9 items-center rounded-sm border border-line px-3 text-sm font-medium text-ink hover:bg-canvas disabled:opacity-40">
