@@ -80,3 +80,9 @@ dosarului Mariei luat dintr-o listă ținută în cache 5 s. După „Re-run liv
 arată tot spre ea → click pe tab = „The application could not be loaded”.
 Reparația simplă: linkul să rămână `/cases/case_maria` (alias-ul din `CasePage` redirecționează la cel mai recent dosar),
 sau `qc.invalidateQueries({ queryKey: ['cases', false] })` după `rerunDemo()` în `CasePage`. Prima variantă e mai sigură.
+
+## Review PR #46 (landing) — Samuel, ~21:00
+Arată foarte bine. Am corectat pe ramura ta (2 commit-uri, `narcis/landing`) trei afirmații care nu erau exact adevărate:
+titlul („20 seconds, not 20 minutes” → „seconds, not ~20 minutes”; 20 min e estimare), „Measured, not estimated” fără
+„synthetic data” (am adăugat disclaimer-ul), Detectorul „AI-generated images” (nu face asta → urme de editare în poze/PDF),
+plus registrul demo la ANAF. Fă `git pull` pe ramură înainte să mai lucrezi pe ea.
