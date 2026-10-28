@@ -130,7 +130,7 @@ class Functionar:
         findings.insert(0, summary)
         if calls.blocked:
             kinds = ", ".join(sorted(calls.blocked))
-            findings.append(Finding(code="PII_GATE_BLOCKED", severity="high",
+            findings.append(Finding(code="PII_GATE_BLOCKED", severity="low",
                                     message=f"Poarta anti-PII a blocat un apel AI ({kinds})"))
         if calls.unavailable or calls.blocked:
             findings.append(Finding(code="EXTRACTION_RULES_ONLY", severity="info",

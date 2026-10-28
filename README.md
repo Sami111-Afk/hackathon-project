@@ -233,7 +233,7 @@ curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/
 - „Identificatorii (CNP, IBAN, nume, MRZ, poza) nu părăsesc niciodată serverul băncii.”
 - „Ce ajunge la LLM e **pseudonimizat**; o poartă blochează orice payload în care apare o valoare din seif.”
 - „Pe benchmark: 0 scurgeri de date personale în N documente.” (doar dacă așa iese)
-- „În producție: Claude pe Bedrock într-o regiune UE, sub contractul AWS al băncii, sau LLM complet on-prem — butonul de mod local arată că se poate.”
+- „**În demo:** Claude pe Bedrock, contul organizatorilor (regiunea us-west-2, date sintetice). **În producție:** Bedrock într-o regiune UE (eu-central-1, Frankfurt), sub contractul AWS al băncii, sau LLM complet on-prem — butonul de mod local arată că se poate.”
 - „Criptarea homomorfică permite unui verificator **terț** să ruleze verificări fără să vadă datele.”
 
 ❌ Nu spunem:
