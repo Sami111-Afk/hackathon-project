@@ -47,7 +47,7 @@ def use(monkeypatch, fake):
 
 def test_demo_registry_first_without_network(online, monkeypatch):
     fake = use(monkeypatch, FakeANAF(RAIFFEISEN))
-    company, source = anaf.resolve("RO40211937")
+    company, source = anaf.resolve("RO9402119372")
     assert (company.name, company.active, source) == ("Agro Prahova Distribuție SRL", False, "demo")
     assert fake.calls == []
 
