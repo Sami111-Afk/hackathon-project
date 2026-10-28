@@ -1275,5 +1275,563 @@
         ]
       }
     ]
+  },
+  "phone_mock": {
+    "generated": "2026-10-28",
+    "args": {
+      "n": 20,
+      "seed": 2026,
+      "noisy": false,
+      "phone": true,
+      "extra_fakes": false,
+      "save": null,
+      "generate_only": false,
+      "llm": "mock",
+      "jobs": 5,
+      "mode": "phone"
+    },
+    "summary": {
+      "dosare": 20,
+      "documente": 60,
+      "agenti_fara_erori": 20,
+      "dosare_cu_scurgeri": 3,
+      "dosare_cu_scurgeri_spre_cloud": 0,
+      "scurgeri_pe_tip": {
+        "NR_BULETIN": 2,
+        "STRADA": 1
+      },
+      "extragere_corecta": {
+        "tip documente": "20/20",
+        "brut": "6/20",
+        "net": "10/20",
+        "luna": "17/20",
+        "data emiterii": "18/20",
+        "sold inițial": "6/20",
+        "sold final": "9/20",
+        "rânduri extras": "5/20",
+        "expirare buletin": "7/20",
+        "sex": "10/20"
+      },
+      "cinstiti_loviti": "3/4",
+      "cinstiti_loviti_detalii": [
+        [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "MRZ_INVALID",
+          "PII_REDACTED"
+        ],
+        [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ]
+      ],
+      "falsuri_prinse": {
+        "forged_net": "1/4",
+        "forged_balance": "3/4",
+        "inactive_employer": "4/4"
+      },
+      "fals_perfect_semnalat": "2/4 (limită cunoscută; doar prin extras)",
+      "fals_perfect_cu_semnal_salariu": "2/4 (netul de pe fluturaș nu apare în extras)",
+      "ms_median_pe_dosar": 19658
+    },
+    "cases": [
+      {
+        "id": "bench_000",
+        "kind": "honest",
+        "ms": 40629,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "MRZ_INVALID",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.6,
+        "expected_caught": null,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "sold inițial",
+          "sold final",
+          "rânduri extras",
+          "expirare buletin"
+        ]
+      },
+      {
+        "id": "bench_001",
+        "kind": "forged_net",
+        "ms": 38182,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "NET_MISMATCH",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.64,
+        "expected_caught": true,
+        "fields_wrong": [
+          "sold final"
+        ]
+      },
+      {
+        "id": "bench_002",
+        "kind": "forged_balance",
+        "ms": 34783,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.64,
+        "expected_caught": true,
+        "fields_wrong": [
+          "sold inițial",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_003",
+        "kind": "inactive_employer",
+        "ms": 27837,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.8785,
+        "expected_caught": true,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "sold inițial",
+          "sold final",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_004",
+        "kind": "perfect_fake",
+        "ms": 26480,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "MRZ_INVALID",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED",
+          "SALARY_NOT_IN_STATEMENT"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.748,
+        "expected_caught": null,
+        "fields_wrong": [
+          "brut",
+          "luna",
+          "sold inițial",
+          "sold final",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_005",
+        "kind": "honest",
+        "ms": 23513,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_006",
+        "kind": "forged_net",
+        "ms": 23072,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": false,
+        "fields_wrong": [
+          "net",
+          "sold final"
+        ]
+      },
+      {
+        "id": "bench_007",
+        "kind": "forged_balance",
+        "ms": 14470,
+        "agents_ok": true,
+        "leaks": [
+          "NR_BULETIN"
+        ],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": false,
+        "fields_wrong": [
+          "brut",
+          "sold inițial",
+          "sold final",
+          "rânduri extras"
+        ]
+      },
+      {
+        "id": "bench_008",
+        "kind": "inactive_employer",
+        "ms": 19658,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.8906,
+        "expected_caught": true,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "luna",
+          "data emiterii",
+          "sold inițial",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_009",
+        "kind": "perfect_fake",
+        "ms": 19772,
+        "agents_ok": true,
+        "leaks": [
+          "NR_BULETIN"
+        ],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "IBAN_CHECKSUM_INVALID",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.748,
+        "expected_caught": null,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_010",
+        "kind": "honest",
+        "ms": 16918,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.1,
+        "expected_caught": null,
+        "fields_wrong": [
+          "brut",
+          "sold inițial",
+          "sold final",
+          "rânduri extras"
+        ]
+      },
+      {
+        "id": "bench_011",
+        "kind": "forged_net",
+        "ms": 21527,
+        "agents_ok": true,
+        "leaks": [
+          "STRADA"
+        ],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.19,
+        "expected_caught": false,
+        "fields_wrong": [
+          "brut",
+          "sold inițial",
+          "sold final",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_012",
+        "kind": "forged_balance",
+        "ms": 14767,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.64,
+        "expected_caught": true,
+        "fields_wrong": [
+          "sold inițial",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_013",
+        "kind": "inactive_employer",
+        "ms": 10701,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.8785,
+        "expected_caught": true,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "luna",
+          "data emiterii",
+          "sold inițial",
+          "sold final",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_014",
+        "kind": "perfect_fake",
+        "ms": 18025,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "PII_REDACTED",
+          "SALARY_NOT_IN_STATEMENT"
+        ],
+        "recommendation": "clear",
+        "risk": 0.3,
+        "expected_caught": null,
+        "fields_wrong": []
+      },
+      {
+        "id": "bench_015",
+        "kind": "honest",
+        "ms": 19631,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "review",
+        "risk": 0.1,
+        "expected_caught": null,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "sold inițial",
+          "sold final",
+          "rânduri extras",
+          "expirare buletin"
+        ]
+      },
+      {
+        "id": "bench_016",
+        "kind": "forged_net",
+        "ms": 13066,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "review",
+        "risk": 0.1,
+        "expected_caught": false,
+        "fields_wrong": [
+          "brut",
+          "sold inițial",
+          "rânduri extras",
+          "expirare buletin",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_017",
+        "kind": "forged_balance",
+        "ms": 19176,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "BALANCE_MISMATCH",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "review",
+        "risk": 0.6,
+        "expected_caught": true,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "expirare buletin"
+        ]
+      },
+      {
+        "id": "bench_018",
+        "kind": "inactive_employer",
+        "ms": 18900,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "COMPANY_INACTIVE",
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "OCR_LOW_QUALITY",
+          "PII_REDACTED"
+        ],
+        "recommendation": "escalate",
+        "risk": 0.865,
+        "expected_caught": true,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "sold inițial",
+          "sold final",
+          "rânduri extras",
+          "sex"
+        ]
+      },
+      {
+        "id": "bench_019",
+        "kind": "perfect_fake",
+        "ms": 14433,
+        "agents_ok": true,
+        "leaks": [],
+        "leaks_to_cloud": [],
+        "codes": [
+          "DOCS_CLASSIFIED",
+          "EXTRACTION_RULES_ONLY",
+          "PII_REDACTED",
+          "UNREDACTED_IDENTIFIER"
+        ],
+        "recommendation": "clear",
+        "risk": 0.0,
+        "expected_caught": null,
+        "fields_wrong": [
+          "brut",
+          "net",
+          "sold inițial",
+          "rânduri extras",
+          "expirare buletin"
+        ]
+      }
+    ]
   }
 }
