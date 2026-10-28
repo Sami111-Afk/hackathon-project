@@ -37,7 +37,7 @@ def apply_edits(template: dict, edits: dict, editable: dict, tricks: list[str]) 
         doc[key] = value
     if "recompute_taxes" in tricks:
         doc["net_salary"] = net_from_gross(doc["gross_salary"])
-    doc["tricks"] = [t for t in tricks if t in {"recompute_taxes", "hide_injection", "ai_photo"}]
+    doc["tricks"] = sorted({t for t in tricks if t in {"recompute_taxes", "hide_injection", "ai_photo"}})
     return doc
 
 

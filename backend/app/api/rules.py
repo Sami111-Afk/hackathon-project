@@ -14,7 +14,7 @@ class DecideIn(BaseModel):
 
 @router.get("")
 def list_rules():
-    return {"rules": proposer.PROPOSED[::-1], "active": len(proposer.engine.RULES),
+    return {"rules": list(proposer.PROPOSED)[::-1], "active": len(proposer.engine.RULES),
             "pending_misses": len(arena.pending_misses())}
 
 

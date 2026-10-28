@@ -5,6 +5,7 @@ Last-Event-ID primește tot ce a ratat (replay), apoi evenimentele noi.
 Stream-ul global trimite doar ID-uri și stări, fără conținut (vezi ARCHITECTURE §3).
 """
 import asyncio
+import threading
 from collections import defaultdict
 from datetime import UTC, datetime
 
@@ -26,6 +27,7 @@ class EventBus:
         self._subs: dict[str, set[asyncio.Queue]] = defaultdict(set)
         self._global_subs: set[asyncio.Queue] = set()
         self._offset: dict[str, int] = {}
+        self._lock = threading.RLock()
 
     def continue_after_restart(self, case_id: str) -> None:
         """Istoria nu supraviețuiește restartului; noile evenimente primesc seq mare,
@@ -34,6 +36,10 @@ class EventBus:
 
     def publish(self, case_id: str, type: str, *, agent: str | None = None,
                 message: str = "", data: dict | None = None) -> PipelineEvent:
+        with self._lock:
+            return self._publish(case_id, type, agent, message, data)
+
+    def _publish(self, case_id, type, agent, message, data) -> PipelineEvent:
         history = self._history[case_id]
         seq = self._offset.get(case_id, 0) + len(history)
         event = PipelineEvent(case_id=case_id, seq=seq, ts=now_iso(),
@@ -52,6 +58,7 @@ class EventBus:
 
     def subscribe(self, case_id: str | None = None) -> asyncio.Queue:
         q: asyncio.Queue = asyncio.Queue(maxsize=QUEUE_MAX)
+        q._orb_loop = asyncio.get_running_loop()  # type: ignore[attr-defined]
         (self._global_subs if case_id is None else self._subs[case_id]).add(q)
         return q
 
@@ -76,9 +83,20 @@ class EventBus:
 
 
 def _offer(q: asyncio.Queue, event: PipelineEvent) -> None:
-    if q.full():
-        q.get_nowait()
-    q.put_nowait(event)
+    def put() -> None:
+        if q.full():
+            q.get_nowait()
+        q.put_nowait(event)
+
+    loop = getattr(q, "_orb_loop", None)
+    try:
+        running = asyncio.get_running_loop()
+    except RuntimeError:
+        running = None
+    if loop is not None and loop is not running:
+        loop.call_soon_threadsafe(put)  # publicat dintr-un thread → livrăm pe loop-ul abonatului
+    else:
+        put()
 
 
 bus = EventBus()

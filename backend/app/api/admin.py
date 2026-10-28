@@ -92,6 +92,7 @@ async def seed_demo():
             [12000, 18000, 25000, 40000, 60000]), fingerprints=fp, risk=round(rng.uniform(0.0, 0.2), 2),
             label="clean", rec="clear", status="cleared", findings=[],
             summary="Nicio problemă: dosarul poate merge la analiza normală de credit."))
+    created = [c for c in created if not store.get(c.id)]  # a doua rulare nu suprascrie decizii
     for case in created:
         await store.save(case)
         bus.publish(case.id, "verdict", agent="compliance", message=case.verdict.summary,
@@ -110,7 +111,9 @@ async def seed_arena():
               ["recompute_taxes", "hide_injection"])]
     out = []
     for nick, edits, tricks in tries:
-        out.append(await asyncio.to_thread(arena_service.submit, nick, "payslip_9000", edits, tricks))
+        result = await asyncio.to_thread(arena_service.submit, nick, "payslip_9000", edits, tricks)
+        arena_service.announce(result)
+        out.append(result)
     return {"seeded": [(o["nickname"], o["outcome"]) for o in out]}
 
 
