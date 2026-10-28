@@ -86,3 +86,5 @@ Arată foarte bine. Am corectat pe ramura ta (2 commit-uri, `narcis/landing`) tr
 titlul („20 seconds, not 20 minutes” → „seconds, not ~20 minutes”; 20 min e estimare), „Measured, not estimated” fără
 „synthetic data” (am adăugat disclaimer-ul), Detectorul „AI-generated images” (nu face asta → urme de editare în poze/PDF),
 plus registrul demo la ANAF. Fă `git pull` pe ramură înainte să mai lucrezi pe ea.
+
+- (21:15) PR #45: am rezolvat eu conflictele cu landing-ul și am pus linkul Mariei înapoi pe `/cases/case_maria` (testat: după Re-run, tab-ul duce la dosarul nou). E pe main. Fă `git pull` înainte să mai lucrezi.
