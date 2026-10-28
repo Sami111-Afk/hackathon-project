@@ -16,7 +16,7 @@ const DEMO_CASE = '/cases/case_maria?mock=1' // merge fără cont și fără bac
 const AGENTS: [AgentName, string][] = [
   ['paznic', 'Before any AI sees a document, names, CNP, IBAN, phone numbers and addresses become labels like [PERSOANA_1]. Blurry photos and ID cards never go to the cloud.'],
   ['functionar', 'Reads the ID card, payslip and bank statement and turns them into fields: employer, gross and net pay, monthly income.'],
-  ['verificator', 'Recomputes the net pay from the gross with Romanian tax rules and checks that the employer is active in the ANAF registry (a demo registry for this demo's fictional companies).'],
+  ['verificator', 'Recomputes the net pay from the gross with Romanian tax rules and checks that the employer is active in the ANAF registry (a demo registry for the fictional demo companies).'],
   ['detector', 'Looks for signs of editing in the scans and PDFs: image analysis of edited areas, PDF edit traces, metadata.'],
   ['detectiv', 'Compares phone, IBAN and address with other applications, to find one person applying under several identities.'],
   ['compliance', 'Weighs all the evidence into a risk level and a recommendation. Every point is marked on the document.'],
