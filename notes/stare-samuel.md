@@ -49,7 +49,7 @@ Stefan (Stefannasd: Funcționar, Verificator, ANAF, HE), Erin (erinlud: frontend
 | **Header `ngrok-skip-browser-warning: 1`** în `lib/api.ts`, `lib/arena.ts`, `lib/events.ts` + proiectorul de pe `EventSource` pe `fetchEventSource` | Erin | lipsește — BLOCANT pentru deploy prin ngrok gratuit |
 | Deploy: ngrok domeniu static (Narcis) + Vercel cu `VITE_API_URL`/`VITE_PUBLIC_URL` (Erin) | Narcis + Erin | neînceput; pașii în `notes/narcis.md` §6 și `notes/erin.md` |
 | Mod local Ollama testat | Narcis | ? |
-| **ZK** | **Samuel (acum)** — Lorena n-a început | vezi planul de mai jos |
+| **ZK** | Samuel | ✅ gata pe main (14:00): circuit + angajator ECDSA + bancă + `/api/zk/demo`, 11 teste; Lorena: date/benchmark + pagina ZK (`notes/lorena.md`) |
 | PR #17 (Stefan: `_extract_json` fără „{” pentru Featherless + bbox doar pe valoare) | agent de verificare pornit | de văzut rezultatul, atinge `core/llm.py` |
 | Ramura `erin/review-fixes` ec07618 (proiector „+0”, graf aerisit) — după merge-ul #16 | Erin | fără PR încă; diff-ul vs main arată notele de deploy șterse doar pentru că ramura e veche (nu le șterge ea) — la merge atenție să nu dispară `notes/*` |
 | Ramura `lorena/p0-generatoare-date` (validator MRZ `mrz_td2_valid`, corect — testat) | Lorena | fără PR; fără conflicte acum |
