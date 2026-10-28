@@ -12,6 +12,8 @@ venv/
 
 # date locale
 *.db
+*.db-shm
+*.db-wal
 *.sqlite
 data/llm_cache/*
 !data/llm_cache/.gitkeep

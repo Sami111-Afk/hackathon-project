@@ -222,3 +222,17 @@ def test_lines_group_label_and_value_on_same_row():
     lines = group_lines(PAYSLIP)
     assert "Salariu brut 14.200,00" in [line.text for line in lines]
     assert len(parse_statement(group_lines(STATEMENT)).rows) == 4
+
+
+def test_identifier_missed_by_paznic_never_reaches_extracted(no_llm):
+    # pe extrasul real, OCR-ul a citit IBAN-ul cu „O” în loc de „0” → checksum invalid → Paznicul nu l-a ascuns
+    leaked = [dict(w, text="RO54RZBR0O000060012345678") if w["text"] == "[IBAN_1]" else w for w in STATEMENT]
+    case = maria_case()
+    scratch = paznic_scratch()
+    scratch["paznic"]["doc_3"]["words"] = leaked
+    result = run_agent(case, Ctx(scratch))
+
+    stmt = case.documents[2]
+    assert "iban" not in stmt.extracted and stmt.extracted["account_holder"].value == "[PERSOANA_1]"
+    f = next(f for f in result.findings if f.code == "UNREDACTED_IDENTIFIER")
+    assert "RO54" not in f.message and f.evidence.doc_id == "doc_3"
