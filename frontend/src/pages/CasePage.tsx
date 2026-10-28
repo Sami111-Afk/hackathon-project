@@ -61,7 +61,7 @@ export function CasePage() {
         <div>
           <h1 className="text-2xl font-bold">🔒 ORB · Dosar {c.id}</h1>
           <p className="text-slate-600">
-            Solicitant {c.applicant_token} · credit {c.requested_amount_ron?.toLocaleString('ro-RO')} lei · {c.documents.length} documente
+            {c.applicant_token?.startsWith('[') && <>Solicitant {c.applicant_token} · </>}credit {c.requested_amount_ron?.toLocaleString('ro-RO')} lei · {c.documents.length} documente
           </p>
         </div>
         <div className="flex items-center gap-3">

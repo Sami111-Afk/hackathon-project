@@ -33,7 +33,10 @@ interface AttackerStatus { running: boolean; rounds: AttackerRound[]; passed: nu
 interface LiveEvent { type: string; message: string; data?: Record<string, unknown> | null }
 
 function line(s: Submission): { icon: string; text: string; cls: string } {
-  if (s.outcome === 'passed') return { icon: '🏆', text: `${s.nickname} a păcălit agenții! +${s.points}`, cls: 'text-emerald-300' }
+  if (s.outcome === 'passed') {
+    // 0 puncte = fals repetat sau plafon atins → nu afișăm „+0”
+    return { icon: '🏆', text: `${s.nickname} a păcălit agenții!${s.points ? ` +${s.points}` : ''}`, cls: 'text-emerald-300' }
+  }
   if (s.outcome === 'caught') {
     return { icon: '🚨', text: `${s.nickname} prins de ${s.caught_by.map((a) => AGENT_RO[a] ?? a).join(', ')}`, cls: 'text-slate-100' }
   }

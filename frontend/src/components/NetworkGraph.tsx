@@ -39,7 +39,11 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
   }, [graph])
 
   useEffect(() => {
-    if (data.nodes.length) setTimeout(() => fg.current?.zoomToFit(400, 70), 600)
+    // noduri mai depărtate: etichetele nu se mai suprapun
+    fg.current?.d3Force('charge')?.strength(-260)
+    const link = fg.current?.d3Force('link') as { distance?: (d: number) => unknown } | undefined
+    link?.distance?.(70)
+    if (data.nodes.length) setTimeout(() => fg.current?.zoomToFit(400, 70), 900)
   }, [data.nodes.length])
 
   const ringSize = graph.nodes.filter((n) => n.type === 'case' && n.in_cluster).length
