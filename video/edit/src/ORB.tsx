@@ -248,11 +248,11 @@ const SCENES: Scene[] = [
   { id: 'names', dur: 9, voice: 's03', parts: [{ dur: 9, el: <Clip src="v3_maria.webm" from={52.3} keys={[Z(0, 1, 960, 540), Z(1.6, 1.55, 760, 420), Z(7.2, 1.55, 760, 420), Z(9.2, 1.3, 760, 420)]} /> }],
     sfx: [['click', at(53.68, 52.3)], ['click', at(59.18, 52.3)]] },
   // 4 — agenții (2×) → dovezile pe document (1,5×)
-  { id: 'agents', dur: 25, voice: 's04', parts: [
+  { id: 'agents', dur: 25, voice: 's04', voiceAt: 1.4, parts: [
     { dur: 10, el: <Clip src="v3_maria.webm" from={8} rate={2.2} keys={[Z(0, 1.35, 960, 330), Z(9, 1.35, 960, 330)]} /> },
-    { dur: 15, el: <Clip src="v3_maria.webm" from={63.7} rate={1.27} keys={[Z(0, 1, 960, 540), Z(0.9, 1.55, 860, 470), Z(5.2, 1.55, 860, 470), Z(6.1, 1.45, 1300, 420), Z(15, 1.45, 1300, 470)]} /> }],
-    captions: [['8,307 ≠ 8,500 lei', 10.8, 15.8, 'danger', true], ['Employer: inactive · DEMO REGISTRY (real ANAF API for real companies)', 16.2, 20.2, 'info', true], ['Salary never arrives in the statement', 20.6, 24.8, 'danger', true]],
-    badges: [['2× SPEED', 'tr'], ['ENCRYPTED-COMPUTE & ZK CARDS = PROTOTYPES', 'bl', '#C9CED6']], sfx: [['whoosh', 0.2, 0.6], ['click', 10 + at(64.52, 63.7, 1.27)], ['click', 10 + at(70.92, 63.7, 1.27)], ['click', 10 + at(77.35, 63.7, 1.27)]] },
+    { dur: 15, el: <Clip src="v3_maria.webm" from={63.7} rate={1.0} keys={[Z(0, 1, 960, 540), Z(0.9, 1.6, 930, 560), Z(5.0, 1.6, 930, 560), Z(6.0, 1.45, 1300, 420), Z(15, 1.45, 1300, 470)]} /> }],
+    captions: [['8,307 ≠ 8,500 lei', 11.0, 15.2, 'danger', true], ['Employer: inactive · DEMO REGISTRY (real ANAF API for real companies)', 17.4, 20.6, 'info', true], ['Salary never arrives in the statement', 21.0, 24.8, 'danger', true]],
+    badges: [['2× SPEED', 'tr'], ['ENCRYPTED-COMPUTE & ZK CARDS = PROTOTYPES', 'bl', '#C9CED6']], sfx: [['whoosh', 0.2, 0.6], ['click', 10 + at(64.52, 63.7, 1.0)], ['click', 10 + at(70.92, 63.7, 1.0)], ['click', 10 + at(77.35, 63.7, 1.0)]] },
   // 5 — harta editării + graful
   { id: 'detect', dur: 8, voice: 's05', parts: [
     { dur: 4, el: <Clip src="v3_maria.webm" from={EDIT_FROM} filter="brightness(2.6) contrast(1.3)" keys={[Z(0, 1.5, 760, 560), Z(4, 1.7, 760, 600)]} /> },
