@@ -5,6 +5,7 @@ import { getMissions, lei, savedNick, submitFake, type Mission } from '@/lib/are
 import { Check, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ArenaShell } from './ArenaShell'
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 /** Previzualizarea fluturașului, desenată local (falsul real îl face serverul). */
 function PayslipPreview({ doc, tricks, jobLabels }: {
@@ -130,6 +131,7 @@ function Forge({ mission }: { mission: Mission }) {
 }
 
 export function ArenaForge() {
+  usePageMeta("Forge your payslip · ORB Arena", "Edit a payslip and submit it. The bank's AI agents check it within seconds.")
   const { missionId } = useParams()
   const missions = useQuery({ queryKey: ['arena-missions'], queryFn: getMissions, staleTime: 60_000 })
   if (!savedNick()) return <Navigate to="/arena" replace />

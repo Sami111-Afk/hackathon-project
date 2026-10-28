@@ -6,6 +6,7 @@ import { AGENT_RO, getLeaderboard, subscribeArenaLive, type Submission } from '@
 import { apiUrl } from '@/lib/config'
 import { cn } from '@/lib/utils'
 import { ArenaControls } from '@/components/ArenaControls'
+import { usePageMeta } from '@/hooks/usePageMeta'
 
 const BASE_KEY = 'orb.arena.base'
 
@@ -46,6 +47,7 @@ function line(s: Submission): { icon: typeof Trophy; text: string; tone: string 
 
 /** Ecranul de pe proiector (1920×1080): QR, flux live, top 10, cât de des trec falsurile. */
 export function ArenaLive() {
+  usePageMeta("Live attempts · ORB Arena", "Every attempt to fool the bank's AI agents, live, with the leaderboard.")
   const qc = useQueryClient()
   const board = useQuery({ queryKey: ['arena-top'], queryFn: getLeaderboard, refetchInterval: 15000 })
   const [qr, setQr] = useState('')
