@@ -1,9 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { login } from '@/lib/auth'
 import { apiUrl } from '@/lib/config'
 
@@ -19,30 +15,35 @@ export function LoginPage() {
     nav('/dashboard')
   }
 
+  const input = 'h-11 w-full rounded-sm border border-input bg-surface px-3 text-base outline-none focus:border-info'
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">🔒 ORB — autentificare</CardTitle>
-          <p className="text-sm text-slate-500">Backend: {apiUrl()}</p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Numele tău (apare pe decizii)</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <div className="h-1 bg-brand" />
+      <div className="flex flex-1 items-center justify-center p-4">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 flex items-center gap-3">
+            <span className="grid h-10 w-10 place-items-center rounded-sm bg-ink font-condensed text-xl font-bold text-brand">O</span>
+            <div>
+              <div className="text-xl font-bold tracking-tight text-ink">ORB</div>
+              <div className="text-sm text-ink-3">Verificarea dosarelor de credit</div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="token">Token de acces</Label>
-              <Input id="token" type="password" value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" />
+          </div>
+          <form onSubmit={submit} className="space-y-5 rounded-md border border-line bg-surface p-6">
+            <h1 className="text-xl font-semibold text-ink">Autentificare</h1>
+            <div className="space-y-1.5">
+              <label htmlFor="name" className="text-sm font-medium text-ink-2">Numele tău, apare pe decizii</label>
+              <input id="name" className={input} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
             </div>
-            <Button type="submit" size="lg" className="w-full">Intră</Button>
-            <a href="/cases/case_maria?mock=1" className="block text-center text-sm text-slate-500 underline">
-              Demo fără backend (replay Maria)
-            </a>
+            <div className="space-y-1.5">
+              <label htmlFor="token" className="text-sm font-medium text-ink-2">Cheia de acces a sucursalei</label>
+              <input id="token" type="password" className={input} value={token} onChange={(e) => setToken(e.target.value)} autoComplete="off" />
+            </div>
+            <button type="submit" className="h-11 w-full rounded-sm bg-ink text-base font-semibold text-white hover:bg-black">Intră</button>
           </form>
-        </CardContent>
-      </Card>
+          <p className="mt-4 text-sm text-ink-3">Server: {apiUrl()}</p>
+          <a href="/cases/case_maria?mock=1" className="mt-1 inline-block text-sm font-medium text-info hover:underline">Deschide demo-ul fără server</a>
+        </div>
+      </div>
     </div>
   )
 }

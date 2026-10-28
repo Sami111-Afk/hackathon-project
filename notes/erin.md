@@ -45,3 +45,13 @@
    (QR-ul de pe proiector trebuie să ducă la Vercel, nu la `localhost`). Fără `BANK_UI_TOKEN` în variabilele `VITE_*`.
 3. Rewrites SPA (`vercel.json`) ca `/arena`, `/arena/live`, `/dashboard` să meargă la refresh.
 4. Test cu Narcis de pe telefon pe **date mobile**.
+
+## Review PR #18 (redesign) — după merge
+Build OK (`npm ci`, `tsc -b && vite build` fără erori; dev server pornește și servește pe :5180 cu backend-ul pe :8028). Funcțiile sunt păstrate: bbox-uri, 3 vederi (original/redactat/ELA cu `view=ela`), banda de agenți SSE, graf, raport, butoane de decizie, grafice Dashboard, Arena mobil, comutator mod local, URL din `VITE_API_URL`, fără token hard-codat. `npm run lint`: doar 4 warning-uri (ui/badge.tsx:48, ui/button.tsx:66, ui/tabs.tsx:89, NetworkGraph.tsx:33 — ref citit în render), nu blochează.
+
+Probleme rămase (nu vin din redesign, dar blochează deploy-ul pe ngrok gratuit):
+1. **BLOCANT:** `ngrok-skip-browser-warning: 1` nu e trimis nicăieri (grep în `src/` = 0 rezultate). Adaugă-l în `lib/api.ts:15-18` (`headers.set('ngrok-skip-browser-warning', '1')`), `lib/arena.ts:45` (fetch-ul fără headere, plus `:67`) și `lib/events.ts:29` (`headers['ngrok-skip-browser-warning'] = '1'`). Fără el ngrok întoarce HTML în loc de JSON.
+2. `pages/arena/ArenaLive.tsx:66` folosește `new EventSource(liveUrl())` — nu poate trimite headerul. Înlocuiește cu `fetchEventSource` (ca în `lib/events.ts`), cu headerul de mai sus și cu reconectare/`onopen`/`onerror` echivalente; altfel proiectorul nu primește evenimente prin ngrok. Imaginile (`lib/api.ts`, blob) trec prin `apiFetch`, deci se rezolvă cu punctul 1.
+3. `npm audit` raportează vulnerabilități în dependențe (nu am rulat `audit fix`); neurgent.
+
+Info: există acum API-ul ZK gata (`POST /api/zk/demo`, vezi `zk/README.md`). Lorena va construi pagina ZK și te poate întreba unde s-o pună în meniu (`components/AppNav.tsx`).

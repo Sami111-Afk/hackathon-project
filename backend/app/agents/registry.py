@@ -10,6 +10,7 @@ import logging
 
 from app.agents.compliance.agent import Compliance
 from app.agents.detectiv.agent import Detectiv
+from app.agents.detector.agent import Detector
 from app.agents.functionar.agent import Functionar
 from app.agents.paznic.agent import Paznic
 from app.agents.paznic.ocr import ocr_available
@@ -29,7 +30,7 @@ AGENTS = {
     "paznic": _paznic(),                                                        # Narcis
     "functionar": Functionar(),                                                 # Stefan
     "verificator": Verificator(),                                               # Stefan
-    "detector": StubAgent("detector", "Caut urme de editare", delay=2.5),       # Narcis
+    "detector": Detector(),                                                     # Narcis
     "detectiv": Detectiv(),                                                     # Erin
     "compliance": Compliance(),                                                 # Samuel
 }

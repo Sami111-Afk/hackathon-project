@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     detector_gpu: Literal["on", "off"] = "off"
     tesseract_cmd: str = ""
 
+    zk_nargo_bin: str = ""  # gol = caută în PATH și ~/.nargo/bin
+    zk_bb_bin: str = ""     # gol = caută în PATH și ~/.bb
+    zk_data_dir: Path = REPO_ROOT / "data" / "zk"
+
     bank_ui_token: str = ""
     cors_origins: str = "http://localhost:5173,http://localhost:4173"
     cors_origin_regex: str = r"https://.*\.vercel\.app"

@@ -1,13 +1,42 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans/700.css";
+@import "@fontsource/ibm-plex-sans-condensed/600.css";
+@import "@fontsource/ibm-plex-sans-condensed/700.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-sans: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    --font-condensed: 'IBM Plex Sans Condensed', 'IBM Plex Sans', Arial, sans-serif;
+    /* ORB — paleta de lucru (back-office bancar): gri rece, grafit, galben doar ca semn de brand */
+    --color-canvas: #EDEFF2;
+    --color-surface: #FFFFFF;
+    --color-line: #D5D9DF;
+    --color-ink: #1F2328;
+    --color-ink-2: #4E5764;
+    --color-ink-3: #6B7480;
+    --color-brand: #FFE600;
+    --color-danger: #B42318;
+    --color-danger-bg: #FEF3F2;
+    --color-warn: #B54708;
+    --color-warn-bg: #FFFAEB;
+    --color-ok: #067647;
+    --color-ok-bg: #ECFDF3;
+    --color-info: #175CD3;
+    /* Arena (telefon + proiector): grafit închis */
+    --color-night: #16191E;
+    --color-night-2: #20252C;
+    --color-night-line: #323843;
+    --color-night-ink: #F2F4F7;
+    --color-night-mute: #A8B0BC;
+    --color-night-danger: #F97066;
+    --color-night-ok: #47CD89;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,30 +78,30 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    --background: #EDEFF2;
+    --foreground: #1F2328;
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    --card-foreground: #1F2328;
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
+    --primary: #1F2328;
     --primary-foreground: oklch(0.985 0 0);
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    --muted-foreground: #4E5764;
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --destructive: #B42318;
+    --border: #D5D9DF;
+    --input: #C3C9D1;
+    --ring: #175CD3;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
+    --radius: 0.375rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
