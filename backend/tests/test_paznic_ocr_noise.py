@@ -14,6 +14,7 @@ TRUE_IBAN = "RO54RZBR0000060012345678"  # valid; așa l-a citit OCR-ul: RO54RZBR
         ("RO54RZBR0O000060012345678", TRUE_IBAN),        # un „O” în plus, lipit de zerouri (văzut pe extras)
         ("RO54RZBR0000O60012345678", TRUE_IBAN),         # „O” în loc de „0”
         ("R054RZBR0000060012345678", TRUE_IBAN),         # „R0” în loc de „RO”
+        ("ROO5RZBR9999000000000003", "RO05RZBR9999000000000003"),  # „O” în cifrele de control (benchmark)
         ("RO54 RZBR 0000 06OO 1234 5678", TRUE_IBAN),    # grupuri cu spații + confuzii
         ("RO59RZBR9999000000000001", "RO59RZBR9999000000000001"),  # deja valid → neschimbat
         ("RO00RZBR9999000000000001", None),              # cifre de control greșite, nu e zgomot de OCR
@@ -34,6 +35,12 @@ def test_misread_iban_is_hidden_and_gets_the_true_fingerprint():
     # aceeași amprentă ca IBAN-ul citit corect → Detectivul leagă dosarul de rețea
     assert fingerprint("k", "IBAN", normalize_value("IBAN", s.value)) == \
         fingerprint("k", "IBAN", normalize_value("IBAN", TRUE_IBAN))
+
+
+def test_iban_with_letter_in_check_digits_is_hidden():
+    text = "IBAN: ROO5RZBR9999000000000003"  # văzut în benchmark: „RO05” citit „ROO5”
+    s = next(s for s in detect.find_identifiers(text) if s.kind == "IBAN")
+    assert text[s.start:s.end] == "ROO5RZBR9999000000000003" and s.value == "RO05RZBR9999000000000003"
 
 
 def test_unrepairable_iban_is_still_hidden():
@@ -78,3 +85,19 @@ def test_id_card_title_with_slash_is_not_mrz():
     assert detect.find_mrz(text) == []
     kinds = {s.kind for s in detect.find_identifiers(text)}
     assert {"SERIE", "NR"} <= kinds
+
+
+def test_benchmark_ocr_cases_are_hidden():
+    # văzute în scripts/benchmark_pipeline.py pe dosare generate curat
+    s = next(s for s in detect.find_identifiers("IBAN: ROO09RZBR9999000000000028") if s.kind == "IBAN")
+    assert s.valid and s.value == "RO09RZBR9999000000000028"
+    text = "CARTE DE IDENTITATE / IDENTITY CARD SERIA BV _ NR 946988"
+    spans = {s.kind: text[s.start:s.end] for s in detect.find_identifiers(text)}
+    assert spans.get("SERIE") == "BV" and spans.get("NR") == "946988"
+
+
+def test_garbled_bilingual_label_does_not_hide_the_label_instead_of_the_name():
+    # benchmark, buletin degradat: traducerea etichetei citită greșit → numele de pe rândul următor rămânea vizibil
+    text = "Prenume/Prenoni/First nane\nELENA\nCetățenie/Nationalité/Nationality\nRomână / ROU"
+    names = [text[s.start:s.end] for s in detect.find_anchored(text) if s.kind == "PERSOANA"]
+    assert names == ["ELENA"]

@@ -27,12 +27,15 @@ CNP_RX = re.compile(r"(?<!\d)[1-9]\d{12}(?!\d)")
 CNP_SPACED_RX = re.compile(r"(?<![\d.])[1-9](?:[ .\-]?\d){12}(?!\d)")
 IBAN_RX = re.compile(r"\bRO\d{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]{4}){4}\b", re.I)
 # tolerant la OCR („R0”, un caracter în plus/lipsă, grupuri rupte): tot ascuns, chiar fără checksum (§4)
-IBAN_LOOSE_RX = re.compile(r"\bR[O0]\s?\d{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]){15,17}\b", re.I)
+# „ROO5” = RO05; „ROO09” = RO09 (un „O” în plus)
+IBAN_LOOSE_RX = re.compile(r"\bR[O0]{1,2}\s?[0-9OIL]{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]){15,17}\b", re.I)
 CUI_RX = re.compile(r"\b(?:CUI|CIF|C\.U\.I\.|cod fiscal|cod unic de [îi]nregistrare)\s*[:.]?\s*((?:RO)?\s?\d{2,10})\b",
                     re.I)
 PHONE_RX = re.compile(r"(?<!\d)(?:\+40|0040|0)[ .\-]?7(?:[ .\-]?\d){8}(?!\d)")
 EMAIL_RX = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
-SERIE_NR_RX = re.compile(r"\bSERIA\s*[:.]?\s*([A-Z]{2})\s*(?:NR\.?|N[O°]\.?)?\s*[:.]?\s*(\d{6})\b", re.I)
+# zgomot de OCR între serie și număr („SERIA BV _ NR 946988”) e tolerat
+SERIE_NR_RX = re.compile(r"\bSERIA\s*[:._|-]*\s*([A-Z]{2})\s*[:._|-]*\s*(?:NR\.?|N[O°]\.?)?\s*[:._|-]*\s*(\d{6})\b",
+                         re.I)
 MRZ_RX = re.compile(r"^[A-Z0-9<]{28,46}$")  # pe linia compactată (fără spații, « → <)
 # seria + numărul fără eticheta „SERIA” (doar pe buletin, altfel ar prinde orice cod)
 BARE_SERIE_NR_RX = re.compile(r"\b([A-Z]{2})\s?(\d{6})\b")
@@ -176,7 +179,9 @@ def find_anchored(text: str) -> list[Span]:
             start = m.end()
             line_end = text.find("\n", start)
             line_end = len(text) if line_end == -1 else line_end
-            if not text[start:line_end].strip() and line_end < len(text):  # valoarea e pe linia următoare
+            rest = text[start:line_end].strip()
+            # valoarea e pe linia următoare; „/…” = traducerea etichetei, citită greșit de OCR („/Prenoni/First nane”)
+            if (not rest or rest.startswith("/")) and line_end < len(text):
                 start = line_end + 1
                 line_end = text.find("\n", start)
                 line_end = len(text) if line_end == -1 else line_end
