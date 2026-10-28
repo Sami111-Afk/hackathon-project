@@ -60,7 +60,16 @@ INJECTION_RX = re.compile(
     r"ignor[aăe]\w*\s+(?:toate\s+)?(?:instruc\w+|regul\w+)|ignore\s+(?:all\s+|any\s+)?(?:previous|prior|above)"
     r"|uit[aă]\s+(?:toate\s+)?instruc\w+|forget\s+(?:all\s+)?(?:previous\s+)?instructions"
     r"|system\s+prompt|you\s+are\s+now|e[sș]ti\s+acum\s+un|aprob[aă]\s+(?:acest|imediat|automat)"
-    r"|approve\s+(?:this|the)\s+(?:loan|application)|r[aă]spunde\s+doar\s+cu\s+[\"„]?(?:aprobat|clear)",
+    r"|approve\s+(?:this|the)\s+(?:loan|application)|r[aă]spunde\s+doar\s+cu\s+[\"„]?(?:aprobat|clear)"
+    # mesaje adresate direct AI-ului / sistemului automat
+    r"|\b(?:asistent(?:ul)?|assistant|llm|chatgpt|claude|gpt)\b(?:\s+ai)?\s*:"
+    r"|(?:pentru|catre|to\s+the)\s+(?:sistemul|asistentul|modelul|automated\s+system|ai\b|llm\b)"
+    r"|instruc\w+\s+(?:pentru|for)\s+(?:ai|llm|model|sistem|system|asistent|assistant)\b"
+    # cereri de a schimba verdictul
+    r"|marche\w*\s+(?:acest|aceasta|dosarul|clientul|cererea|documentul)\w*\s+(?:\w+\s+)?ca\s+"
+    r"(?:sigur|valid|aprobat|legitim|curat|ok)"
+    r"|(?:mark|classify|treat)\s+(?:this|the)\s+\w+\s+as\s+(?:safe|valid|approved|legit|clean|genuine)"
+    r"|nu\s+(?:raporta|semnala|marca)\w*\s+(?:nicio|niciun|nimic)|(?:do\s+not|don'?t)\s+(?:flag|report)\b",
     re.I,
 )
 
