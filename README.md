@@ -20,7 +20,7 @@ decision to the analyst.
 | Role | What it does |
 |---|---|
 | 🛡️ **Guard** | OCR; finds and hides personal data (CNP, IBAN, names, addresses, ID-card MRZ) **before any AI sees the text**; keeps the real values in an encrypted vault; HMAC fingerprints to link applications without storing identifiers |
-| 📄 **Clerk** | Extracts the fields (gross/net pay, balances, dates…). **Every value must be found verbatim in the document**, otherwise it is discarded |
+| 📄 **Clerk** | Extracts the fields (gross/net pay, balances, dates…). **Every value must be found in the document text** (amounts must match exactly), otherwise it is discarded |
 | 🔍 **Verifier** | Recalculates Romanian payroll taxes, checks the statement balance row by row and that the net pay arrives, looks the employer up at ANAF, Romanian ID checks (CNP ↔ ID card ↔ MRZ, age, IBAN bank) |
 | 🔬 **Detector** | Image/PDF tampering: error-level analysis, JPEG ghosts, PDF editor and incremental saves, EXIF |
 | 🕵️ **Detective** | Links applications through fingerprints → fraud rings (e.g. one IBAN used by 6 identities) |
