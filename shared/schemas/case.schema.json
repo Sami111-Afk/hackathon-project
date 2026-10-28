@@ -1,0 +1,551 @@
+{
+  "$defs": {
+    "AgentResult": {
+      "properties": {
+        "agent": {
+          "enum": [
+            "paznic",
+            "functionar",
+            "verificator",
+            "detector",
+            "detectiv",
+            "compliance"
+          ],
+          "title": "Agent",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "running",
+            "done",
+            "error",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "risk": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Risk"
+        },
+        "duration_ms": {
+          "default": 0,
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "artifacts": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Artifacts",
+          "type": "object"
+        },
+        "llm_usage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LLMUsage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "agent",
+        "status"
+      ],
+      "title": "AgentResult",
+      "type": "object"
+    },
+    "Decision": {
+      "properties": {
+        "action": {
+          "enum": [
+            "clear",
+            "reject",
+            "escalate",
+            "flag_network",
+            "correct"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "decided_by": {
+          "title": "Decided By",
+          "type": "string"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "corrections": {
+          "additionalProperties": true,
+          "title": "Corrections",
+          "type": "object"
+        },
+        "decided_at": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decided At"
+        }
+      },
+      "required": [
+        "action",
+        "decided_by"
+      ],
+      "title": "Decision",
+      "type": "object"
+    },
+    "Document": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "default": "unknown",
+          "enum": [
+            "id_card",
+            "payslip",
+            "bank_statement",
+            "employment_certificate",
+            "other",
+            "unknown"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "filename": {
+          "title": "Filename",
+          "type": "string"
+        },
+        "pages": {
+          "items": {
+            "$ref": "#/$defs/PageInfo"
+          },
+          "title": "Pages",
+          "type": "array"
+        },
+        "redacted_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Redacted Text"
+        },
+        "extracted": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/ExtractedValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Extracted"
+        }
+      },
+      "required": [
+        "id",
+        "filename"
+      ],
+      "title": "Document",
+      "type": "object"
+    },
+    "Evidence": {
+      "properties": {
+        "doc_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Doc Id"
+        },
+        "page": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bbox"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        }
+      },
+      "title": "Evidence",
+      "type": "object"
+    },
+    "ExtractedValue": {
+      "properties": {
+        "value": {
+          "default": null,
+          "title": "Value"
+        },
+        "source_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Text"
+        }
+      },
+      "title": "ExtractedValue",
+      "type": "object"
+    },
+    "Finding": {
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Evidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule Id"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "LLMUsage": {
+      "properties": {
+        "provider": {
+          "enum": [
+            "featherless",
+            "ollama",
+            "mock",
+            "cache"
+          ],
+          "title": "Provider",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "input_tokens": {
+          "default": 0,
+          "title": "Input Tokens",
+          "type": "integer"
+        },
+        "output_tokens": {
+          "default": 0,
+          "title": "Output Tokens",
+          "type": "integer"
+        },
+        "cost_usd": {
+          "default": 0.0,
+          "title": "Cost Usd",
+          "type": "number"
+        }
+      },
+      "required": [
+        "provider",
+        "model"
+      ],
+      "title": "LLMUsage",
+      "type": "object"
+    },
+    "PageInfo": {
+      "properties": {
+        "page": {
+          "title": "Page",
+          "type": "integer"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "page",
+        "width",
+        "height"
+      ],
+      "title": "PageInfo",
+      "type": "object"
+    },
+    "Verdict": {
+      "properties": {
+        "risk": {
+          "title": "Risk",
+          "type": "number"
+        },
+        "label": {
+          "enum": [
+            "clean",
+            "suspicious",
+            "forged",
+            "identity_fraud",
+            "fraud_ring"
+          ],
+          "title": "Label",
+          "type": "string"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "recommendation": {
+          "enum": [
+            "clear",
+            "review",
+            "escalate"
+          ],
+          "title": "Recommendation",
+          "type": "string"
+        },
+        "incomplete": {
+          "default": false,
+          "title": "Incomplete",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "risk",
+        "label",
+        "summary",
+        "recommendation"
+      ],
+      "title": "Verdict",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "source": {
+      "default": "bank",
+      "enum": [
+        "bank",
+        "arena"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "status": {
+      "default": "received",
+      "enum": [
+        "received",
+        "processing",
+        "awaiting_review",
+        "cleared",
+        "rejected",
+        "escalated",
+        "error"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    },
+    "requested_amount_ron": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Requested Amount Ron"
+    },
+    "applicant_token": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Applicant Token"
+    },
+    "documents": {
+      "items": {
+        "$ref": "#/$defs/Document"
+      },
+      "title": "Documents",
+      "type": "array"
+    },
+    "fingerprints": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Fingerprints",
+      "type": "object"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/AgentResult"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "verdict": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Verdict"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Decision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "id",
+    "created_at"
+  ],
+  "title": "Case",
+  "type": "object"
+}

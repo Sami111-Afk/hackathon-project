@@ -1,0 +1,24 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-core.txt
+      - run: ruff check app tests
+      - run: pytest -q
+        env:
+          ENV: test
+      - name: contractul JSON e la zi
+        working-directory: .
+        run: |
+          python scripts/export_schemas.py
+          python scripts/build_fixtures.py
+          git diff --exit-code shared/

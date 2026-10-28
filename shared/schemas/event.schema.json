@@ -1,0 +1,80 @@
+{
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "seq": {
+      "title": "Seq",
+      "type": "integer"
+    },
+    "ts": {
+      "title": "Ts",
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "case_created",
+        "agent_started",
+        "agent_progress",
+        "agent_finished",
+        "agent_error",
+        "debate",
+        "verdict",
+        "decision",
+        "rule_proposed",
+        "rule_approved",
+        "arena_scored",
+        "ping"
+      ],
+      "title": "Type",
+      "type": "string"
+    },
+    "agent": {
+      "anyOf": [
+        {
+          "enum": [
+            "paznic",
+            "functionar",
+            "verificator",
+            "detector",
+            "detectiv",
+            "compliance"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Agent"
+    },
+    "message": {
+      "default": "",
+      "title": "Message",
+      "type": "string"
+    },
+    "data": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Data"
+    }
+  },
+  "required": [
+    "case_id",
+    "seq",
+    "ts",
+    "type"
+  ],
+  "title": "PipelineEvent",
+  "type": "object"
+}

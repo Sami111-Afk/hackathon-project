@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rule.schema.json",
+  "title": "Rule",
+  "type": "object",
+  "required": ["id", "status", "description", "when", "then"],
+  "properties": {
+    "id": { "type": "string" },
+    "status": { "enum": ["proposed", "approved", "rejected", "disabled"] },
+    "description": { "type": "string" },
+    "applies_to": { "type": "array", "items": { "type": "string" } },
+    "when": { "$ref": "#/$defs/condition" },
+    "then": {
+      "type": "object",
+      "required": ["code", "severity", "message"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+        "severity": { "enum": ["info", "low", "medium", "high", "critical"] },
+        "message": { "type": "string" }
+      }
+    },
+    "origin": { "type": "object" },
+    "backtest": {
+      "type": ["object", "null"],
+      "properties": {
+        "cases": { "type": "integer" },
+        "true_positives": { "type": "integer" },
+        "false_positives": { "type": "integer" },
+        "fp_rate": { "type": "number" }
+      }
+    }
+  },
+  "$defs": {
+    "condition": {
+      "oneOf": [
+        { "type": "object", "required": ["all"], "properties": { "all": { "type": "array", "items": { "$ref": "#/$defs/condition" } } } },
+        { "type": "object", "required": ["any"], "properties": { "any": { "type": "array", "items": { "$ref": "#/$defs/condition" } } } },
+        { "type": "object", "required": ["not"], "properties": { "not": { "$ref": "#/$defs/condition" } } },
+        {
+          "type": "object",
+          "required": ["left", "op"],
+          "properties": {
+            "left": { "type": "string", "pattern": "^(doc|company|statement|case)\\.[a-z_.]+$" },
+            "op": { "enum": ["eq", "ne", "lt", "lte", "gt", "gte", "between", "in", "not_in", "exists", "missing", "abs_diff_gt", "ratio_gt", "regex"] },
+            "right": {},
+            "value": {}
+          }
+        }
+      ]
+    }
+  }
+}

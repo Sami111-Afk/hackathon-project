@@ -1,0 +1,9 @@
+# Doar pe laptopul cu GPU. ÎNTÂI:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+# Verificați înainte că există wheels pentru Python 3.11 pe OS-ul vostru:
+#   pip download tenseal c2pa-python --only-binary=:all: --python-version 3.11 -d /tmp/x
+-r requirements-core.txt
+gliner
+tenseal
+c2pa-python
+transformers

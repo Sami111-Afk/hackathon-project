@@ -1,0 +1,23 @@
+# Python 3.11 — pentru toată lumea (fără torch). Versiunile se fixează în prima oră
+# cu `pip freeze` pe laptopul lui Narcis, după ce totul se instalează.
+fastapi
+uvicorn[standard]
+sse-starlette
+sqlmodel
+pydantic-settings
+python-multipart
+httpx
+openai
+cryptography
+slowapi
+regex
+jsonschema
+numpy
+pillow
+pypdf
+pypdfium2
+pytesseract
+networkx
+ecdsa
+pytest
+ruff

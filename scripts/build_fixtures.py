@@ -1,0 +1,97 @@
+"""Generează shared/fixtures/maria_case.json și maria_events.jsonl (date 100% inventate).
+Sunt validate cu modelele din backend → dacă se schimbă contractul, rulați din nou.
+"""
+import json
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "backend"))
+
+from app.models import AgentResult, Case, PipelineEvent  # noqa: E402
+
+CASE_ID = "case_maria"
+t0 = datetime(2026, 10, 28, 10, 14, 0, tzinfo=timezone.utc)
+
+
+def ts(sec: float) -> str:
+    return (t0 + timedelta(seconds=sec)).isoformat().replace("+00:00", "Z")
+
+
+results = [
+    {"agent": "paznic", "status": "done", "duration_ms": 1900, "findings": [
+        {"code": "PII_REDACTED", "severity": "info", "message": "23 de valori personale ascunse (nume, CNP, IBAN, adresă, MRZ, poză)"}]},
+    {"agent": "functionar", "status": "done", "duration_ms": 2600,
+     "llm_usage": {"provider": "featherless", "model": "deepseek-ai/DeepSeek-V4-Flash", "input_tokens": 1820, "output_tokens": 410, "cost_usd": 0.00037},
+     "findings": [{"code": "DOCS_CLASSIFIED", "severity": "info", "message": "3 documente: buletin, fluturaș, extras"}]},
+    {"agent": "verificator", "status": "done", "risk": 0.9, "duration_ms": 1840, "findings": [
+        {"code": "NET_MISMATCH", "severity": "high", "message": "Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)",
+         "evidence": {"doc_id": "doc_2", "page": 1, "bbox": [980, 1310, 1260, 1360], "field": "net_salary"}},
+        {"code": "COMPANY_INACTIVE", "severity": "critical", "message": "Angajatorul [CUI_1] figurează inactiv la ANAF din 2024"},
+        {"code": "AGE_EMPLOYMENT_MISMATCH", "severity": "medium", "message": "Solicitant de 67 de ani declarat angajat activ cu normă întreagă"}]},
+    {"agent": "detector", "status": "done", "risk": 0.7, "duration_ms": 3100,
+     "artifacts": {"ela_image": f"/api/cases/{CASE_ID}/documents/doc_3/image?view=ela"},
+     "findings": [
+        {"code": "ELA_ANOMALY", "severity": "medium", "message": "Zona soldului final are un nivel de compresie diferit de restul paginii",
+         "evidence": {"doc_id": "doc_3", "page": 1, "bbox": [1120, 1880, 1480, 1930]}},
+        {"code": "PDF_EDITOR_PRODUCER", "severity": "medium", "message": "Documentul a fost produs de un editor de imagini, nu de sistemul unei bănci"}]},
+    {"agent": "detectiv", "status": "done", "risk": 0.85, "duration_ms": 420, "findings": [
+        {"code": "FRAUD_RING_SUSPECTED", "severity": "critical", "message": "Telefonul din cerere apare în alte 5 cereri, pe 5 identități diferite, în ultimele 3 săptămâni"}]},
+    {"agent": "compliance", "status": "done", "risk": 0.96, "duration_ms": 1500,
+     "llm_usage": {"provider": "featherless", "model": "deepseek-ai/DeepSeek-V4-Flash", "input_tokens": 900, "output_tokens": 220, "cost_usd": 0.00019},
+     "findings": [{"code": "IDENTITY_FRAUD_LIKELY", "severity": "critical", "message": "Furt de identitate probabil, parte dintr-o rețea"}]},
+]
+
+case = {
+    "id": CASE_ID, "source": "bank", "status": "awaiting_review", "created_at": ts(0),
+    "requested_amount_ron": 45000, "applicant_token": "[PERSOANA_1]",
+    "documents": [
+        {"id": "doc_1", "type": "id_card", "filename": "buletin.jpg", "pages": [{"page": 1, "width": 1600, "height": 1010}],
+         "redacted_text": "ROMÂNIA CARTE DE IDENTITATE SERIA [SERIE_1] NR [NR_1] CNP [CNP_1] Nume [PERSOANA_1] Domiciliu [ADRESA_1] [MRZ_1]",
+         "extracted": {"birth_date": {"value": "1959-03-12", "source_text": "12.03.1959"}, "series_county": {"value": "PH", "source_text": "PH"}}},
+        {"id": "doc_2", "type": "payslip", "filename": "fluturas.jpg", "pages": [{"page": 1, "width": 1654, "height": 2339}],
+         "redacted_text": "FLUTURAȘ DE SALARIU Angajator [FIRMA_1] CUI [CUI_1] Angajat [PERSOANA_1] CNP [CNP_1] Funcția: Contabil Brut 14.200,00 Net 8.500,00",
+         "extracted": {"gross_salary": {"value": 14200, "source_text": "14.200,00"}, "net_salary": {"value": 8500, "source_text": "8.500,00"},
+                       "employer_cui": {"value": "[CUI_1]", "source_text": "[CUI_1]"}}},
+        {"id": "doc_3", "type": "bank_statement", "filename": "extras.pdf", "pages": [{"page": 1, "width": 1654, "height": 2339}],
+         "redacted_text": "EXTRAS DE CONT [IBAN_1] Titular [PERSOANA_1] Sold inițial 1.240,50 ... Sold final 26.480,00",
+         "extracted": {"closing_balance": {"value": 26480, "source_text": "26.480,00"}}},
+    ],
+    "fingerprints": {"phone": ["hm_9c1e"], "iban": ["hm_44ab"], "cnp": ["hm_0f2d"], "address": ["hm_aa71"]},
+    "results": results,
+    "verdict": {"risk": 0.96, "label": "identity_fraud", "recommendation": "escalate", "incomplete": False,
+                "summary": "Fluturașul nu respectă calculul taxelor, angajatorul e inactiv, extrasul a fost editat, iar telefonul leagă cererea de alte 5 identități. Recomandare: respingere și investigație de fraudă."},
+    "decision": None,
+}
+Case.model_validate(case)
+
+events, seq = [], 0
+
+
+def ev(sec, type_, agent=None, message="", data=None):
+    global seq
+    e = {"case_id": CASE_ID, "seq": seq, "ts": ts(sec), "type": type_, "agent": agent, "message": message, "data": data}
+    PipelineEvent.model_validate(e)
+    events.append(e)
+    seq += 1
+
+
+ev(0, "case_created", message="Dosar nou: 3 documente, credit 45.000 lei")
+ev(0.2, "agent_started", "paznic", "Ascund datele personale")
+ev(2.1, "agent_finished", "paznic", "23 de valori personale ascunse", results[0])
+ev(2.2, "agent_started", "functionar", "Citesc documentele")
+ev(4.8, "agent_finished", "functionar", "Fluturaș, extras, buletin — date extrase", results[1])
+for i, (a, msg) in enumerate([("verificator", "Refac calculele (pe date criptate)"), ("detector", "Caut urme de editare"), ("detectiv", "Compar cu alte dosare")]):
+    ev(4.9 + i * 0.05, "agent_started", a, msg)
+ev(5.4, "agent_finished", "detectiv", "Rețea suspectă: 6 cereri legate", results[4])
+ev(6.7, "agent_finished", "verificator", "Calculul nu iese: diferență -193 lei; firmă inactivă", results[2])
+ev(8.0, "agent_finished", "detector", "Zona soldului a fost editată", results[3])
+ev(8.1, "agent_started", "compliance", "Analizez dovezile")
+ev(8.6, "debate", "compliance", "Detectorul a dat doar risc mediu, dar Verificatorul și Detectivul au dovezi critice — escaladez.")
+ev(9.6, "agent_finished", "compliance", "Scor de risc 96", results[5])
+ev(9.7, "verdict", "compliance", "Furt de identitate probabil — investigație", case["verdict"])
+
+(ROOT / "shared/fixtures/maria_case.json").write_text(json.dumps(case, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+(ROOT / "shared/fixtures/maria_events.jsonl").write_text("".join(json.dumps(e, ensure_ascii=False) + "\n" for e in events), encoding="utf-8")
+print(f"ok: 1 dosar, {len(events)} evenimente")

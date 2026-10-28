@@ -1,0 +1,39 @@
+# secrete
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# date locale
+*.db
+*.sqlite
+data/llm_cache/*
+!data/llm_cache/.gitkeep
+data/generated/
+uploads/
+
+# modele
+models/
+*.gguf
+*.safetensors
+*.bin
+
+# node / frontend
+node_modules/
+dist/
+.vercel/
+
+# noir
+zk/**/target/
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
