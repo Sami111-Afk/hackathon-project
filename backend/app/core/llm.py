@@ -44,7 +44,7 @@ TASKS = {
     "arena": "fast",     # volum mare
     "summary": "reason", # Compliance: rezumat din dovezi
     "attack": "reason",  # (rezervat; Atacatorul e acum un fuzzer, fără LLM)
-    "learn": "deep",     # self-learning: propunere de reguli
+    "learn": "reason",   # self-learning: propunere de reguli (Sonnet ajunge; Opus nu e necesar și poate lipsi din cont)
 }
 
 # USD per milion de tokeni (intrare, ieșire). Prețuri estimative; Bedrock poate diferi.

@@ -69,7 +69,7 @@ def test_invalid_json_retried_once(monkeypatch):
 def test_task_routing():
     assert "haiku" in llm.model_for("extract", "bedrock")
     assert "sonnet" in llm.model_for("summary", "bedrock")
-    assert "opus" in llm.model_for("learn", "bedrock")
+    assert "sonnet" in llm.model_for("learn", "bedrock")
 
 
 def test_extract_json_recovers_object_without_opening_brace():

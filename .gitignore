@@ -45,5 +45,9 @@ logs/
 
 # video: înregistrări brute și exporturi (mari)
 video/rec/
+video/rec7/
 video/out/
 video/voice/
+video/edit/node_modules/
+video/edit/out/
+video/edit/public/
