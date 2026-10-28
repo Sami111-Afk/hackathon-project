@@ -30,10 +30,8 @@ Excepție posibilă: 5–10 s de Arena la final („oricine poate încerca să-l
 | Timp manual pe dosar | **~20 min** — test informal al echipei (miercuri dimineață) + estimare pe pași: buletin 1,5–2 · fluturaș cu recalcul taxe 4–6 · ANAF 2–3 · extras (sold + salariu) 5–8 · concluzie 1–2 = **14–21 min**; verificarea rețelei (IBAN/telefon în alte cereri) +5–10 min sau nu se face deloc | context: la ipotecare, studiile din industrie raportează ore per dosar (Cotality/CoreLogic, V7 — surse de vânzători) → 20 min e prudent |
 | Timp ORB pe dosar | **~13–20 s** cloud · **8–9 s** local (RTX 4060, Ollama — testat și pe linkul public) | dosarul Mariei; benchmark |
 | Cost AI pe dosar | **~0,005 $** (Haiku extrage, Sonnet rezumă) | `llm_usage` pe dosarul Mariei |
-| Date personale trimise la AI-ul din cloud | **0 din 40** (curat) · **0 din 20** (poze de telefon) | `scripts/benchmark_pipeline.py`, `data/benchmark/pipeline_results.json` |
-| Oameni cinstiți acuzați | **0 din 8** (curat) · pe poze proaste: trimiși la om, nu acuzați | idem |
-| Falsuri prinse (net umflat / sold / firmă inactivă) | 8/8 · 8/8 · 8/8 pe documente curate | idem |
-| Cu AI-ul real (Haiku/Bedrock), 20 dosare | **0 valori inventate** (filtrul n-a avut ce opri) · **198/200 câmpuri corecte** · 0 cinstiți acuzați · 12/12 falsuri prinse · ~13 s/dosar | `--llm bedrock`, cheia `clean_bedrock` |
+| **Cu AI-ul real (Haiku/Bedrock), 60 dosare** | **0 date personale trimise în cloud · 0 valori inventate · 0/12 cinstiți acuzați** (3/12 trimiși la om) · **36/36 falsuri prinse** · câmpuri corecte 56–60/60 · ~12 s/dosar | `scripts/benchmark_pipeline.py --n 60 --llm bedrock` → `clean_bedrock` |
+| Poze de telefon, AI real, 20 dosare | 0 date trimise în cloud · 0/4 cinstiți acuzați (3/4 la om) · 10/12 falsuri prinse; extragerea scade mult → ORB trimite la om | `--phone --llm bedrock` → `phone_bedrock` |
 
 **Spunem deschis:** date sintetice, falsuri create de noi → „test de corectitudine a lanțului, nu acuratețe pe fraude reale”.
 Ce NU prindem: falsul „perfect” (taxe refăcute corect) nu se vede din fluturaș — doar din extras/ANAF.
