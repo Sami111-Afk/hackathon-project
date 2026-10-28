@@ -1,4 +1,52 @@
-# Video 3:00 — VARIANTA 2 (după 4 jurați fără context, 28.10 seara)
+# Video 3:00 — VARIANTA 3 (după 2 runde de jurați, 28.10 seara) — DE LUCRU
+
+> Varianta 2 și varianta 1 sunt mai jos, doar ca istoric. **De confirmat după workshopul de la 20:00.**
+
+## Runda 2 de jurați (pe varianta 2): ce s-a schimbat
+Note: 7 · 7 · 6 · 6 din 10. Toți: **încape în 3:00** (~330 de cuvinte), dar timpul e prost împărțit: scenele 3, 4 și 6 au liniște,
+iar 1, 5 și 9 sunt înghesuite. Reparații în varianta 3:
+1. **Eficiența e încă doar estimată.** → În scena 3 punem un **cronometru real pe ecran** (de la încărcare la aprobare) = singura
+   cifră de eficiență *măsurată* chiar în video. La scena 2 spunem „our estimate”.
+2. **„Toate falsurile prinse” e o omisiune.** Benchmark-ul are 60 de dosare: 12 cinstite, 36 de falsuri simple (toate prinse) și
+   **12 falsuri „perfecte”** (taxe refăcute corect), din care semnalăm doar 3. → O spunem deschis în scena 8 și legăm Arena de asta.
+3. **„Stolen identity”** nu putem dovedi → „someone applied in her name”. **„Retired, dar are fluturaș”** părea o greșeală de scenariu →
+   e chiar o dovadă: extrasul arată pensie, fluturașul zice angajată.
+4. **„0 personal data”** e prea larg (salariul e tot dată personală) → „0 names or ID numbers”. „none of twelve” în loc de „no honest”.
+5. **„Two use AI, four are plain code”**, plus de ce contează: un document nu poate convinge scorul cu text ascuns (prompt injection).
+6. Cifra de pe dashboard: 21 de dosare × 1 min de verificare = **~20 min** (0,4 h), corect. Mașina rulează separat, nu e timpul analistului.
+
+## Structura — ce se vede și ce se aude (180 s, ~320 de cuvinte)
+
+| # | Timp | Durată | Pe ecran | Vocea (engleză) | Text mare pe ecran |
+|---|---|---|---|---|---|
+| 0 | 0:00–0:03 | 3 s | Titlul: ORB — „AI agents that do the repetitive checks on loan applications” | — (muzică) | — |
+| 1 | 0:03–0:17 | 14 s | Buletinul, fluturașul și extrasul Mariei, zoom lent | "Every loan file means the same repetitive work: read the ID, the payslip, the bank statement. Recalculate the taxes, look up the employer, cross-check everything. By our own timing, about twenty minutes per file." | „~20 min per application” |
+| 2 | 0:17–0:29 | 12 s | Dashboard-ul; zoom pe bara cu orele (manual vs ORB) | "ORB does that check in twenty seconds; the analyst reviews the evidence in a minute. On these twenty-one files, our estimate: seven hours, down to twenty minutes." | „7 h → 20 min (estimate)” |
+| 3 | 0:29–0:59 | 30 s | „New application” + **cronometru pe ecran** → dosarul cinstit → agenții → nimic grav → valori legate de document → Approve → cronometrul se oprește | "Most real applications are honest — and that's where the hours go. Here's one, with a stopwatch running. Six steps, each with one job: two use AI to read and summarise; the four that check and score are plain code, so a document can't talk its way past them. Everything adds up — upload to approval in under a minute." | cronometrul (timpul real măsurat) |
+| 4 | 0:59–1:33 | 34 s | Maria → „Re-run live”: agenții (2x) → dovezile → click = chenar pe fluturaș → harta editării | "Now Maria. Someone applied in her name for a forty-five-thousand-lei loan. Her bank statement shows a pension — yet the payslip says she's employed. ORB recalculates that payslip: the take-home pay should be 8,307 lei, not 8,500. The employer comes back inactive. And image forensics highlight where the payslip was edited — every finding marked on the document." | „real time: 20 s” · „8,307 ≠ 8,500 lei” |
+| 5 | 1:33–1:43 | 10 s | Graful: Maria + 5 cereri, același cont | "And what no one sees one file at a time: one bank account, six applications, six different names." | „1 account · 6 names” |
+| 6 | 1:43–2:01 | 18 s | Cardul de risc → „Why this score?” → Approve fără motiv → cere motiv | "The AI doesn't decide. The risk level is computed from the evidence, each piece explained. The analyst decides — and approving a flagged file takes a written reason." | „The AI doesn't decide” |
+| 7 | 2:01–2:19 | 18 s | Privacy: ce a văzut AI-ul ([PERSOANA_1]) → butonul „100% local” | "Before any cloud AI sees a document, names and ID numbers are replaced with placeholders. ID cards and unclear photos never leave the bank. Or, with one switch, everything runs on the bank's own machine." | „0 names or ID numbers to the cloud” |
+| 8 | 2:19–2:39 | 20 s | Cardul cu cifrele (nou: include și falsurile „perfecte”) | "We tested sixty synthetic applications with the real cloud AI: no names or ID numbers leaked, none of twelve honest applicants flagged high-risk, thirty-six of thirty-six simple forgeries caught. Perfect forgeries mostly get through — that's what a pilot on real files measures." | (cardul plin) |
+| 9 | 2:39–2:49 | 10 s | Telefonul: Arena, fals prins → proiectorul: regula propusă → Approve | "Think you can do better? Try our Arena. When a forgery gets through, it becomes a proposed rule — and a human approves it." | — |
+| 10 | 2:49–3:00 | 11 s | Cardul de final: propunerea + link + Arena | "Our proposal: run ORB next to your analysts on a hundred real files, and measure the hours saved. ORB does the checking. People decide." | „Pilot: 100 real files, next to your analysts” |
+
+### De făcut înainte de filmare
+- **Cardurile** (`scripts/make_video_cards.py`):
+  - titlul fără „without customer data leaving the bank”;
+  - overlay nou „7 h → 20 min (estimate)”;
+  - „1 account · 6 names”;
+  - „0 names or ID numbers to the cloud”;
+  - cardul de cifre: „0/12 honest flagged high-risk”, „36/36 simple forgeries”, plus „12 perfect forgeries: 3 flagged”;
+  - cardul de final cu pilotul.
+- **Cronometrul din scena 3:** îl adăugăm la montaj, după timpul real din înregistrare. Dacă iese peste un minut, schimbăm fraza.
+- **Dashboard-ul:** seed curat, fără rânduri Error/unknown; vocea spune cifra care apare pe ecran (21 de dosare / 7 h / 0,4 h).
+- Dovada cu pensia trebuie să se vadă în lista Mariei când o spunem.
+- Designul nou al lui Narcis intră înainte de filmare.
+
+---
+
+# Varianta 2 (istoric)
 
 > Asta e varianta de lucru. Varianta veche e mai jos, la „Varianta 1”, doar ca istoric.
 > **De confirmat după workshopul de la 20:00.**
