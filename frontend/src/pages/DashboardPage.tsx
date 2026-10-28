@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, LabelList, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { AppNav } from '@/components/AppNav'
+import { NewCaseForm } from '@/components/NewCaseForm'
 import { Panel } from '@/components/Panel'
 import { getStats, listCases, type CaseSummary, type DashboardStats } from '@/lib/api'
 import { isMock } from '@/lib/config'
@@ -17,6 +20,12 @@ const LEGEND_ORDER = ['clear', 'review', 'escalate']
 const STATUS_LABEL: Record<CaseStatus, string> = {
   received: 'Primit', processing: 'În analiză', awaiting_review: 'Așteaptă decizia', cleared: 'Aprobat',
   rejected: 'Respins', escalated: 'La investigație', error: 'Eroare',
+}
+
+/** Cum citește un analist cererea: suma, nu codul intern (tipul creditului nu e cunoscut). */
+function describe(c: CaseSummary): string {
+  const amount = c.requested_amount_ron ? `${Math.round(c.requested_amount_ron).toLocaleString('ro-RO')} lei` : 'sumă necunoscută'
+  return `Cerere de credit de ${amount}`
 }
 
 const ron = (n: number) => `${Math.round(n).toLocaleString('ro-RO')} lei`
@@ -76,6 +85,7 @@ function perDay(cases: CaseSummary[]) {
 
 export function DashboardPage() {
   const { cases, stats, mock } = useDashboard()
+  const [creating, setCreating] = useState(false)
   const s = stats.data
   const list = [...(cases.data ?? [])].sort((x, y) => Date.parse(y.created_at) - Date.parse(x.created_at))
 
@@ -101,11 +111,22 @@ export function DashboardPage() {
       <AppNav />
       <div className="border-b border-line bg-surface px-4 py-5 md:px-8">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <div>
+          <div className="max-w-3xl">
             <h1 className="text-3xl font-semibold tracking-tight">Privire de ansamblu</h1>
-            <p className="mt-1 text-base text-ink-2">Toate cererile de credit verificate de ORB, din ultimele 21 de zile.</p>
+            <p className="mt-1 text-base leading-relaxed text-ink-2">
+              Pentru analistul de credit: ORB verifică actele fiecărei cereri și semnalează ce nu se potrivește.
+              Analistul nu mai citește dosarul rând cu rând, ci revizuiește dovezile și decide, în aproximativ un minut în loc de douăzeci.
+            </p>
           </div>
-          {!mock && <span className="flex items-center gap-2 text-sm text-ink-2"><span className="h-2 w-2 rounded-full bg-ok" />Actualizare la 5 secunde</span>}
+          <div className="flex items-center gap-4">
+            {!mock && <span className="flex items-center gap-2 text-sm text-ink-2"><span className="h-2 w-2 rounded-full bg-ok" />Actualizare la 5 secunde</span>}
+            {!mock && !creating && (
+              <button type="button" onClick={() => setCreating(true)}
+                className="flex h-11 items-center gap-2 rounded-sm bg-ink px-4 text-[15px] font-semibold text-white hover:bg-black">
+                <Plus className="h-4 w-4" aria-hidden /> Dosar nou
+              </button>
+            )}
+          </div>
         </div>
         {mock && (
           <p className="mt-4 rounded-sm border border-warn bg-warn-bg px-4 py-3 text-base font-semibold text-warn">
@@ -115,6 +136,7 @@ export function DashboardPage() {
       </div>
 
       <main className="space-y-6 px-4 py-6 md:px-8">
+        {creating && <NewCaseForm onClose={() => setCreating(false)} />}
         <section aria-label="Indicatori" className="grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 xl:grid-cols-4">
           <Kpi label="Dosare verificate" value={s ? num(s.cases_processed) : '—'}
                note={s ? `Cost AI: ${s.ai_cost_usd.toLocaleString('ro-RO', { minimumFractionDigits: 2 })} $ în total` : undefined} />
@@ -175,8 +197,7 @@ export function DashboardPage() {
           <table className="w-full min-w-[720px] text-left text-base">
             <thead className="bg-canvas/60 text-sm text-ink-2">
               <tr className="border-b border-line">
-                <th className="px-6 py-3 font-medium">Dosar</th><th className="px-4 font-medium">Depus</th>
-                <th className="px-4 text-right font-medium">Suma</th><th className="px-4 font-medium">Risc</th><th className="px-6 font-medium">Stare</th>
+                <th className="px-6 py-3 font-medium">Cerere</th><th className="px-4 font-medium">Depusă</th><th className="px-4 font-medium">Risc</th><th className="px-6 font-medium">Stare</th>
               </tr>
             </thead>
             <tbody>
@@ -187,10 +208,12 @@ export function DashboardPage() {
                 return (
                   <tr key={c.id} className="border-b border-line last:border-0 hover:bg-canvas/50">
                     <td className="px-6 py-3.5">
-                      {openable ? <Link to={`/cases/${c.id}`} className="font-medium text-info hover:underline">{c.id}</Link> : <span className="text-ink-2">{c.id}</span>}
+                      {openable
+                        ? <Link to={`/cases/${c.id}`} className="font-medium text-info hover:underline">{describe(c)}</Link>
+                        : <span className="font-medium text-ink">{describe(c)}</span>}
+                      <div className="text-sm text-ink-3">Solicitant anonimizat, dosar {c.id.replace(/^case_/, '')}</div>
                     </td>
                     <td className="px-4 text-ink-2">{new Date(c.created_at).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short' })}</td>
-                    <td className="px-4 text-right tabular-nums">{c.requested_amount_ron ? ron(c.requested_amount_ron) : '—'}</td>
                     <td className="px-4">
                       {lvl && Icon ? (
                         <span className={`flex items-center gap-2 font-semibold tabular-nums ${lvl.text}`}>

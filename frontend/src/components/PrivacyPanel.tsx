@@ -85,15 +85,15 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
   return (
     <section aria-label="Confidențialitate" className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-semibold text-ink">Confidențialitate — ce poate demonstra banca</h2>
+        <h2 className="text-lg font-semibold text-ink">Ce poate demonstra banca despre datele clientului</h2>
         <span className="text-sm text-ink-3">Nimic nu e decriptat pentru această pagină.</span>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card icon={<Lock className="h-4 w-4" />} title="Criptat pe disc" ok={rest.documents.length > 0}
-          status={`${rest.documents.length} documente · ${rest.vault.count} valori în seif`}
+          status={`${rest.documents.length} documente, ${rest.vault.count} valori în seif`}
           proof={<>
             {rest.documents.map((d) => (
-              <div key={d.doc_id}><div className="text-xs text-ink-3">{d.filename} · {kb(d.encrypted_bytes)} pe disc</div><Mono>{d.sample}</Mono></div>
+              <div key={d.doc_id}><div className="text-xs text-ink-3">{d.filename}, {kb(d.encrypted_bytes)} pe disc</div><Mono>{d.sample}</Mono></div>
             ))}
             {rest.vault.sample && <div><div className="text-xs text-ink-3">Seif: {rest.vault.labels.join(' ')}</div><Mono>{rest.vault.sample}</Mono></div>}
           </>}>
@@ -101,7 +101,7 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
         </Card>
 
         <Card icon={<EyeOff className="h-4 w-4" />} title="AI-ul n-a văzut date personale" ok={ai.with_pii === 0}
-          status={`${ai.llm_calls} apeluri AI · ${ai.with_pii} cu date personale`}
+          status={`${ai.llm_calls} cereri către AI, ${ai.with_pii} cu date personale`}
           proof={ai.redacted_sample ? <><div className="text-xs text-ink-3">Textul exact primit de AI:</div><Mono>{ai.redacted_sample}</Mono></> : undefined}>
           AI-ul lucrează pe etichete ca [PERSOANA_1] și [CNP_1]. Chiar păcălit printr-un text ascuns, nu are ce date reale să scape.
           {ai.blocked > 0 && ` Poarta anti-date-personale a blocat ${ai.blocked} cereri.`}
@@ -109,7 +109,7 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
         </Card>
 
         <Card icon={<Calculator className="h-4 w-4" />} title="Calcul pe date criptate" ok={he ? true : null}
-          status={he ? `${he.he_scheme.split(',')[0]} · ${he.he_ms} ms` : 'nefolosit la acest dosar'}
+          status={he ? `${he.he_scheme.split(',')[0]}, ${he.he_ms} ms` : 'nefolosit la acest dosar'}
           proof={he ? <>
             <div className="text-xs text-ink-3">Formula calculată pe ciphertext: {he.he_formula}</div>
             <div className="text-xs text-ink-3">Primii octeți din salariul criptat ({he.he_ciphertext_kb} KB):</div>

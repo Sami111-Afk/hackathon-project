@@ -1,4 +1,4 @@
-import { LogOut } from 'lucide-react'
+import { ExternalLink, LogOut } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { LocalModeToggle } from '@/components/LocalModeToggle'
 import { getUserName, logout } from '@/lib/auth'
@@ -39,6 +39,10 @@ export function AppNav() {
               {l.label}
             </NavLink>
           ))}
+          <a href="/arena/live" target="_blank" rel="noreferrer" title="Ecranul Arenei pentru proiector, în tab nou"
+             className="flex items-center gap-1.5 border-b-2 border-transparent text-[15px] font-medium text-ink-2 hover:text-ink">
+            Arena <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+          </a>
         </nav>
         <div className="ml-auto flex items-center gap-4 py-2">
           {mock ? (

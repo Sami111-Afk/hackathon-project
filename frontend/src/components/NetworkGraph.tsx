@@ -70,6 +70,7 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
           height={height}
           graphData={data}
           cooldownTicks={120}
+          onEngineStop={() => fg.current?.zoomToFit(400, 48)}
           linkColor={(l) => ((l as { kind: string }).kind === 'phone' || (l as { kind: string }).kind === 'iban'
             ? C.linkStrong : C.link)}
           linkWidth={(l) => ((l as { kind: string }).kind === 'phone' || (l as { kind: string }).kind === 'iban' ? 2.5 : 1)}
@@ -120,11 +121,11 @@ export function NetworkGraph({ graph, height = 420 }: { graph: GraphData; height
           }}
         />
       )}
-      <div className="pointer-events-none absolute bottom-3 left-3 flex flex-wrap gap-x-5 gap-y-1 text-sm text-[#D0D5DD]">
+      <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-[#2A3039] px-4 py-3 text-sm text-[#D0D5DD]">
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-brand" />Acest dosar</span>
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#F04438]" />Rețea suspectă ({Math.max(0, ringSize - 1)} dosare)</span>
         <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#98A2B3]" />Alte dosare</span>
-        <span className="text-[#98A2B3]">Etichetele tel, IBAN, adr, CNP sunt date comune, păstrate ca amprente. Treci cu mouse-ul peste un dosar ca să-l vezi.</span>
+        <span className="text-[#98A2B3]">tel, IBAN, adr, CNP: date comune, păstrate ca amprente. Treci cu mouse-ul peste un dosar.</span>
       </div>
     </div>
   )
