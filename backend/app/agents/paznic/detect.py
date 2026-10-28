@@ -26,6 +26,8 @@ CNP_RX = re.compile(r"(?<!\d)[1-9]\d{12}(?!\d)")
 # CNP scris cu separatori („259 031 229 0006”) — acceptat doar dacă cifra de control e validă (altfel ar prinde sume)
 CNP_SPACED_RX = re.compile(r"(?<![\d.])[1-9](?:[ .\-]?\d){12}(?!\d)")
 IBAN_RX = re.compile(r"\bRO\d{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]{4}){4}\b", re.I)
+# tolerant la OCR („R0”, un caracter în plus/lipsă, grupuri rupte): tot ascuns, chiar fără checksum (§4)
+IBAN_LOOSE_RX = re.compile(r"\bR[O0]\s?\d{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]){15,17}\b", re.I)
 CUI_RX = re.compile(r"\b(?:CUI|CIF|C\.U\.I\.|cod fiscal|cod unic de [îi]nregistrare)\s*[:.]?\s*((?:RO)?\s?\d{2,10})\b",
                     re.I)
 PHONE_RX = re.compile(r"(?<!\d)(?:\+40|0040|0)[ .\-]?7(?:[ .\-]?\d){8}(?!\d)")
@@ -79,8 +81,14 @@ def find_identifiers(text: str, id_card: bool = False) -> list[Span]:
                 continue
             spans.append(Span("SERIE", m.start(1), m.end(1), m.group(1)))
             spans.append(Span("NR", m.start(2), m.end(2), m.group(2)))
-    for m in IBAN_RX.finditer(text):
-        spans.append(Span("IBAN", m.start(), m.end(), m.group(), v.valid_iban(m.group())))
+    for m in IBAN_LOOSE_RX.finditer(text):
+        if v.valid_iban(m.group()):
+            spans.append(Span("IBAN", m.start(), m.end(), m.group(), True))
+        elif repaired := v.repair_iban(m.group()):
+            # valoarea reparată intră în seif și în amprentă → aceeași amprentă ca IBAN-ul citit corect
+            spans.append(Span("IBAN", m.start(), m.end(), repaired, True))
+        else:
+            spans.append(Span("IBAN", m.start(), m.end(), m.group(), False))
     for m in CUI_RX.finditer(text):
         val = m.group(1)
         spans.append(Span("CUI", m.start(1), m.end(1), val, v.valid_cui(val.replace(" ", ""))))
@@ -94,8 +102,26 @@ def find_identifiers(text: str, id_card: bool = False) -> list[Span]:
     return spans
 
 
+# ce citește OCR-ul des în locul lui „<” pe zona MRZ
+_MRZ_FILLER_RX = re.compile(r"[«‹/\\|(\[{]")
+
+
 def _compact_mrz(line: str) -> str:
-    return re.sub(r"\s+", "", line).replace("«", "<").replace("‹", "<").upper()
+    compact = re.sub(r"\s+", "", line).upper()
+    # doar pe rânduri care au deja un „<” adevărat: altfel „IDENTITATE / IDENTITY CARD” ar deveni MRZ
+    return _MRZ_FILLER_RX.sub("<", compact) if "<" in compact else compact
+
+
+def _repair_mrz_line2(compact: str):
+    """Rândul 2 TD2 are 36 de caractere; OCR-ul mai adaugă unul (ex. „<7/ROU” în loc de „<7ROU”).
+    Scoatem câte un „<” până ies cifrele de control; altfel None (linia rămâne oricum ascunsă)."""
+    parsed = v.parse_mrz_td2_line2(compact)
+    if parsed or len(compact) != 37:
+        return parsed
+    for i, ch in enumerate(compact):
+        if ch == "<" and (candidate := v.parse_mrz_td2_line2(compact[:i] + compact[i + 1:])) and candidate.valid:
+            return candidate
+    return None
 
 
 def find_mrz(text: str) -> list[Span]:
@@ -114,7 +140,7 @@ def find_mrz(text: str) -> list[Span]:
     spans = []
     for i, (start, end, compact) in enumerate(lines):
         is_last = i + 1 == len(lines) or text[end:lines[i + 1][0]].strip()
-        parsed = v.parse_mrz_td2_line2(compact) if is_last and i > 0 else None
+        parsed = _repair_mrz_line2(compact) if is_last and i > 0 else None
         spans.append(Span("MRZ", start, end, compact, parsed.valid if parsed else None))
     return spans
 
