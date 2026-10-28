@@ -383,7 +383,7 @@ LLM-ul **nu scrie cod executabil** (ar fi injecție de cod într-un sistem banca
 QR mare + URL scurt, feed live, top 10, plus un grafic pe runde „AI atacator vs AI apărător”.
 
 ### Atacatorul (P2, Samuel)
-Un jucător automat al Arenei: LLM-ul alege misiunea, câmpurile și trucurile din Forge Studio, trimite falsul, citește de ce a fost prins și încearcă altceva runda următoare. Ce trece declanșează self-learning → apărătorul învață. Pe ecran: rata de falsuri care trec, pe runde.
+Un **fuzzer** (fără LLM — Claude a refuzat rolul de falsificator, iar un algoritm e oricum repetabil și instant): alege câmpuri și trucuri din Forge Studio, citește codurile dovezilor care l-au prins și evită ce l-a dat de gol. Ce trece declanșează self-learning (Claude Opus) → apărătorul învață. Pe ecran: rata de falsuri care trec, pe runde. `POST /api/admin/attacker/start {rounds, auto_approve}`.
 
 ### Dacă nu joacă nimeni
 **Dacă nu joacă nimeni:** clasamentul e populat cu rulările pregătite de echipă, Atacatorul poate fi pornit din admin, un coleg joacă live de pe un telefon proiectat.
@@ -432,29 +432,28 @@ Valorile presupuse se afișează ca **presupuneri configurabile**, nu ca fapte.
 - Deciziile poartă `decided_by` (numele introdus la login) → atribuire + posibilitate de „4 ochi”.
 - `FastAPI(docs_url=None, redoc_url=None, openapi_url=None)` când `ENV=demo`.
 
-### Endpoint-uri (`/api`)
+### Endpoint-uri (`/api`) — ✅ implementat · ⏳ de făcut
 | Metodă | Endpoint | Descriere | Acces |
 |---|---|---|---|
-| GET | `/health` | stare + mod LLM | public |
-| POST | `/api/cases` | upload multipart → `{case_id}`, pornește pipeline-ul | bancă |
-| GET | `/api/cases` · `/api/cases/{id}` | listă / dosar complet | bancă |
-| GET | `/api/cases/{id}/events` | SSE (replay de la `Last-Event-ID`) | bancă |
-| GET | `/api/cases/{id}/documents/{doc_id}/image?view=original\|redacted\|ela&page=1` | imagini | bancă (auditat pentru `original`) |
-| POST | `/api/cases/{id}/decision` | `{action: clear\|reject\|escalate\|flag_network\|correct, notes, corrections}` | bancă |
-| GET | `/api/cases/{id}/he-preview` | ciphertext ilustrativ, dimensiuni, latență | bancă |
-| GET | `/api/events` | SSE global (doar ID-uri + stări) | bancă |
-| GET | `/api/dashboard/stats` | metrici | bancă |
-| GET | `/api/graph?case_id=` | noduri + muchii | bancă |
-| GET | `/api/rules` · POST `/api/rules/{id}/approve\|reject` | reguli | bancă |
-| GET | `/api/audit` | jurnal | bancă |
-| GET/POST | `/api/settings` | `llm_mode`, `he_enabled` | bancă |
-| GET | `/api/arena/missions` | misiuni + șabloane + câmpuri editabile | public |
-| POST | `/api/arena/submissions` | `{nickname, mission_id, edits}` sau fișier | public, rate-limited |
-| GET | `/api/arena/submissions/{id}` · `/events` | rezultat + „de ce” (proiecție whitelisted) | public |
-| GET | `/api/arena/leaderboard` · `/api/arena/live` | clasament + feed (SSE) | public |
-| POST | `/api/zk/nonce` | `case_nonce` pentru o cerere | public |
-| POST | `/api/zk/verify` | verifică dovada | public |
-| POST | `/api/admin/seed-demo` · `/reset` · `/rerun-demo` · `/attacker/start` | admin | admin |
+| ✅ GET | `/health` | stare | public |
+| ✅ POST | `/api/cases` | upload multipart (1–5 fișiere) → `{case_id}`, pornește pipeline-ul | bancă |
+| ✅ GET | `/api/cases` · `/api/cases/{id}` | listă / dosar complet | bancă |
+| ✅ GET | `/api/cases/{id}/events` | SSE (replay de la `Last-Event-ID`) | bancă |
+| ✅ GET | `/api/cases/{id}/documents/{doc_id}/image?view=original\|redacted\|ela&page=1` | imagini (PDF → PNG); `redacted`/`ela` după ce le salvează Paznic/Detector | bancă |
+| ✅ POST | `/api/cases/{id}/decision` | `{action: clear\|reject\|escalate\|flag_network\|correct, decided_by, notes}` → Decision | bancă |
+| ✅ GET | `/api/cases/{id}/report` | raport de anchetă HTML (printabil ca PDF) | bancă |
+| ✅ GET | `/api/events` | SSE global (doar ID-uri + stări) | bancă |
+| ✅ GET | `/api/dashboard/stats` · `/api/audit` | metrici / jurnal | bancă |
+| ✅ GET/POST | `/api/settings` | `llm_mode`, `he_enabled` (butoanele din UI) | bancă |
+| ✅ GET | `/api/rules` · POST `/api/rules/{id}/approve\|reject` · POST `/api/rules/learn/{submission_id}` | self-learning | bancă |
+| ✅ GET | `/api/arena/missions` | misiuni + șabloane + câmpuri editabile | public |
+| ✅ POST | `/api/arena/submissions` | `{nickname, mission_id, edits, tricks}` (JSON) | public, rate-limited |
+| ✅ GET | `/api/arena/submissions/{id}` · `/image` | rezultat + „de ce” · falsul generat | public |
+| ✅ GET | `/api/arena/leaderboard` · `/api/arena/live` (SSE) | clasament + feed | public |
+| ✅ POST | `/api/admin/rerun-demo` · `seed-demo` · `seed-arena` · `reset` · `attacker/start` · GET `attacker/status` | demo | admin |
+| ⏳ GET | `/api/graph?case_id=` | noduri + muchii (Erin, cu Detectivul) | bancă |
+| ⏳ GET | `/api/cases/{id}/he-preview` | ciphertext ilustrativ (Stefan) | bancă |
+| ⏳ POST | `/api/zk/nonce` · `/api/zk/verify` | ZK (Lorena) | public |
 
 Serviciul angajatorului (`/employer/attest`) rulează **separat**, cu cheia lui.
 
@@ -464,7 +463,7 @@ Serviciul angajatorului (`/employer/attest`) rulează **separat**, cu cheia lui.
 
 | Mod | Ce | Client | Când |
 |---|---|---|---|
-| `bedrock` | **Claude pe AWS Bedrock** (Haiku 5.5 / Sonnet 5.5 / Opus 5.5) | SDK-ul Anthropic pentru Bedrock sau Converse API cu bearer token | **implicit**, cât timp e valabilă cheia |
+| `bedrock` | **Claude pe AWS Bedrock** (Haiku 5.5 / Sonnet 5.5 / Opus 5.5) | SDK-ul Anthropic, `AsyncAnthropicBedrock` | principalul, cât timp e valabilă cheia (setați `LLM_MODE=bedrock`; implicitul din cod e `mock`) |
 | `cloud` | Featherless (DeepSeek, Qwen) | SDK `openai` cu `base_url` | după ce expiră cheia Bedrock; teste ieftine |
 | `local` | Ollama (Qwen ~4B) | SDK `openai` cu `base_url` local | butonul „mod 100% local” |
 | `mock` | răspunsuri salvate | — | frontend, CI, demo fără internet |
@@ -480,7 +479,6 @@ Serviciul angajatorului (`/employer/attest`) rulează **separat**, cu cheia lui.
 | Funcționar (extragere text + imagini) | Haiku 5.5 | rapid, ieftin, bun la extragere și imagini |
 | Arena (volum mare) | Haiku 5.5 | multe cereri |
 | Compliance (rezumat din dovezi) | Sonnet 5.5 | raționament bun, latență mică |
-| Atacatorul | Sonnet 5.5 | creativ, multe runde |
 | Self-learning (propunere de reguli) | Opus 5.5 | puține apeluri, calitatea contează |
 
 **Notă pentru pitch:** cheia de demo e în regiunea SUA (`us-west-2`). În producție: Bedrock într-o regiune UE (ex. Frankfurt) sau complet on-prem — spunem asta explicit.
@@ -598,8 +596,8 @@ hackathon-project/
 │   │   │   ├── verificator/     tax, statement, anaf, ro_checks, he     [Stefan]
 │   │   │   ├── detectiv/        graph, clusters, scoring                [Erin]
 │   │   │   └── compliance/      scoring, summary, report                [Samuel]
-│   │   ├── learning/            rule engine, proposer, backtest         [Samuel; evaluarea regulilor în Verificator: Stefan]
-│   │   ├── arena/               missions, forge, scoring, ratelimit     [Samuel]
+│   │   ├── learning/            engine (reguli JSON), proposer (LLM + backtest) [Samuel; în Verificator: Stefan]
+│   │   ├── arena/               missions, forge, judge, service, attacker, ratelimit [Samuel]
 │   │   └── zk/                  nonce, verify bridge                    [Lorena]
 │   └── tests/
 ├── employer/                    serviciul separat al angajatorului (ZK)   [Lorena]

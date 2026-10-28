@@ -1,7 +1,7 @@
 """Clientul LLM unic al proiectului. Toți agenții apelează DOAR `chat(...)`.
 
 Moduri (settings.llm_mode, schimbabil live din UI):
-  bedrock — Claude pe AWS Bedrock (SDK Anthropic, client AnthropicBedrock)
+  bedrock — Claude pe AWS Bedrock (SDK Anthropic, client AsyncAnthropicBedrock)
   cloud   — Featherless (SDK openai, base_url)
   local   — Ollama (SDK openai, base_url local)
   mock    — doar răspunsuri din cache (data/llm_cache); fără internet, fără cost

@@ -116,7 +116,7 @@ Maria nu va afla niciodată de la un executor că are o datorie de 45.000 lei.
 ### Configurare
 ```bash
 cp .env.example .env
-# completează: FEATHERLESS_API_KEY, HMAC_SECRET, VAULT_KEY, BANK_UI_TOKEN
+# completează: HMAC_SECRET, ARENA_HMAC_SECRET, VAULT_KEY, BANK_UI_TOKEN (+ AWS_BEARER_TOKEN_BEDROCK sau FEATHERLESS_API_KEY)
 # (comenzile de generare sunt în comentariile din .env.example)
 ```
 Backend-ul **refuză să pornească** dacă secretele lipsesc.
@@ -153,6 +153,7 @@ Ollama rulează pe același laptop cu backend-ul, pe `127.0.0.1`. Pe Windows, se
 ### Date de demo (din rădăcina repo-ului)
 ```bash
 python -m data.generator.build_demo
+export BANK_UI_TOKEN=$(grep ^BANK_UI_TOKEN .env | cut -d= -f2)
 curl -X POST -H "Authorization: Bearer $BANK_UI_TOKEN" localhost:8000/api/admin/seed-demo
 ```
 

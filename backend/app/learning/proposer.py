@@ -81,12 +81,12 @@ def legit_dataset() -> list[dict]:
                 gross = round(median * factor / 50) * 50
                 if c["employees"] < 50 and gross > 2.5 * c["median_gross"]:
                     continue  # ar fi prins deja de verificările existente
-                for months_ago in (1, 3):
-                    issued = date(2026, 10, 1) - timedelta(days=30 * months_ago)
+                for days_ago in (1, 17, 29, 46, 75, 120):
+                    issued = date(2026, 10, 1) - timedelta(days=days_ago)
                     if issued < c["founded"]:
                         continue
                     docs.append({"employee": "[PERSOANA_X]", "employer": name, "job_title": role,
-                                 "gross_salary": gross, "net_salary": net_from_gross(gross),
+                                 "gross_salary": gross, "net_salary": net_from_gross(gross, issued.isoformat()[:7]),
                                  "issue_date": issued.isoformat(), "tricks": []})
     return docs
 
@@ -113,12 +113,37 @@ def _valid_ops(cond: dict) -> bool:
     return cond.get("op") in engine.OPS and isinstance(cond.get("left"), str)
 
 
+def _overfit(cond: dict, trigger_doc: dict) -> bool:
+    """Regulă care compară exact cu o valoare literală din falsul declanșator (ex. data emiterii == 2026-09-30)."""
+    if "all" in cond or "any" in cond:
+        return any(_overfit(c, trigger_doc) for c in cond.get("all", cond.get("any", [])))
+    if "not" in cond:
+        return _overfit(cond["not"], trigger_doc)
+    if cond.get("op") not in ("eq", "in"):
+        return False
+    field = str(cond.get("left", ""))
+    if not field.startswith("doc."):
+        return False
+    value = trigger_doc.get(field[4:])
+    right = cond.get("right", cond.get("value"))
+    return right == value or (isinstance(right, list) and value in right)
+
+
 def vet(rule: dict, trigger_doc: dict, legit: list[dict]) -> tuple[bool, str, dict]:
-    if not _valid_ops(rule["when"]):
+    try:
+        return _vet(rule, trigger_doc, legit)
+    except Exception as exc:  # noqa: BLE001 — o regulă stricată e respinsă, nu oprește restul
+        return False, f"regulă invalidă ({type(exc).__name__})", {}
+
+
+def _vet(rule: dict, trigger_doc: dict, legit: list[dict]) -> tuple[bool, str, dict]:
+    if not isinstance(rule.get("when"), dict) or not _valid_ops(rule["when"]):
         return False, "operator sau structură invalidă", {}
     unknown = _fields_in(rule["when"]) - set(FIELDS)
     if unknown:
         return False, f"câmpuri necunoscute: {sorted(unknown)}", {}
+    if _overfit(rule["when"], trigger_doc):
+        return False, "prea specifică (compară cu o valoare exactă din fals)", {}
     probe = {**rule, "status": "approved"}
     catches_trigger = bool(engine.apply_rules(trigger_doc, [probe]))
     fps = sum(bool(engine.apply_rules(d, [probe])) for d in legit)
@@ -200,4 +225,4 @@ def decide(rule_id: str, approve: bool, decided_by: str) -> dict | None:
 def reset() -> None:
     with _lock:
         PROPOSED.clear()
-    engine.RULES.clear()
+    engine.clear()

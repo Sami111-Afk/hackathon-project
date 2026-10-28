@@ -84,7 +84,7 @@ def test_paznic_redacts_digital_pdf(secrets):
     assert "VALOARE_DIN_SEIF" in pii_gate.scan("trimite contabil maria ionescu", "case_t1")
 
     # imaginea redactată e salvată criptat, cuvintele din scratch nu conțin PII
-    assert files.load_decrypted("case_t1", "doc_1_redacted_p1").startswith(b"\x89PNG")
+    assert files.load_derived("case_t1", "doc_1", "redacted", 1).startswith(b"\x89PNG")
     words = " ".join(w["text"] for w in ctx.scratch["paznic"]["doc_1"]["words"])
     assert MARIA_CNP not in words and "[CNP_1]" in words
     assert case.documents[0].pages[0].width > 1000
