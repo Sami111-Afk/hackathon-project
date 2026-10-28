@@ -18,7 +18,7 @@
   [
    8.16,
    10.34,
-   "read, recalculate, cross-check."
+   "Read, recalculate, cross-check."
   ],
   [
    10.34,
@@ -52,7 +52,7 @@
   [
    2.02,
    3.71,
-   "three documents, all synthetic."
+   "Three documents, all synthetic."
   ],
   [
    3.71,
@@ -74,7 +74,7 @@
   [
    6.26,
    10.26,
-   "any value it cannot point to in the document is thrown away."
+   "Any value it cannot point to in the document is thrown away."
   ],
   [
    10.26,
@@ -84,7 +84,7 @@
   [
    13.52,
    15.59,
-   "net should be 8,307, not 8,500."
+   "Net should be 8,307, not 8,500."
   ],
   [
    15.59,
@@ -94,7 +94,7 @@
   [
    17.92,
    21.65,
-   "inactive. And the salary never arrives in her statement."
+   "Inactive. And the salary never arrives in her statement."
   ]
  ],
  "s05": [
@@ -118,7 +118,7 @@
   [
    3.83,
    8.45,
-   "the AI only writes the summary, and a summary quoting an unverified number is rejected."
+   "The AI only writes the summary, and a summary quoting an unverified number is rejected."
   ],
   [
    8.45,
@@ -162,12 +162,12 @@
   [
    6.38,
    8.1,
-   "the rest is rules and tools:"
+   "The rest is rules and tools:"
   ],
   [
    8.1,
    11.17,
-   "tax tables, the company registry, image forensics."
+   "Tax tables, the company registry, image forensics."
   ],
   [
    11.17,
@@ -208,7 +208,7 @@
   [
    2.14,
    4.17,
-   "no name or ID number left the bank."
+   "No name or ID number left the bank."
   ],
   [
    4.17,
@@ -218,7 +218,7 @@
   [
    7.12,
    13.09,
-   "three went to a human. All thirty-six simple fakes caught, and all twelve perfect ones sent to a human."
+   "Three went to a human. All thirty-six simple fakes caught, and all twelve perfect ones sent to a human."
   ],
   [
    13.09,
@@ -235,7 +235,7 @@
   [
    4.76,
    7.63,
-   "a forger who also fakes the statement would pass."
+   "A forger who also fakes the statement would pass."
   ],
   [
    7.63,
@@ -252,7 +252,7 @@
   [
    1.29,
    2.36,
-   "and your people decide."
+   "And your people decide."
   ]
  ],
  "s14": [
@@ -264,7 +264,7 @@
   [
    3.39,
    5.67,
-   "most fakes get caught, with the reason."
+   "Most fakes get caught, with the reason."
   ],
   [
    5.67,
