@@ -12,7 +12,7 @@ def test_generated_ids_are_valid():
     for seq in range(1, 50):
         assert cnp_valid(cnp("F", "1959-03-12", "PH", seq))
     assert iban_valid(iban("RZBR"))
-    assert not cnp_valid("2590312290170")
+    assert not cnp_valid("2590312290007")
 
 
 def test_arena_companies_have_valid_cui():
@@ -27,7 +27,7 @@ def test_generated_cui_uses_only_unallocated_values():
 
 
 def test_mrz_lines_are_36_chars():
-    lines = mrz_td2("IONESCU", "MARIA", "PH", "481925", "1959-03-12", "F", "2029-03-12", "2590312290171")
+    lines = mrz_td2("IONESCU", "MARIA", "PH", "481925", "1959-03-12", "F", "2029-03-12", "2590312290006")
     assert len(lines[0]) == len(lines[1]) == 36
     assert lines[0].startswith("IDROUIONESCU<<MARIA")
     assert mrz_td2_valid(lines)

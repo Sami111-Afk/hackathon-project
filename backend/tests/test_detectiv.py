@@ -125,3 +125,18 @@ def test_graph_endpoint():
         assert set(g["cluster"]) == set(ring)
         assert lone[0] not in g["cluster"]
         assert c.get("/api/graph?case_id=nu_exista", headers=AUTH).status_code == 404
+
+
+def test_graph_labels_never_show_fingerprints():
+    """Paznicul real pune o amprentă (hm_…) în applicant_token; pe graf apare ID-ul dosarului."""
+    a = mk("a", phone="P", name="hm_nume1")
+    a.applicant_token = "hm_nume1"
+    b = mk("b", phone="P", name="hm_nume2")
+    b.applicant_token = "[PERSOANA_B]"
+    labels = {n["case_id"]: n["label"] for n in graph_payload(build_graph([a, b]), "a")["nodes"] if n["type"] == "case"}
+    assert labels == {"a": "a", "b": "[PERSOANA_B]"}
+
+
+def test_same_name_without_cnp_is_same_person():
+    findings, _ = analyze(mk("a", phone="P", name="N"), [mk(f"b{i}", phone="P", name="N") for i in range(3)], NOW)
+    assert findings == []
