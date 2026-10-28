@@ -8,7 +8,10 @@ export function ArenaTop() {
   const me = savedNick().toLowerCase()
   return (
     <ArenaShell>
-      <h2 className="text-2xl font-semibold">Leaderboard</h2>
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 className="text-2xl font-semibold">Leaderboard</h2>
+        {q.data && q.data.top.length > 0 && <span className="text-sm text-night-mute">{q.data.top.length} players</span>}
+      </div>
       {q.isError && <p className="mt-3 text-night-danger">The server is not responding.</p>}
       <ol className="mt-4 divide-y divide-night-line overflow-hidden rounded-md border border-night-line">
         {q.data?.top.map((r) => (

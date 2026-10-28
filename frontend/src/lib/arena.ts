@@ -60,7 +60,8 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const getMissions = () => call<Mission[]>('/missions')
 export const getSubmission = (id: string) => call<Submission>(`/submissions/${encodeURIComponent(id)}`)
-export const getLeaderboard = () => call<Leaderboard>('/leaderboard')
+/** Toți jucătorii (până la 500), nu doar primii 10. */
+export const getLeaderboard = () => call<Leaderboard>('/leaderboard?limit=500')
 /** Imaginea falsului, cerută cu headerele noastre (un <img src> simplu nu le poate trimite prin ngrok). */
 export async function getSubmissionImage(id: string): Promise<string> {
   const res = await fetch(`${apiUrl()}/api/arena/submissions/${encodeURIComponent(id)}/image`, { headers: API_HEADERS })
