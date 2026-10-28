@@ -1,4 +1,5 @@
-import { FileDown, RotateCcw } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { EyeOff, FileDown, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
@@ -11,7 +12,7 @@ import { PrivacyPanel } from '@/components/PrivacyPanel'
 import { Panel } from '@/components/Panel'
 import { VerdictCard } from '@/components/VerdictCard'
 import { useCaseLive } from '@/hooks/useCaseLive'
-import { getGraph, listCases, openReport, rerunDemo } from '@/lib/api'
+import { getCase, getGraph, listCases, openReport, rerunDemo } from '@/lib/api'
 import { isMock } from '@/lib/config'
 import type { ConnectionState } from '@/lib/events'
 import { AGENT_INFO } from '@/lib/labels'
@@ -75,6 +76,12 @@ function CaseView({ caseId }: { caseId: string }) {
   )
   const allFindings = findings.map((f) => f.finding)
   const lastDebate = [...state.feed].reverse().find((e) => e.type === 'debate')
+  const fresh = useQuery({
+    queryKey: ['case-fresh', caseId, state.agents.functionar.status, Boolean(state.verdict)],
+    queryFn: () => getCase(caseId),
+    enabled: !mock && (state.agents.functionar.status === 'done' || Boolean(state.verdict)),
+    placeholderData: (prev) => prev,
+  })
 
   // dosar deschis în timpul analizei: tipul documentelor și imaginea redactată apar abia după Paznic/Funcționar
   // → reîncărcăm dosarul când termină Funcționarul și la verdict (altfel taburile rămân „Necunoscut”, vederea AI 404)
@@ -105,7 +112,8 @@ function CaseView({ caseId }: { caseId: string }) {
       </Shell>
     )
   }
-  const c = snapshot.data
+  // dosarul citit la deschidere e cel de dinainte de agenți; după Funcționar și după verdict îl recitim
+  const c = fresh.data ?? snapshot.data
   const status = state.decision ? ({ clear: 'cleared', reject: 'rejected', escalate: 'escalated', flag_network: 'escalated', correct: 'awaiting_review' } as const)[state.decision.action] : c.status
   const activeDoc = docId || c.documents[0]?.id || ''
 
@@ -123,9 +131,15 @@ function CaseView({ caseId }: { caseId: string }) {
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-ink">Cerere de credit de {lei(c.requested_amount_ron)}</h1>
             <p className="mt-1 text-base text-ink-2">
-              {c.applicant_token?.startsWith('[') ? `Solicitant ${c.applicant_token}, ` : ''}
+              {c.applicant_token ? `Solicitant ${c.applicant_token.startsWith('[') ? c.applicant_token : 'anonimizat'}, ` : ''}
               {c.documents.length} documente, depusă pe {new Date(c.created_at).toLocaleString('ro-RO', { dateStyle: 'long', timeStyle: 'short' })}
             </p>
+            {c.applicant_token && (
+              <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-3">
+                <EyeOff className="h-3.5 w-3.5" aria-hidden />
+                Numele real e ascuns de Paznic: nici AI-ul, nici această pagină nu îl văd.
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <span className="rounded-sm border border-line px-2.5 py-1 text-sm font-medium text-ink">{STATUS[status]}</span>
@@ -167,13 +181,13 @@ function CaseView({ caseId }: { caseId: string }) {
 
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_440px]">
           <div className="space-y-6">
-            <Panel title="Legături cu alte cereri" bodyClassName="p-0">
-              <NetworkGraph graph={state.graph} height={400} />
-            </Panel>
             <section id="documente" className="scroll-mt-4 rounded-md border border-line bg-surface">
               <DocumentViewer caseId={c.id} docs={c.documents} findings={allFindings} mock={mock}
                               highlighted={selected} docId={activeDoc} onDocChange={setDocId} />
             </section>
+            <Panel title="Legături cu alte cereri" bodyClassName="p-0">
+              <NetworkGraph graph={state.graph} height={320} />
+            </Panel>
           </div>
 
           <aside className="space-y-6 xl:sticky xl:top-4">
