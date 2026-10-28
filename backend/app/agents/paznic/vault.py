@@ -36,7 +36,7 @@ class Vault:
     def _fernet(self) -> Fernet:
         return Fernet(settings.vault_key.encode())
 
-    def put(self, case_id: str, values: dict[str, list[str]]) -> None:
+    def put(self, case_id: str, values: dict[str, list[str]], register: bool = True) -> None:
         """Rulează într-un thread (asyncio.to_thread): criptare + scriere SQLite."""
         f = self._fernet()
         rows = [(case_id, label, f.encrypt(json.dumps(vals, ensure_ascii=False).encode()))
@@ -45,7 +45,8 @@ class Vault:
             conn = self._connect()
             conn.executemany("INSERT OR REPLACE INTO vault VALUES (?, ?, ?)", rows)
             conn.commit()
-        pii_gate.register_vault_values(case_id, [v for vals in values.values() for v in vals])
+        if register:
+            pii_gate.register_vault_values(case_id, [v for vals in values.values() for v in vals])
 
     def get(self, case_id: str) -> dict[str, list[str]]:
         f = self._fernet()

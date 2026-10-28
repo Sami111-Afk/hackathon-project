@@ -23,19 +23,24 @@ PRIORITY = {"MRZ": 0, "IBAN": 1, "CNP": 2, "CUI": 3, "SERIE": 4, "NR": 4, "EMAIL
             "ADRESA": 7, "FIRMA": 8, "PERSOANA": 9}
 
 CNP_RX = re.compile(r"(?<!\d)[1-9]\d{12}(?!\d)")
+# CNP scris cu separatori („259 031 229 0171”) — acceptat doar dacă cifra de control e validă (altfel ar prinde sume)
+CNP_SPACED_RX = re.compile(r"(?<![\d.])[1-9](?:[ .\-]?\d){12}(?!\d)")
 IBAN_RX = re.compile(r"\bRO\d{2}\s?[A-Z]{4}(?:\s?[A-Z0-9]{4}){4}\b", re.I)
 CUI_RX = re.compile(r"\b(?:CUI|CIF|C\.U\.I\.|cod fiscal|cod unic de [îi]nregistrare)\s*[:.]?\s*((?:RO)?\s?\d{2,10})\b",
                     re.I)
-PHONE_RX = re.compile(r"(?<!\d)(?:\+40|0040|0)7\d{2}[\s.-]?\d{3}[\s.-]?\d{3}(?!\d)")
+PHONE_RX = re.compile(r"(?<!\d)(?:\+40|0040|0)[ .\-]?7(?:[ .\-]?\d){8}(?!\d)")
 EMAIL_RX = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b")
 SERIE_NR_RX = re.compile(r"\bSERIA\s*[:.]?\s*([A-Z]{2})\s*(?:NR\.?|N[O°]\.?)?\s*[:.]?\s*(\d{6})\b", re.I)
-MRZ_RX = re.compile(r"^[A-Z0-9<]{30,44}$", re.M)
+MRZ_RX = re.compile(r"^[A-Z0-9<]{28,46}$")  # pe linia compactată (fără spații, « → <)
+# seria + numărul fără eticheta „SERIA” (doar pe buletin, altfel ar prinde orice cod)
+BARE_SERIE_NR_RX = re.compile(r"\b([A-Z]{2})\s?(\d{6})\b")
 
 # eticheta → ce urmează după ea; pe buletin etichetele sunt bilingve („Nume/Nom/Last name”)
 ANCHORS = {
     "PERSOANA": ["nume si prenume", "nume", "prenume", "nom", "prenom", "titular", "angajat", "salariat",
-                 "solicitant", "client"],
-    "ADRESA": ["domiciliu", "domiciliul", "adresa", "adresse", "address"],
+                 "solicitant", "client", "beneficiar", "platitor", "ordonator"],
+    # locul nașterii e tot dată personală → îl tratăm ca adresă
+    "ADRESA": ["domiciliu", "domiciliul", "adresa", "adresse", "address", "loc nastere", "loc nasterii"],
     "FIRMA": ["angajator", "angajatorul", "societatea", "employer"],
 }
 # etichete după care valoarea se termină (pe aceeași linie); „nr” lipsește intenționat (apare în adrese)
@@ -43,7 +48,8 @@ STOP_LABELS = ["cnp", "cui", "cif", "seria", "iban", "functia", "funcția", "bru
                "cetatenie", "cetățenie", "nationalitate", "loc nastere", "emis", "valabilitate", "telefon",
                "email", "sold", "perioada", "cont"] + [a for labels in ANCHORS.values() for a in labels]
 # traducerile de pe buletin: „Nume/Nom/Last name”, „Domiciliu/Adresse/Address”
-_LABEL_TAIL = r"(?:\s*/\s*(?:nom|prenom|last\s+name|first\s+name|surname|given\s+names?|adresse|address))*"
+_LABEL_TAIL = (r"(?:\s*/\s*(?:nom|prenom|last\s+name|first\s+name|surname|given\s+names?|adresse|address"
+               r"|lieu\s+de\s+naissance|place\s+of\s+birth))*")
 
 INJECTION_RX = re.compile(
     r"ignor[aăe]\w*\s+(?:toate\s+)?(?:instruc\w+|regul\w+)|ignore\s+(?:all\s+|any\s+)?(?:previous|prior|above)"
@@ -59,10 +65,20 @@ def _ascii_fold(text: str) -> str:
     return text.translate(table)
 
 
-def find_identifiers(text: str) -> list[Span]:
+def find_identifiers(text: str, id_card: bool = False) -> list[Span]:
     spans = []
     for m in CNP_RX.finditer(text):
         spans.append(Span("CNP", m.start(), m.end(), m.group(), v.valid_cnp(m.group())))
+    for m in CNP_SPACED_RX.finditer(text):
+        digits = re.sub(r"\D", "", m.group())
+        if m.group() != digits and v.valid_cnp(digits):
+            spans.append(Span("CNP", m.start(), m.end(), m.group(), True))
+    if id_card:
+        for m in BARE_SERIE_NR_RX.finditer(text):
+            if m.group(1).upper() in {"NR", "NO", "RO"}:
+                continue
+            spans.append(Span("SERIE", m.start(1), m.end(1), m.group(1)))
+            spans.append(Span("NR", m.start(2), m.end(2), m.group(2)))
     for m in IBAN_RX.finditer(text):
         spans.append(Span("IBAN", m.start(), m.end(), m.group(), v.valid_iban(m.group())))
     for m in CUI_RX.finditer(text):
@@ -78,15 +94,47 @@ def find_identifiers(text: str) -> list[Span]:
     return spans
 
 
+def _compact_mrz(line: str) -> str:
+    return re.sub(r"\s+", "", line).replace("«", "<").replace("‹", "<").upper()
+
+
 def find_mrz(text: str) -> list[Span]:
-    """Liniile MRZ se ascund integral; validarea (7-3-1) se face doar pe ultima linie a blocului (linia 2 TD2)."""
-    lines = [m for m in MRZ_RX.finditer(text) if "<" in m.group()]
+    """Liniile MRZ se ascund integral. OCR-ul pune des spații între „<” → comparăm pe linia compactată.
+    Validarea (7-3-1) se face doar pe ultima linie a blocului (linia 2 TD2)."""
+    lines = []
+    pos = 0
+    for raw in text.split("\n"):
+        start, end = pos, pos + len(raw)
+        pos = end + 1
+        compact = _compact_mrz(raw)
+        # rândul 2 TD2 poate avea un singur „<” (PH481925<7ROU…) → ajunge unul, dacă linia e lungă
+        if MRZ_RX.match(compact) and "<" in compact and len(compact) >= 30:
+            lead = len(raw) - len(raw.lstrip())
+            lines.append((start + lead, end - (len(raw) - len(raw.rstrip())), compact))
     spans = []
-    for i, m in enumerate(lines):
-        line = m.group()
-        is_last = i + 1 == len(lines) or text[m.end():lines[i + 1].start()].strip()
-        parsed = v.parse_mrz_td2_line2(line) if is_last and i > 0 else None
-        spans.append(Span("MRZ", m.start(), m.end(), line, parsed.valid if parsed else None))
+    for i, (start, end, compact) in enumerate(lines):
+        is_last = i + 1 == len(lines) or text[end:lines[i + 1][0]].strip()
+        parsed = v.parse_mrz_td2_line2(compact) if is_last and i > 0 else None
+        spans.append(Span("MRZ", start, end, compact, parsed.valid if parsed else None))
+    return spans
+
+
+def find_known_names(text: str, tokens: set[str]) -> list[Span]:
+    """A doua trecere: numele găsite lângă etichete („Nume: …”) le ascundem ORIUNDE apar în dosar
+    („Beneficiar: … IONESCU MARIA”, „Plată către Maria Ionescu”). Tokeni vecini → un singur span."""
+    toks = {t for t in tokens if len(t) >= 3}
+    if not toks:
+        return []
+    folded = _ascii_fold(text).lower()
+    rx = re.compile(r"(?<![\w\[])(?:" + "|".join(re.escape(_ascii_fold(t)) for t in sorted(toks, key=len, reverse=True))
+                    + r")(?!\w)")
+    hits = [(m.start(), m.end()) for m in rx.finditer(folded)]
+    spans: list[Span] = []
+    for start, end in hits:
+        if spans and re.fullmatch(r"[\s,.\-]{1,3}", text[spans[-1].end:start]):
+            prev = spans.pop()
+            start = prev.start
+        spans.append(Span("PERSOANA", start, end, text[start:end]))
     return spans
 
 
@@ -132,5 +180,13 @@ def resolve_overlaps(spans: list[Span]) -> list[Span]:
     return sorted(chosen, key=lambda s: s.start)
 
 
-def find_all(text: str) -> list[Span]:
-    return resolve_overlaps(find_mrz(text) + find_identifiers(text) + find_anchored(text))
+def looks_like_id_card(text: str) -> bool:
+    folded = _ascii_fold(text).lower()
+    return "carte de identitate" in folded or "identity card" in folded or "idrou" in folded.replace(" ", "")
+
+
+def find_all(text: str, known_names: set[str] | None = None) -> list[Span]:
+    spans = find_mrz(text) + find_identifiers(text, looks_like_id_card(text)) + find_anchored(text)
+    if known_names:
+        spans += find_known_names(text, known_names)
+    return resolve_overlaps(spans)

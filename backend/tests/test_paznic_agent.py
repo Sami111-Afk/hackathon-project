@@ -129,3 +129,26 @@ def test_fixture_replay_without_files_uses_stub(secrets):
 
 def test_injection_detector_ignores_normal_text():
     assert not find_prompt_injection("Funcția: Contabil. Instrucțiuni de plată: virament bancar.")
+
+
+
+def test_ocr_noise_and_names_outside_labels_are_redacted():
+    """Scurgeri găsite pe documentele reale ale Mariei (OCR): MRZ cu spații, rândul 2 cu un singur „<”,
+    CNP/telefon cu spații, nume fără etichetă, locul nașterii."""
+    from app.agents.paznic import detect
+    from app.agents.paznic.redact import CaseRedactor, apply, name_tokens
+
+    card = ("CARTE DE IDENTITATE\nNume/Nom/Last name\nIONESCU\nPrenume/Prénom/First name\nMARIA\n"
+            "Loc naștere/Lieu de naissance/Place of birth\nMun. Ploiești, Jud. PH\n"
+            "IDROUIONESCU<<MARIA<< <<< <<< << << <<< <<\nPH481925<7ROU5903128F290312722901712")
+    other = "Beneficiar plată: Ionescu Maria\nCNP 259 031 229 0171, tel +40 722 318 405"
+    names = set()
+    for text in (card, other):
+        for sp in detect.find_all(text):
+            if sp.kind == "PERSOANA":
+                names |= name_tokens(sp.value)
+    red = CaseRedactor(secret="t")
+    out = [apply(t, red.label_spans(detect.find_all(t, names))) for t in (card, other)]
+    joined = " ".join(out).lower()
+    for leak in ("ionescu", "maria", "ploie", "5903128", "2290171", "722 318", "259 031"):
+        assert leak not in joined, (leak, out)
