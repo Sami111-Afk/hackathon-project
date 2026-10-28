@@ -3,7 +3,7 @@
 Totul determinist, fără LLM (ARCHITECTURE.md §5):
   fluturaș  → taxele refăcute (tax.py), NET_MISMATCH; cu HE_ENABLED pe date criptate (he_bank.py)
   extras    → soldurile rând cu rând + salariul ca încasare (statement.py)
-  angajator → registrul ANAF (anaf.py)
+  angajator → registrul demo, apoi ANAF real cu cache (anaf.py)
   dosar     → verificări românești pe valorile din seiful local (ro_checks.py)
   reguli    → regulile învățate și aprobate (learning/engine.py)
 
@@ -74,9 +74,10 @@ class Verificator:
         company = None
         if employment:
             cui = _val(employment, "employer_cui")
-            company = anaf.lookup(cui=local_values.resolve(values, cui),
-                                  name=local_values.resolve(values, _val(employment, "employer_name")))
-            findings += anaf.check_company(company, employment.id, cui if isinstance(cui, str) else "")
+            company, source = await asyncio.to_thread(
+                anaf.resolve, local_values.resolve(values, cui),
+                local_values.resolve(values, _val(employment, "employer_name")), case.id)
+            findings += anaf.check_company(company, source, employment.id, cui if isinstance(cui, str) else "")
             findings += ro_checks.check_dates(_val(employment, "issue_date"), company.founded if company else None,
                                               today, employment.id)
         if stmt:
