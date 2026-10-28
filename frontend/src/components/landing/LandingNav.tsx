@@ -23,7 +23,7 @@ export function LandingNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-night-line bg-night-glass backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-8 px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2.5 rounded-sm focus-visible:outline-2 focus-visible:outline-brand" aria-label="ORB, home">
+        <Link to="/about" className="flex items-center gap-2.5 rounded-sm focus-visible:outline-2 focus-visible:outline-brand" aria-label="ORB, home">
           <span className="grid h-8 w-8 place-items-center rounded-sm bg-brand font-condensed text-lg font-bold text-ink">O</span>
           <span className="text-lg font-bold tracking-tight">ORB</span>
         </Link>
