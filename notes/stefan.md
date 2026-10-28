@@ -23,7 +23,7 @@ Benchmark pe **documente-imagine** prin agenții reali (OCR Tesseract → Paznic
 | Oameni cinstiți acuzați | **0 / 16** |
 | Falsuri prinse: net umflat · sold falsificat · firmă inactivă | **16/16 · 16/16 · 16/16** |
 | Extragere corectă, cel mai slab câmp | ≥ 92% (curat: ≥ 95%) |
-| Timp pe dosar (3 documente, laptop, CPU) | 3–4 s |
+| Timp pe dosar (3 documente, laptop, CPU) | 4–5 s (cu recitirea sumelor la nepotriviri) |
 | Verificarea netului pe date criptate | ~0,3 s, context public ~1,8 MB |
 | Cost LLM (Featherless) | ~0,0002 $ / document |
 
@@ -77,8 +77,11 @@ să apară ca încasare.
   CKKS dă confidențialitate, nu integritate: un verificator rău-intenționat poate întoarce orice.
 - **Fals „perfect”** (brut umflat, taxe refăcute corect): fluturașul singur nu-l poate prinde. Semnalul există
   (16/16: netul nu apare în extras), dar e sub pragul de review → nu e escaladat.
-- **OCR-ul greșește cifre** (~2–3 din 40 de dosare, ex. 7.952 → 1.952). Pe un om cinstit, asta ar putea da o alarmă
-  falsă la sold — în benchmark nu s-a întâmplat, dar e posibil; de aceea decizia finală o ia omul.
+- **OCR-ul greșește cifre** (~2–3 din 40 de dosare, ex. 7.952 → 1.952). De aceea, **înainte de a acuza**, Verificatorul
+  recitește de pe imagine doar zona sumei (6 citiri, vot). Dacă la recitire calculul iese → „probabil eroare de citire,
+  de verificat” (`AMOUNT_UNCERTAIN`), nu acuzație; dacă recitirea confirmă cifra (falsul e tipărit) → acuzația rămâne.
+  În benchmark: ambele solduri citite greșit au devenit „de verificat”, toate cele 16 extrase falsificate au rămas prinse.
+  Tot omul decide.
 - Taxele sunt o **simplificare declarată** (fără tichete, avansuri, popriri; deducerea pe tabel simplificat).
 - Registrul ANAF al demo-ului e simulat pentru firmele inventate; pentru CUI-uri reale interogăm ANAF-ul real.
 
@@ -94,9 +97,10 @@ parsează Python, nu LLM-ul. Ce nu se regăsește e aruncat și raportat.
 să poată rula verificarea fără să vadă salariul. Nu pretindem mai mult.
 
 **„Ce faceți dacă OCR-ul greșește?”** — Paznicul repară confuziile tipice (O/0, caractere în plus) cu cifrele de control;
-ce nu poate repara rămâne ascuns. Verificatorul doar recomandă — omul decide, cu chenarul pe document în față.
+ce nu poate repara rămâne ascuns. Înainte de o acuzație pe o sumă, Verificatorul o recitește de pe imagine; dacă la
+recitire calculul iese, marchează „de verificat”, nu „fals”. Și oricum doar recomandă — omul decide, cu chenarul pe document.
 
-**„Cât costă / cât durează?”** — 3–4 secunde și ~0,0006 $ pe un dosar de 3 documente, pe un laptop.
+**„Cât costă / cât durează?”** — 4–5 secunde și ~0,0006 $ pe un dosar de 3 documente, pe un laptop.
 
 **„Merge pe documente reale?”** — Am testat pe documente sintetice cu layout cunoscut; pentru alte layout-uri,
 LLM-ul face extragerea, iar extrasele ar avea nevoie de parsarea pe coloane per bancă.
@@ -107,3 +111,11 @@ Nu l-am îmbinat încă. Ideea e bună (fluturașul Mariei e tot prins: NET_MISM
 - Cu `lang="ron"` trec 3 din 4, dar `test_ocr_digit_error_inside_a_row_is_not_an_accusation` dă al doilea rând tot BALANCE_MISMATCH → votul cu `ron` e mai slab pe decupaje; de reglat (ori `eng` documentat ca cerință + `ocr_available()` să verifice și `eng`).
 - Cerință: `Rereader.available()` să verifice limba pe care o folosește chiar recitirea, ca să nu pară activ când nu e.
 - Testele din `test_reread.py` durează ~16 s (OCR real) — de marcat ca lente sau reduse.
+
+### Răspuns (Stefan)
+- **Limba:** recitirea folosește `eng` dacă e instalată (vine implicit cu Tesseract; citește cifrele mai bine — `ron` confundă des „7” cu „1” pe fontul nostru, chiar și la recitire), altfel `ron`. Reprodus mediul tău (doar `ron` + `osd`, cu `TESSDATA_PREFIX`): toate testele trec.
+- **Votul:** 8 citiri (măriri ×2 și ×3 × 2 contraste × `--psm 7/13`), minimum 3 voturi și strict mai multe decât a doua valoare; citirile în format EN (`9,547.50`) sunt interpretate corect, cele incomplete nu votează.
+- **`Rereader.available()`** verifică exact limba aleasă (`digit_lang()`).
+- **Viteză:** testele cu OCR real sunt `@pytest.mark.slow`; `pytest.ini` le exclude implicit (`-m "not slow"`), rulează cu `pytest -m slow` (~15 s). Parsarea citirilor e în `test_reread_parse.py` și rulează și în CI.
+- **Benchmark:** dacă un agent pică (am prins o dată un `OSError` trecător de la OCR-ul în paralel pe Windows), îl reîncercăm o dată; altfel dosarul e raportat ca eroare și nu mai intră în detecție (înainte Funcționarul trecea pe datele de probă ale Mariei și număra acuzațiile ei).
+
