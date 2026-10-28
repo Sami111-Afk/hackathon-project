@@ -24,3 +24,14 @@
 - **Raportul de anchetă**: `GET /api/cases/{id}/report` (HTML printabil) — un buton pe pagina Dosar.
 - Criptarea homomorfică: Verificatorul pune în `AgentResult.artifacts` câțiva bytes de ciphertext — dacă îi arăți,
   scrie că sunt **ilustrație**, nu dovadă.
+
+## Arena pe mobil + proiector (PR #13, îmbinat) — din review
+1. **QR (`ArenaLive.tsx` ~140) folosește `window.location.origin`** → dacă proiectorul e deschis pe `localhost`,
+   telefoanele nu pot intra. Fă-l configurabil: `VITE_PUBLIC_URL` sau `?base=https://...` (adresa publică Vercel/ngrok).
+2. Avertismentul „Nu încărcați documente reale” pe proiector e `text-lg` (`ArenaLive.tsx` ~185) → `text-xl`.
+3. Ecranul live ignoră `rule_proposed` / `rule_approved` / `agent_progress` (Atacatorul). Momentul din pitch
+   „acest fals a devenit regula #N” și runda atacatorului ar trebui să apară pe proiector. La reconectarea SSE,
+   reîmprospătează și clasamentul (`onopen`).
+4. `lib/arena.ts` ~57: dacă `detail` e obiect (eroare 422 FastAPI), apare „[object Object]” →
+   `typeof d === 'string' ? d : mesaj generic`.
+5. Previzualizarea din Forge arată netul vechi când e bifat „recalculează taxele”; motivele din rezultat sunt cheiate pe text (dubluri).

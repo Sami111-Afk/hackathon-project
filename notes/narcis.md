@@ -38,3 +38,8 @@ Pe Windows: `OLLAMA_KEEP_ALIVE=-1` ca variabilă de mediu, restart la Ollama din
 
 ## 4. Deploy (laptopul tău = serverul băncii)
 ngrok cu domeniu static gratuit → testat SSE de pe telefon (`/api/arena/live`). Până la integrarea #2 (~ora 16).
+
+## 5. CORS pentru telefoane (din review-ul Arenei)
+Implicit backend-ul acceptă doar `localhost:5173/4173` + `*.vercel.app` (`CORS_ORIGINS`, `CORS_ORIGIN_REGEX` în `.env`).
+Dacă Arena se servește de pe alt domeniu (ngrok, IP din rețea), adaugă-l în `CORS_ORIGINS`, altfel telefoanele primesc eroare.
+Testează la deploy: deschide Arena de pe un telefon pe date mobile (nu pe Wi-Fi-ul hackathonului).
