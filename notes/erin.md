@@ -63,3 +63,25 @@ Linkul din meniu `/cases/case_maria` dădea „Dosarul nu s-a încărcat” — 
 - (13:55) Am adăugat în `CasePage` butonul **„Analizează din nou, live”** (doar pe dosarele Mariei, nu în mock): `POST /api/admin/rerun-demo`
   → navighează la dosarul nou, iar agenții apar live prin SSE. Funcția e `rerunDemo()` în `lib/api.ts`. Rămâne la tine: butonul **„Dosar nou”**
   cu încărcare de documente (`POST /api/cases`, multipart — vezi `backend/app/api/cases.py`).
+
+## Design — ce nu se înțelege la prima vedere (Samuel, 28.10 ~14:00) — după deploy, în ordinea asta
+1. **Panou „Dovezi de confidențialitate” în pagina Dosar** (cel mai important — e ce ne diferențiază și acum NU se vede nicăieri).
+   Date gata: `GET /api/cases/{id}/privacy` (token de bancă). Întoarce:
+   - `at_rest.documents[]` (`filename`, `encrypted_bytes`, `sample` = începutul fișierului criptat de pe disc, „gAAAAA…”) și
+     `at_rest.vault` (`labels` = [CNP_1], [IBAN_1]…, `count`, `sample` criptat) → „Documentele și datele personale stau criptate (AES)”.
+   - `ai_saw` (`llm_calls`, `with_pii` = 0, `blocked`, `models`, `redacted_sample`) → „AI-ul a primit 6 cereri, 0 cu date personale”
+     + textul exact pe care l-a văzut AI-ul (cu [PERSOANA_1]).
+   - `homomorphic` (`he_scheme`, `he_formula`, `he_ms`, `he_ciphertext_kb`, `he_ciphertext_sample`, `verifier_has_secret_key: false`)
+     → „Taxele verificate pe date criptate: CKKS, 71 ms, 1,6 MB ciphertext; verificatorul n-a avut cheia”. Arată și câțiva octeți hex.
+   - `zk` (null sau `answer`, `reason`, `threshold_ron`, `employer`) → „Venit dovedit fără să-l vedem: DA”. Buton „Cere dovadă de venit”
+     care cheamă `POST /api/zk/demo` cu `{"case_id": id}` și apoi reîncarcă panoul (pagina Lorenei poate primi `?case_id=`).
+   - `prompt_injection_detected` (bool).
+   Ideal ca o bandă sus, sub banda agenților: 🔒 Criptat în repaus · 🙈 AI-ul n-a văzut date personale · 🧮 Calcul pe date criptate · 🔐 Venit dovedit ZK.
+2. **Context**: cine folosește aplicația (analistul de credit) și ce câștigă (20 min → 1 min/dosar). Un text scurt pe Dashboard.
+3. **„Solicitant [PERSOANA_1]”** pare bug → tooltip/notă: „numele e ascuns de Paznic, nici AI-ul nu-l vede”.
+4. **Graful**: cutia neagră mare cu nodurile înghesuite într-un colț și etichete peste legendă. Centrează (zoomToFit după încărcare),
+   fă-l mai mic și mută-l SUB documente + dovezi (documentele sunt partea principală).
+5. **Dashboard**: `case_ok_30` nu spune nimic → „Credit nevoi personale · 60.000 lei” / solicitant anonimizat; buton **„Dosar nou”**
+   (upload, `POST /api/cases` multipart, vezi `backend/app/api/cases.py`).
+6. Mici: gol mare deasupra scorului de risc în coloana din dreapta; descrierile agenților tăiate („Ascunde datele perso…”);
+   link spre Arena în meniu.

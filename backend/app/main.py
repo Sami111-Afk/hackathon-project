@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.agents.paznic.vault import vault
-from app.api import admin, arena, cases, graph, rules, system, zk
+from app.api import admin, arena, cases, graph, privacy, rules, system, zk
 from app.config import settings
 from app.core.store import store
 
@@ -42,6 +42,7 @@ app.include_router(arena.router)
 app.include_router(rules.router)
 app.include_router(graph.router)
 app.include_router(zk.router)
+app.include_router(privacy.router)
 
 
 @app.get("/health")
