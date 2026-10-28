@@ -217,7 +217,7 @@ export function DashboardPage() {
                     <td className="px-4">
                       {lvl && Icon ? (
                         <span className={`flex items-center gap-2 font-semibold tabular-nums ${lvl.text}`}>
-                          <Icon className="h-4 w-4" aria-hidden />{Math.round(c.risk! * 100)}
+                          <Icon className="h-4 w-4" aria-hidden />{Math.min(99, Math.round(c.risk! * 100))}
                           <span className="font-normal text-ink-3">{lvl.label.replace(/ risk$/i, '')}</span>
                         </span>
                       ) : '—'}

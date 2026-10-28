@@ -38,6 +38,10 @@ def _band(risk: float) -> str:
     return "very high" if risk >= 0.85 else "high" if risk >= 0.70 else "medium" if risk >= 0.35 else "low"
 
 
+AGENT_NAMES = {"paznic": "Guard", "functionar": "Clerk", "verificator": "Verifier", "detector": "Detector",
+               "detectiv": "Detective", "compliance": "Compliance"}
+
+
 class Compliance:
     name = "compliance"
     start_message = "Analyzing the evidence"
@@ -78,6 +82,7 @@ class Compliance:
             return
         low, high = min(scored, key=lambda r: r.risk), max(scored, key=lambda r: r.risk)
         if round(high.risk - low.risk, 6) >= 0.15:
-            await ctx.emit("debate", f"{low.agent.capitalize()} sees {low.risk:.0%} risk, but "
-                           f"{high.agent.capitalize()} has evidence at {high.risk:.0%} — weighing both.",
+            lo, hi = AGENT_NAMES.get(low.agent, low.agent), AGENT_NAMES.get(high.agent, high.agent)
+            await ctx.emit("debate", f"{lo} sees {low.risk:.0%} risk, but {hi} has evidence at {high.risk:.0%} — "
+                           "weighing both.",
                            data={"low": low.agent, "high": high.agent})

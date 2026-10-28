@@ -175,12 +175,12 @@ async def demo(body: DemoIn):
 
     res = await _call(bank.verify, nonce=ch.nonce, cui=for_bank["cui"], period=for_bank["period"],
                       commitment=_int(for_bank["commitment"]), signature=for_bank["signature"], proof=proof)
-    steps.append({"actor": "bank", "action": "verifies", "detail": f"{res['answer']} — {res['reason']}"})
+    steps.append({"actor": "bank", "action": "verifies", "detail": f"{'YES' if res['ok'] else 'NO'} — {res['reason']}"})
     if body.attack == "replay":
         res = await _call(bank.verify, nonce=ch.nonce, cui=for_bank["cui"], period=for_bank["period"],
                           commitment=_int(for_bank["commitment"]), signature=for_bank["signature"], proof=proof)
         steps.append({"actor": "attacker", "action": "resends the same proof",
-                      "detail": f"{res['answer']} — {res['reason']}"})
+                      "detail": f"{'YES' if res['ok'] else 'NO'} — {res['reason']}"})
     return {**res, "steps": steps, "attack": body.attack,
             "bank_saw": {k: v for k, v in for_bank.items() if k != "signature"} | {"proof_bytes": len(proof)}}
 
