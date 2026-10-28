@@ -22,11 +22,13 @@ from app.agents.functionar.parsing import parse_amount, parse_date, parse_month
 from app.agents.functionar.schemas import (
     DOC_LABELS,
     FIELD_KINDS,
+    IDENTIFIER_FIELDS,
     SCHEMAS,
     SYSTEM_CLASSIFY,
     SYSTEM_EXTRACT,
     ClassifyOut,
     RawField,
+    is_label,
 )
 from app.agents.functionar.statement import parse_statement
 from app.agents.stubs import StubAgent
@@ -152,6 +154,7 @@ class Functionar:
         findings: list[Finding] = []
         extracted: dict[str, ExtractedValue] = {}
         evidence: dict[str, dict] = {}
+        unredacted: list[str] = []
         for name in schema.model_fields:
             kind = FIELD_KINDS.get(name, "text")
             llm_raw = getattr(llm, name, None) if llm else None
@@ -160,7 +163,9 @@ class Functionar:
                 if (m := _ground(raw, kind, words, text)) and (value := _parsed(raw, kind)) is not None:
                     chosen = (raw, m, value)
                     break
-            if chosen:
+            if chosen and name in IDENTIFIER_FIELDS and not is_label(chosen[2]):
+                unredacted.append(name)  # Paznicul n-a recunoscut valoarea (ex. IBAN citit greșit de OCR)
+            elif chosen:
                 raw, m, value = chosen
                 extracted[name] = ExtractedValue(value=value, source_text=raw.source_text)
                 if m.bbox:
@@ -170,6 +175,11 @@ class Functionar:
                     code="EXTRACTION_UNGROUNDED", severity="low",
                     message=f"Câmpul „{FIELD_RO.get(name, name)}” nu se regăsește în document; ignorat",
                     evidence=Evidence(doc_id=doc.id, field=name)))
+        if unredacted:
+            findings.append(Finding(
+                code="UNREDACTED_IDENTIFIER", severity="info",
+                message=f"Identificator neascuns de Paznic, nepreluat ({', '.join(unredacted)})",
+                evidence=Evidence(doc_id=doc.id)))
 
         table = None
         if doc_type == "bank_statement":
