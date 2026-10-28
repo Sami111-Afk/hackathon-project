@@ -62,7 +62,7 @@ async def _run_agent(name: str, ctx: PipelineContext) -> AgentResult:
     agent = AGENTS[name]
     failed = {d for d in DEPENDS_ON.get(name, set()) if ctx.results.get(d) and ctx.results[d].status != "done"}
     if failed:
-        result = AgentResult(agent=name, status="skipped", error=f"sărit: {', '.join(sorted(failed))} nu a terminat")
+        result = AgentResult(agent=name, status="skipped", error=f"skipped: {', '.join(sorted(failed))} did not finish")
         bus.publish(ctx.case.id, "agent_error", agent=name, message=result.error,
                     data=result.model_dump(exclude_none=True))
         ctx.results[name] = result
@@ -82,11 +82,11 @@ async def _run_agent(name: str, ctx: PipelineContext) -> AgentResult:
         if isinstance(exc, asyncio.TimeoutError):
             kind = "timeout"
         elif isinstance(exc, PIIGateBlocked):
-            kind = f"blocat de poarta anti-PII ({', '.join(exc.kinds)})"
+            kind = f"blocked by the PII gate ({', '.join(exc.kinds)})"
         elif isinstance(exc, LLMUnavailable):
-            kind = "AI indisponibil"
+            kind = "AI unavailable"
         else:
-            kind = "eroare internă"
+            kind = "internal error"
         result = AgentResult(agent=name, status="error", error=f"{kind} (ref {corr})",
                              duration_ms=int((time.perf_counter() - t0) * 1000))
         ok = False
@@ -100,7 +100,7 @@ async def _run_agent(name: str, ctx: PipelineContext) -> AgentResult:
 
 def _summarize(result: AgentResult) -> str:
     if not result.findings:
-        return "Nicio problemă găsită"
+        return "No issues found"
     worst = max(result.findings, key=lambda f: ["info", "low", "medium", "high", "critical"].index(f.severity))
     return worst.message
 

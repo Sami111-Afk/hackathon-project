@@ -33,7 +33,7 @@ def _bin(name: str, configured: str, fallback: Path) -> str:
     for cand in (configured, shutil.which(name), str(fallback)):
         if cand and Path(cand).is_file():
             return cand
-    raise ZkUnavailable(f"{name} nu e instalat (vezi zk/README.md)")
+    raise ZkUnavailable(f"{name} is not installed (see zk/README.md)")
 
 
 def nargo() -> str:
@@ -73,7 +73,9 @@ def _execute(circuit: str, inputs: dict[str, int], work: Path) -> tuple[Path, st
 
 def _nargo_error(text: str) -> str:
     m = re.search(r"(venit sub prag|angajament invalid)", text)
-    return m.group(1) if m else "witness invalid"
+    if not m:
+        return "witness invalid"
+    return {"venit sub prag": "income below threshold", "angajament invalid": "invalid commitment"}[m.group(1)]
 
 
 def commitment(salary_bani: int, salt: int, case_nonce: int) -> int:
@@ -82,7 +84,7 @@ def commitment(salary_bani: int, salt: int, case_nonce: int) -> int:
         _, out = _execute(COMMIT, {"salary_bani": salary_bani, "salt": salt, "case_nonce": case_nonce}, Path(tmp))
     m = re.search(r"Circuit output: (0x[0-9a-fA-F]+)", out)
     if not m:
-        raise ZkUnavailable("nargo nu a întors angajamentul")
+        raise ZkUnavailable("nargo did not return the commitment")
     return int(m.group(1), 16)
 
 
@@ -96,10 +98,10 @@ def verification_key() -> bytes:
                 shutil.copytree(CIRCUITS / MAIN, prog, ignore=shutil.ignore_patterns("target", "Prover.toml"))
                 r = _run([nargo(), "compile"], cwd=prog)
                 if r.returncode != 0:
-                    raise ZkUnavailable("compilarea circuitului a eșuat: " + r.stderr[-300:])
+                    raise ZkUnavailable("circuit compilation failed: " + r.stderr[-300:])
                 r = _run([bb(), "write_vk", "-b", str(prog / "target" / f"{MAIN}.json"), "-o", str(prog / "target")])
                 if r.returncode != 0:
-                    raise ZkUnavailable("bb write_vk a eșuat: " + r.stderr[-300:])
+                    raise ZkUnavailable("bb write_vk failed: " + r.stderr[-300:])
                 _vk = (prog / "target" / "vk").read_bytes()
         return _vk
 
@@ -120,7 +122,7 @@ def prove(salary_bani: int, salt: int, threshold_bani: int, commitment_value: in
         r = _run([bb(), "prove", "-b", str(t / f"{MAIN}.json"), "-w", str(t / f"{MAIN}.gz"),
                   "-k", str(t / "vk"), "-o", str(t)])
         if r.returncode != 0:
-            raise ZkUnavailable("bb prove a eșuat: " + r.stderr[-300:])
+            raise ZkUnavailable("bb prove failed: " + r.stderr[-300:])
         return (t / "proof").read_bytes()
 
 

@@ -65,18 +65,19 @@ def verify(*, nonce: int, cui: str, period: str, commitment: int, signature: str
     names = {info["cui"]: name for name, info in COMPANIES.items()}
     out = {"ok": False, "answer": "NU", "employer": names.get(cui), "cui": cui, "period": period}
     if ch is None:
-        out["reason"] = "nonce necunoscut, expirat sau deja folosit"
+        out["reason"] = "nonce unknown, expired or already used"
     else:
         out.update(threshold_ron=ch.threshold_bani / 100, installment_ron=ch.installment_bani / 100,
                    case_id=ch.case_id)
         if cui not in employer.registry():
-            out["reason"] = "angajator necunoscut în registru"
+            out["reason"] = "employer not in the registry"
         elif not employer.verify_signature(cui, period, commitment, nonce, signature):
-            out["reason"] = "semnătura angajatorului nu e validă"
+            out["reason"] = "the employer signature is not valid"
         elif not tools.verify(proof, tools.public_inputs(ch.threshold_bani, commitment, nonce)):
-            out["reason"] = "dovada ZK nu e validă pentru pragul și cererea băncii"
+            out["reason"] = "the ZK proof is not valid for the bank's threshold and request"
         else:
-            out.update(ok=True, answer="DA", reason="venit net ≥ prag, atestat de angajator; salariul nu a fost văzut")
+            out.update(ok=True, answer="DA",
+                       reason="net income ≥ threshold, attested by the employer; the salary was not seen")
     out["verify_ms"] = round((time.perf_counter() - t0) * 1000)
     if out.get("case_id"):
         last_by_case[out["case_id"]] = {k: out.get(k) for k in ("answer", "reason", "threshold_ron", "employer",
