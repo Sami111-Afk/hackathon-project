@@ -93,7 +93,7 @@ def test_agent_uses_encryption_when_enabled(monkeypatch):
     result = run_both(maria_case(), paznic_scratch(), monkeypatch, MARIA_VAULT)
     assert result.artifacts["he_slots"] == "5"
     f = next(f for f in result.findings if f.code == "NET_MISMATCH")
-    assert f.message == "Netul calculat (8.307 lei) diferă de cel declarat (8.500 lei)" and f.evidence.bbox
+    assert f.message == "Calculated net pay (8.307 lei) differs from the declared one (8.500 lei)" and f.evidence.bbox
 
     monkeypatch.setattr(settings, "he_enabled", False)
     clear = run_both(maria_case(), paznic_scratch(), monkeypatch, MARIA_VAULT)

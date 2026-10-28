@@ -45,10 +45,10 @@ from app.models import AgentResult, Document, Evidence, ExtractedValue, Finding,
 log = logging.getLogger("orb.functionar")
 
 PARSERS = {"amount": parse_amount, "date": parse_date, "month": parse_month}
-SHORT_LABELS = {"id_card": "buletin", "payslip": "fluturaș", "bank_statement": "extras",
-                "employment_certificate": "adeverință", "other": "alt document", "unknown": "necunoscut"}
-FIELD_RO = {"gross_salary": "salariul brut", "net_salary": "salariul net", "closing_balance": "soldul final",
-            "opening_balance": "soldul inițial", "employer_cui": "CUI-ul angajatorului"}
+SHORT_LABELS = {"id_card": "ID card", "payslip": "payslip", "bank_statement": "bank statement",
+                "employment_certificate": "employment certificate", "other": "other document", "unknown": "unknown"}
+FIELD_RO = {"gross_salary": "gross pay", "net_salary": "net pay", "closing_balance": "closing balance",
+            "opening_balance": "opening balance", "employer_cui": "employer CUI"}
 
 
 @dataclass
@@ -102,7 +102,7 @@ def _parsed(raw: RawField, kind: str):
 
 class Functionar:
     name = "functionar"
-    start_message = "Citesc documentele"
+    start_message = "Reading the documents"
 
     async def run(self, case, ctx) -> AgentResult:
         paznic = ctx.scratch.get("paznic") or {}
@@ -117,7 +117,7 @@ class Functionar:
         async def one(doc: Document) -> list[Finding]:
             info = paznic.get(doc.id) or {}
             doc_findings, out[doc.id] = await self._document(case.id, doc, info.get("words") or [], info, calls)
-            await ctx.emit("agent_progress", f"{SHORT_LABELS[doc.type]}: {len(doc.extracted or {})} câmpuri")
+            await ctx.emit("agent_progress", f"{SHORT_LABELS[doc.type]}: {len(doc.extracted or {})} fields")
             return doc_findings
 
         for doc_findings in await asyncio.gather(*(one(d) for d in case.documents)):
@@ -125,16 +125,16 @@ class Functionar:
 
         types = [SHORT_LABELS[d.type] for d in case.documents]
         summary = Finding(code="DOCS_CLASSIFIED", severity="info",
-                          message=f"{len(types)} documente: {', '.join(types)}" if len(types) != 1
+                          message=f"{len(types)} documents: {', '.join(types)}" if len(types) != 1
                           else f"1 document: {types[0]}")
         findings.insert(0, summary)
         if calls.blocked:
             kinds = ", ".join(sorted(calls.blocked))
             findings.append(Finding(code="PII_GATE_BLOCKED", severity="low",
-                                    message=f"Poarta anti-PII a blocat un apel AI ({kinds})"))
+                                    message=f"The PII gate blocked an AI call ({kinds})"))
         if calls.unavailable or calls.blocked:
             findings.append(Finding(code="EXTRACTION_RULES_ONLY", severity="info",
-                                    message="AI indisponibil: unele câmpuri au fost citite doar după etichete"))
+                                    message="AI unavailable: some fields were read from labels only"))
         return AgentResult(agent="functionar", status="done", findings=findings, llm_usage=calls.total_usage())
 
     async def _document(self, case_id: str, doc: Document, words: list[dict], paznic: dict,
@@ -183,12 +183,12 @@ class Functionar:
             elif llm_raw and llm_raw.value:
                 findings.append(Finding(
                     code="EXTRACTION_UNGROUNDED", severity="low",
-                    message=f"Câmpul „{FIELD_RO.get(name, name)}” nu se regăsește în document; ignorat",
+                    message=f"The \"{FIELD_RO.get(name, name)}\" field was not found in the document; ignored",
                     evidence=Evidence(doc_id=doc.id, field=name)))
         if unredacted:
             findings.append(Finding(
                 code="UNREDACTED_IDENTIFIER", severity="info",
-                message=f"Identificator neascuns de Paznic, nepreluat ({', '.join(unredacted)})",
+                message=f"Identifier not hidden by the Guard, not taken over ({', '.join(unredacted)})",
                 evidence=Evidence(doc_id=doc.id)))
 
         table = None

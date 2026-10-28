@@ -14,11 +14,11 @@ from app.models import AgentResult, Finding
 log = logging.getLogger("orb.compliance")
 
 SYSTEM = (
-    "Ești ofițerul de conformitate al unei bănci. Primești DOAR lista de dovezi găsite de agenți "
-    "(cod, gravitate, mesaj), scorul de risc și recomandarea — deja calculate. NU le schimbi. "
-    "Scrii în română un rezumat de 2–3 propoziții pentru angajatul care decide: ce s-a găsit, de ce contează, "
-    "ce recomanzi. Fără date personale, fără speculații dincolo de dovezi, fără scoruri sau procente. "
-    "Etichetele [X_1] rămân etichete. Nu menționa detalii tehnice despre sursa datelor (ex. „registru demo”)."
+    "You are a bank's compliance officer. You receive ONLY the list of evidence found by the agents "
+    "(code, severity, message), the risk score and the recommendation — already computed. You do NOT change them. "
+    "Write, in ENGLISH, a summary of 2-3 sentences for the employee who decides: what was found, why it matters, "
+    "what you recommend. No personal data, no speculation beyond the evidence, no scores or percentages. "
+    "Labels like [X_1] stay labels. Do not mention technical details about the data source (e.g. \"demo registry\")."
 )
 
 
@@ -26,21 +26,21 @@ class Summary(BaseModel):
     summary: str = Field(max_length=600)
 
 LABEL_FINDING = {
-    "identity_fraud": ("IDENTITY_FRAUD_LIKELY", "critical", "Furt de identitate probabil, parte dintr-o rețea"),
-    "fraud_ring": ("FRAUD_RING_LINKED", "high", "Dosarul e legat de o rețea suspectă"),
-    "forged": ("DOCUMENT_FORGERY_LIKELY", "high", "Documente probabil falsificate"),
-    "suspicious": ("NEEDS_REVIEW", "medium", "Dosarul necesită verificare manuală"),
-    "clean": ("NO_ISSUES", "info", "Nicio problemă găsită"),
+    "identity_fraud": ("IDENTITY_FRAUD_LIKELY", "critical", "Likely identity theft, part of a ring"),
+    "fraud_ring": ("FRAUD_RING_LINKED", "high", "The application is linked to a suspicious ring"),
+    "forged": ("DOCUMENT_FORGERY_LIKELY", "high", "Documents likely forged"),
+    "suspicious": ("NEEDS_REVIEW", "medium", "The application needs manual review"),
+    "clean": ("NO_ISSUES", "info", "No issues found"),
 }
 
 
 def _band(risk: float) -> str:
-    return "foarte mare" if risk >= 0.85 else "mare" if risk >= 0.70 else "mediu" if risk >= 0.35 else "scăzut"
+    return "very high" if risk >= 0.85 else "high" if risk >= 0.70 else "medium" if risk >= 0.35 else "low"
 
 
 class Compliance:
     name = "compliance"
-    start_message = "Analizez dovezile"
+    start_message = "Analyzing the evidence"
 
     async def run(self, case, ctx) -> AgentResult:
         results = list(ctx.results.values())
@@ -48,19 +48,20 @@ class Compliance:
         verdict, top = score(results)
         usage = None
         try:
-            evidence = "\n".join(f"- {f.code} [{f.severity}]: {f.message}" for f in top[:12]) or "- (nicio dovadă)"
+            evidence = "\n".join(f"- {f.code} [{f.severity}]: {f.message}" for f in top[:12]) or "- (no evidence)"
             r = await chat("summary", case_id=case.id, system=SYSTEM, json_schema=Summary, max_tokens=1500,
                            cache_key=f"summary|{case.id}" if case.id.startswith("case_maria") else None,
-                           prompt=f"Nivel de risc: {_band(verdict.risk)} (nu da procente sau scoruri). "
-                                  f"Recomandare: {verdict.recommendation}. "
-                                  f"Incomplet: {verdict.incomplete}.\nDovezi:\n{evidence}")
+                           prompt=f"Risk level: {_band(verdict.risk)} (do not give percentages or scores). "
+                                  f"Recommendation: {verdict.recommendation}. "
+                                  f"Incomplete: {verdict.incomplete}.\nEvidence:\n{evidence}")
             usage = r.usage
             bad = unsupported_claims(r.data.summary, evidence, verdict.risk)
             if bad:  # rezumatul conține cifre/etichete care nu sunt în dovezi → nu-l arătăm
                 log.warning("rezumat LLM respins: afirmații fără dovadă %s", bad)
                 verdict.summary_source = "template_after_check"
                 await ctx.emit("agent_progress",
-                               "Rezumatul AI conținea o cifră fără dovadă — folosesc rezumatul standard")
+                               "The AI summary contained a figure with no supporting evidence "
+                               "— using the standard summary")
             else:
                 verdict.summary, verdict.summary_source = r.data.summary, "llm"
         except Exception as exc:  # noqa: BLE001 — rezumatul din șablon rămâne
@@ -77,6 +78,6 @@ class Compliance:
             return
         low, high = min(scored, key=lambda r: r.risk), max(scored, key=lambda r: r.risk)
         if round(high.risk - low.risk, 6) >= 0.15:
-            await ctx.emit("debate", f"{low.agent.capitalize()} vede risc {low.risk:.0%}, dar "
-                           f"{high.agent.capitalize()} are dovezi de {high.risk:.0%} — cântăresc ambele.",
+            await ctx.emit("debate", f"{low.agent.capitalize()} sees {low.risk:.0%} risk, but "
+                           f"{high.agent.capitalize()} has evidence at {high.risk:.0%} — weighing both.",
                            data={"low": low.agent, "high": high.agent})

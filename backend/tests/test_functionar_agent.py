@@ -114,7 +114,7 @@ def test_maria_without_llm_reads_everything_by_labels(no_llm):
     card, slip, stmt = case.documents
 
     assert [d.type for d in case.documents] == ["id_card", "payslip", "bank_statement"]
-    assert result.findings[0].message == "3 documente: buletin, fluturaș, extras"
+    assert result.findings[0].message == "3 documents: ID card, payslip, bank statement"
     assert "EXTRACTION_RULES_ONLY" in codes(result) and "EXTRACTION_UNGROUNDED" not in codes(result)
 
     s = {k: v.value for k, v in slip.extracted.items()}
@@ -207,7 +207,7 @@ def test_unknown_document_without_llm(no_llm):
     words = words_of([(100, [(80, "Factură fiscală nr. 12")])])
     result = run_agent(case, Ctx({"paznic": {"d": {"words": words}}}))
     assert case.documents[0].type == "unknown" and case.documents[0].extracted == {}
-    assert result.findings[0].message == "1 document: necunoscut"
+    assert result.findings[0].message == "1 document: unknown"
 
 
 def test_grounding_rejects_close_but_different_amount():

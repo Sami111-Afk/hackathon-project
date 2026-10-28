@@ -19,8 +19,8 @@ Reread = Callable[[int | None, list[float] | None], float | None]  # (pagina, ch
 
 def _uncertain(doc_id: str, page, bbox, field: str | None = None) -> Finding:
     return Finding(code="AMOUNT_UNCERTAIN", severity="low",
-                   message="Soldul nu iese cu sumele citite, dar iese la recitirea zonei: "
-                           "probabil eroare de citire, de verificat pe document",
+                   message="The balance does not add up with the amounts read, but it does when the area is re-read: "
+                           "probably a reading error, check on the document",
                    evidence=Evidence(doc_id=doc_id, page=page, bbox=bbox, field=field))
 
 
@@ -51,8 +51,8 @@ def check_balances(table: dict, doc_id: str, reread: Reread | None = None) -> li
             continue
         findings.append(Finding(
             code="BALANCE_MISMATCH", severity="high",
-            message=f"Soldul de pe {row['date']} ({format_ron(row['balance'])} lei) nu iese din rândul "
-                    f"anterior ({format_ron(expected)} lei)",
+            message=f"The balance on {row['date']} ({format_ron(row['balance'])} lei) does not follow from the "
+                    f"previous row ({format_ron(expected)} lei)",
             evidence=Evidence(doc_id=doc_id, page=page, bbox=row["bbox"])))
     closing = table.get("closing_balance")
     if (rows and closing is not None and rows[-1].get("balance") is not None
@@ -66,7 +66,7 @@ def check_balances(table: dict, doc_id: str, reread: Reread | None = None) -> li
         else:
             findings.append(Finding(
                 code="BALANCE_MISMATCH", severity="high",
-                message=f"Soldul final ({format_ron(closing)} lei) nu iese din tranzacții "
+                message=f"The closing balance ({format_ron(closing)} lei) does not follow from the transactions "
                         f"({format_ron(last['balance'])} lei)",
                 evidence=Evidence(doc_id=doc_id, page=ev.get("page"), bbox=ev.get("bbox"), field="closing_balance")))
     return findings
@@ -80,13 +80,14 @@ def check_income(table: dict, doc_id: str, payslip_net: float | None) -> list[Fi
     if payslip_net and credits and not any(abs(r["amount"] - payslip_net) <= SALARY_TOLERANCE_RON for r in credits):
         findings.append(Finding(
             code="SALARY_NOT_IN_STATEMENT", severity="medium",
-            message=f"Netul de pe fluturaș ({format_ron(payslip_net)} lei) nu apare ca încasare în extras",
+            message=f"The net pay on the payslip ({format_ron(payslip_net)} lei) "
+                    "does not appear as a credit in the bank statement",
             evidence=Evidence(doc_id=doc_id)))
     pension = next((r for r in credits if "pensie" in normalize(r["description"])), None)
     if pension and payslip_net:
         findings.append(Finding(
             code="PENSION_INCOME", severity="low",
-            message=f"Extrasul arată o încasare de pensie ({format_ron(pension['amount'])} lei), "
-                    "deși solicitantul se declară angajat",
+            message=f"The bank statement shows a pension credit ({format_ron(pension['amount'])} lei), "
+                    "although the applicant declares being employed",
             evidence=Evidence(doc_id=doc_id, page=pension["page"], bbox=pension["bbox"])))
     return findings
