@@ -37,7 +37,8 @@ export function DocumentViewer({
     getDocumentImage(caseId, doc.id, view, page.page)
       .then((u) => { url = u; if (!cancelled) setImg({ key, src: u, failed: false }) })
       .catch(() => { if (!cancelled) setImg({ key, src: null, failed: true }) })
-    return () => { cancelled = true; if (url) URL.revokeObjectURL(url) }
+    // Eliberarea după o secundă: în estomparea dintre pagini, imaginea veche mai e citită o clipă.
+    return () => { cancelled = true; const u = url; if (u) setTimeout(() => URL.revokeObjectURL(u), 1000) }
   }, [caseId, doc, view, page.page, mock, key])
 
   if (!doc) return null
