@@ -1,4 +1,66 @@
-# Video 3:00 — VARIANTA 4 (după 3 runde de jurați; runda 3 cu Fable, care au verificat și codul) — DE LUCRU
+# Video 3:00 — VARIANTA 5 (după prezentarea organizatorilor, 28.10 ~20:00) — PROPUNERE
+
+> Variantele 4–1 sunt mai jos, ca istoric. Varianta 5 urmează **structura recomandată de organizatori** și
+> **criteriile juriului Raiffeisen**. Sursa: slide-urile workshopului (link în chat).
+
+## Ce am aflat din prezentare (important)
+- **3 finaliști pe challenge**, iar în challenge-ul nostru (Operational Efficiency) sunt **~28 de echipe**. Evaluarea companiei
+  contează 90% la selecția finaliștilor, mentoratul 10%.
+- **Criteriile Raiffeisen:**
+  - originalitate 15%;
+  - înțelegerea problemei și a domeniului 15% („procese, date, reguli, constrângeri, excepții”);
+  - **designul agenților și orchestrarea 25%** („decizii, folosirea uneltelor, **situații neprevăzute**”);
+  - funcționalitate și testabilitate 20%;
+  - arhitectură și reproductibilitate 15% („componente + instrucțiuni de instalare”).
+  - Plus: *„Mai mulți agenți nu înseamnă automat o soluție mai bună. Explicați de ce designul se potrivește sarcinii.”*
+- **Structura recomandată (nu obligatorie):**
+  - 0:00–0:30 utilizator, problemă, soluție;
+  - **0:30–2:00 demonstrație: UN flux de la input la rezultat**;
+  - 2:00–2:30 valoare și diferențiere;
+  - 2:30–3:00 implementare, limite, pasul următor;
+  - „Explicați deciziile tehnice în timpul demo-ului.”
+- Deschiderea recomandată: *„We built [soluția] to help [utilizatorul] do [sarcina]. Today this is difficult because [problema].”*
+  **Exemplul lor e chiar ideea noastră** („an agent that checks application documents and flags missing information”) →
+  multe echipe vor face ceva asemănător, deci **diferențierea contează** (dovezile pe document, fără date personale în AI, situații neprevăzute).
+- „A feature tour is less useful than a complete user journey.” → **scoatem Arena din video** (rămâne linkul pe cardul de final).
+- „Spuneți clar ce e sintetic, ce integrare e simulată, ce nu e terminat.” + „Spuneți dacă ați accelerat sau tăiat așteptări.” (avem „shown at 2×”).
+- **Finala (17:00): doar video, fără demo live pe platformă** („technical restrictions”). → **Arena cu telefoanele juriului nu se poate face
+  în finală.** Pitch deck-ul final se predă până la 16:30. La 15:30 juriul poate pune întrebări.
+
+## Structura (180 s) — mapată pe criterii
+
+| # | Timp | Durată | Pe ecran | Vocea (engleză) | Criteriu |
+|---|---|---|---|---|---|
+| 0 | 0:00–0:04 | 4 s | Intro animat ORB | — (muzică) | |
+| 1 | 0:04–0:17 | 13 s | Zoom pe fluturașul Mariei (8.500), apoi buletinul și extrasul | "This payslip says 8,500 lei take-home. It should say 8,307. Catching that is a credit analyst's routine: read the documents, recalculate, cross-check. About twenty minutes a file, by our own timing." | problema |
+| 2 | 0:17–0:33 | 16 s | Ecranul „New application” / dashboard | "We built ORB to help credit analysts check loan applications. It takes the ID card, the payslip and the bank statement, applies the bank's rules, and either clears the file or flags exactly what's wrong, for a human to decide." | utilizator + soluție |
+| 3 | 0:33–0:46 | 13 s | **Input:** încărcăm cele 3 documente ale Mariei → vederea „redactat” (nume → [PERSOANA_1]) | "Here's Maria's application. First, the Guard reads the documents and replaces every name and ID number with a stand-in, before any AI sees them." | flux, decizii |
+| 4 | 0:46–1:16 | 30 s | **Procesare:** agenții live (2×) → dovezile → click = chenar pe fluturaș → zonele editate | "The Clerk extracts the fields, and anything it reads must be found in the document, or it's discarded. The Verifier applies Romanian payroll tax rules: take-home should be 8,307, not 8,500. It looks up the employer: inactive. The statement shows a pension, though the payslip says employed. And the Detector finds where the image was edited." | unelte, domeniu |
+| 5 | 1:16–1:25 | 9 s | Graful rețelei | "The Detective checks other applications: the same bank account, six applications, six different names." | |
+| 6 | 1:25–1:45 | 20 s | **Situații neprevăzute:** un dosar cu poză neclară (OCR_LOW_QUALITY → la om, fără cloud) · o sumă „de verificat” · un agent „skipped” | "When something doesn't fit, ORB doesn't guess. A blurry photo never goes to the cloud; the file goes to a human. An amount the OCR may have misread is re-read before anyone is accused. If one agent fails, the others finish, and the gap is reported." | **agenți 25%** |
+| 7 | 1:45–2:00 | 15 s | **Rezultat:** risc „Very high” → „Why this score?” → Approve cere motiv | "Compliance weighs the evidence with fixed rules, every line explained. The AI doesn't decide. The analyst does, and approving a flagged file takes a written reason." | excepție + om |
+| 8 | 2:00–2:15 | 15 s | Dosarul cinstit: verde, valorile legate de sursă → dashboard cu orele | "Most files are honest. They come back clean in seconds, every value linked to its source. On twenty-one files: seven hours of checking, about twenty minutes of review, by our estimate." | valoare |
+| 9 | 2:15–2:30 | 15 s | Privacy: ce a văzut AI-ul → butonul local | "And it's built for a bank: the cloud AI only sees stand-ins, a second gate checks every request before it leaves, and one switch runs everything in-house." | diferențiere |
+| 10 | 2:30–2:46 | 16 s | Cardul cu cifrele (cu falsurile perfecte și „synthetic”) | "We tested sixty synthetic applications with the real AI: no names leaked, none of twelve honest applicants flagged high-risk, all thirty-six simple forgeries caught. Perfect forgeries mostly pass. The data and the forgeries are ours." | limite |
+| 11 | 2:46–2:56 | 10 s | Schema arhitecturii (6 module) + README cu o comandă | "Six modules on one shared contract, tested, one command to run. Our ask: a pilot on a hundred real files, on the bank's own machine." | arhitectură 15% + pasul următor |
+| 12 | 2:56–3:00 | 4 s | Outro animat ORB | "ORB does the checking. Your people decide." | |
+
+### Ce se schimbă față de varianta 4
+- **Maria devine fluxul principal** (input → procesare → rezultat → om), cum cer ei; dosarul cinstit trece la „valoare”.
+- **Scenă nouă: situații neprevăzute** (25% din notă e pe asta și nu o arătam deloc).
+- **Fiecare agent e numit când lucrează** (Guard, Clerk, Verifier, Detector, Detective, Compliance) → „agent design” vizibil.
+  Am scos „four are plain code”: la criteriul lor ar suna ca „nu sunt agenți”. Spunem în schimb *de ce* (reguli fixe unde cifrele trebuie să fie exacte).
+- **Arena scoasă** din video (linkul rămâne pe cardul de final). În finală nu se poate face live oricum.
+- **Scenă nouă de arhitectură** (10 s): 6 module, contract comun, teste, o comandă.
+
+### De filmat în plus
+- un dosar cu **poză de telefon neclară** (din `scripts/benchmark_pipeline.py --phone --generate-only`) → OCR_LOW_QUALITY, fără cloud;
+- o sumă „de verificat” (AMOUNT_UNCERTAIN) și un agent „skipped”, dacă le putem arăta pe un dosar real;
+- schema arhitecturii (din `ARCHITECTURE.md`) ca imagine curată.
+
+---
+
+# Varianta 4 (istoric)
 
 > Variantele 3, 2 și 1 sunt mai jos, doar ca istoric. **De confirmat după workshopul de la 20:00.**
 
