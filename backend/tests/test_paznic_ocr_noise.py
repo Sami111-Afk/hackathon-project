@@ -120,3 +120,71 @@ def test_long_digit_runs_hidden_but_amounts_and_phones_kept():
     kinds = {s.value: s.kind for s in find_all("Cont 9999 0000 0000 0001. Sold 26.480,00. Tel 0722 123 456")}
     assert kinds.get("9999 0000 0000 0001") == "CONT"
     assert "26.480,00" not in kinds and kinds.get("0722 123 456") == "TELEFON"
+
+
+@pytest.mark.parametrize("line", [
+    "Str. Mihai viteazu nr. 13, Ploiești, jud. Prahova",     # văzute în benchmark --phone, fără eticheta „Domiciliu”
+    "PE Str. Republicii nr. 72. Timişoara, jud. Timiş",
+    "+ Str. Victoriei nr. 28, Iași, jud. Iași",
+    "m Mihai Viteazu nr. 14, Timişoara, jud. Timiș",          # OCR-ul a mâncat „Str.”
+    "Bd. Unirii nr. 5A, bl. 3, București",
+    "Mun. Ploiești, Jud. PH",                                 # locul nașterii
+])
+def test_addresses_hidden_by_shape_without_label(line):
+    text = f"Valabilitate\n{line}\n20.05.19-12.03.2029"
+    spans = [s for s in detect.find_all(text) if s.kind == "ADRESA"]
+    hidden = "".join(text[s.start:s.end] for s in spans)
+    street = line.split(" nr.")[0].split()[-1]
+    assert spans and street in hidden
+
+
+@pytest.mark.parametrize("line", [
+    "CUI [CUI_1] · Ploiești, jud. Prahova",                   # firma de pe fluturaș: nu e adresă personală
+    "Salariu brut 14.200,00", "NET DE PLATĂ 8.500,00", "Perioada: 01.09.2026 – 30.09.2026",
+    "20.09 Factură utilități -286,70 2.851,50", "Funcția Contabil",
+])
+def test_ordinary_lines_are_not_addresses(line):
+    assert [s for s in detect.find_addresses(line)] == []
+
+
+def test_iban_with_s_for_5_is_hidden():
+    s = next(s for s in detect.find_identifiers("IBAN: ROOSRZBR9999000000000003") if s.kind == "IBAN")
+    assert s.valid and s.value == "RO05RZBR9999000000000003"  # benchmark --phone: „RO05” citit „ROOS”
+
+
+ID_HEADER = "CARTE DE IDENTITATE / IDENTITY CARD\n"
+
+
+@pytest.mark.parametrize("line", [
+    "———————K | Victoriei pr. 96, Ploieşti, jud. Prahova",   # benchmark --phone: „nr.” citit „pr.”
+    "Str. Florilor m 1 08, Brașov, jud. Brașov",
+    "i ser. Zorilor nr Sa Cluj-Napoca, jud. Cluj",
+])
+def test_id_card_county_lines_are_addresses_whatever_ocr_read(line):
+    text = ID_HEADER + line
+    spans = [s for s in detect.find_all(text) if s.kind == "ADRESA"]
+    street = next(w for w in ("Victoriei", "Florilor", "Zorilor") if w in line)
+    assert any(street in text[s.start:s.end] for s in spans)
+
+
+@pytest.mark.parametrize("line", [
+    "__ 15750912<4ROU9705102M2911208000037 E =",           # benchmark --phone: zgomot la capete
+    "1S166673<5ROU971 1220F3201146000097 —",              # zgomot și în interior
+])
+def test_noisy_mrz_line2_is_hidden_without_accusing(line):
+    text = ID_HEADER + "IDROUPOPESCU<<ELENA<<<<<<<<<<<<<<<<<<<\n" + line
+    spans = [s for s in detect.find_all(text) if s.kind == "MRZ"]
+    hidden = "".join(text[s.start:s.end] for s in spans)
+    assert "ROU" in hidden and ("15750912" in hidden or "166673" in hidden)
+    assert all(s.valid is not False for s in spans)  # nevalidabil ≠ fals: fără MRZ_INVALID pe zgomot
+
+
+def test_payslip_county_line_is_not_hidden():
+    text = "FLUTURAȘ DE SALARIU\nCUI RO9402119372 · Ploiești, jud. Prahova"  # nu e buletin → firma rămâne
+    assert not [s for s in detect.find_all(text) if s.kind == "ADRESA"]
+
+
+def test_id_number_with_ocr_space_is_hidden():
+    text = "CARTE DE IDENTITATE / IDENTITY CARD SERIA IS NR 86524 7"  # benchmark --phone
+    spans = {s.kind: text[s.start:s.end] for s in detect.find_identifiers(text)}
+    assert spans.get("SERIE") == "IS" and spans.get("NR") == "86524 7"
