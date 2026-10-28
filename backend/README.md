@@ -64,7 +64,7 @@ class Fluturas(BaseModel):
 r = await chat("extract", case_id=case.id, system="...", prompt=text_redactat, json_schema=Fluturas)
 r.data.net_salary   # validat
 ```
-- **Sarcini → modele** (`TASKS` în `core/llm.py`): `extract`/`arena` → Haiku 5.5, `summary` → Sonnet 5.5, `learn` → Opus 5.5 (pe Bedrock).
+- **Sarcini → modele** (`TASKS` în `core/llm.py`): `extract`/`arena` → Haiku 5.5, `summary` → Sonnet 5.5, `learn` → Sonnet 5.5 (pe Bedrock).
 - **Moduri:** `LLM_MODE=bedrock|cloud|local|mock`, schimbabil live prin `POST /api/settings`. Bedrock picat (cheie expirată) → trece singur pe Featherless.
 - **Poarta anti-PII:** în bedrock/cloud, orice CNP/IBAN/telefon/email sau valoare din seif în payload → `PIIGateBlocked`, nimic nu pleacă. Paznicul înregistrează valorile cu `pii_gate.register_vault_values(case_id, [...])`.
 - **Imagini:** `images=[(bytes, "image/jpeg")]`; în cloud doar cu `images_redacted=True`. Buletine — niciodată.
@@ -81,7 +81,7 @@ r.data.net_salary   # validat
 - `GET /api/arena/leaderboard` — `{top, feed, stats}`; `GET /api/arena/live` — SSE pentru proiector (`arena_scored`, `rule_proposed`, `rule_approved`).
 
 ## Self-learning (rute „bancă”)
-- Un fals care trece în Arena → Claude Opus propune reguli în fundal → backtest automat (respinsă dacă nu prinde falsul sau prinde fluturași legitimi).
+- Un fals care trece în Arena → Claude Sonnet propune reguli în fundal → backtest automat (respinsă dacă nu prinde falsul sau prinde fluturași legitimi).
 - `GET /api/rules` · `POST /api/rules/{id}/approve|reject` `{decided_by}` · `POST /api/rules/learn/{submission_id}` (pornire manuală, util la demo).
 - Regulile sunt JSON evaluat de `app/learning/engine.py` — LLM-ul nu scrie cod.
 - Arena folosește deocamdată un arbitru provizoriu (`app/arena/judge.py`) cu aceleași verificări ca Verificatorul; trece pe pipeline-ul complet când agenții reali sunt gata.

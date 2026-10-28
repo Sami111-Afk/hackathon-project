@@ -23,7 +23,7 @@ OUT = ROOT / "data" / "demo" / "maria"
 
 MARIA = {
     "surname": "IONESCU", "given": "MARIA", "sex": "F", "birth": "1959-03-12", "county": "PH",
-    "address": "Str. Florilor nr. 12, Ploiești, jud. Prahova", "phone": "0722 318 405",
+    "address": "Str. Florilor nr. 12, Ploiești, jud. Prahova", "phone": "0700 000 000",
     "series": "PH", "number": "481925", "issued": "2019-05-20", "expiry": "2029-03-12",
 }
 EMPLOYER = {"name": "Agro Prahova Distribuție SRL", "cui": "RO9402119372"}  # inactivă în registrul Arenei/ANAF simulat

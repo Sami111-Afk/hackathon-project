@@ -225,7 +225,7 @@ type Scene = { id: string; dur: number; voice?: string; voiceAt?: number; parts:
 
 const SCENES: Scene[] = [
   { id: 'intro', dur: 4, parts: [{ dur: 4, el: <OffthreadVideo src={staticFile('orb_intro.mp4')} /> }] },
-  { id: 'hook', dur: 14.5, voice: 's01', voiceAt: 0.3, parts: [{ dur: 14.5, el: <Hook /> }],
+  { id: 'hook', dur: 14.5, voice: 's01', voiceAt: 0.05, parts: [{ dur: 14.5, el: <Hook /> }],
     captions: [['~20 min per file · our timing, not bank data', 9.6, 14.2]], sfx: [['alert', 4.3, 0.5]] },
   { id: 'new', dur: 13, voice: 's02', parts: [{ dur: 13, el: <Clip src="v2_new.webm" from={1} keys={[Z(0, 1, 960, 540), Z(3, 1, 960, 540), Z(6, 1.18, 960, 520)]} /> }],
     captions: [['User: credit analyst', 1, 5.6], ['Dashboard counters: demo, on synthetic data', 6.2, 12.6]], sfx: [['click', at(4.54, 1)]] },
@@ -272,7 +272,7 @@ const SCENES: Scene[] = [
     captions: [['Try it: orb-raiffeisen.vercel.app/arena', 0.5, 4.4, 'info', false],
       ['AI-proposed rule · back-tested on 291 synthetic payslips: 0 false alarms · a human approves', 7.3, 11.8, 'ok', true]],
     sfx: [['whoosh', 4.5, 0.4], ['click', 7 + (8.44 - 3.8) / 1.05], ['ping', 7 + (8.44 - 3.8) / 1.05 + 0.15, 0.55]] },
-  { id: 'limits', dur: 11, voice: 's12', parts: [{ dur: 11, el: <Terminal /> }],
+  { id: 'limits', dur: 11, voice: 's12', voiceAt: 0.1, parts: [{ dur: 11, el: <Terminal /> }],
     captions: [['Limits: synthetic data · our own forgeries · a forger who also fakes the statement would pass', 1.2, 6.4, 'danger'], ['Shown: offline replay, no API key · the 60-file benchmark used the real cloud AI', 6.8, 10.8]] },
   { id: 'outro', dur: 4, voice: 's13', voiceAt: 0.6, parts: [{ dur: 4, el: <OffthreadVideo src={staticFile('orb_outro.mp4')} /> }] },
 ]

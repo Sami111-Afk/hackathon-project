@@ -1,7 +1,8 @@
-"""Arbitrul provizoriu al Arenei: verificările reale pentru fluturaș, pe datele știute exact.
+"""Arena judge: the Verifier's payslip checks (same tax code, `verificator/tax.py`) + learned rules,
+applied directly to the forged fields.
 
-Când agenții reali sunt gata, ARENA_USE_PIPELINE=true trimite falsurile prin pipeline-ul
-complet. Până atunci, aceleași verificări pe care le face Verificatorul + reguli învățate.
+The Arena skips OCR on purpose (players edit fields, not photos), so it answers in milliseconds on a phone.
+/ Arbitrul Arenei: aceleași verificări ca Verificatorul + regulile învățate, direct pe câmpurile falsificate (fără OCR).
 """
 from datetime import date
 

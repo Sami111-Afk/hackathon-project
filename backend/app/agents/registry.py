@@ -1,10 +1,7 @@
-"""Ce agent rulează pentru fiecare pas.
+"""Which agent runs at each pipeline step. / Ce agent rulează la fiecare pas.
 
-Cât timp agentul tău nu e gata, rulează varianta „de probă” (stub), care
-redă rezultatul din dosarul Mariei. Când e gata, înlocuiești aici linia ta:
-
-    from app.agents.paznic.agent import Paznic
-    "paznic": Paznic(),
+All six are real agents. The only fallback: without Tesseract `ron` the Guard cannot OCR and runs
+as a stub that replays the demo case (a warning is logged) — see README › Run it.
 """
 import logging
 

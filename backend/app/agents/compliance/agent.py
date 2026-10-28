@@ -1,7 +1,9 @@
-"""⚖️ Compliance — Samuel. Scor determinist + dezbatere + rezumat.
+"""⚖️ Compliance — deterministic risk score + LLM summary (English summary below).
 
-Rezumatul LLM (când îl adăugăm) primește DOAR finding-urile, niciodată textul
-documentelor (anti prompt injection). Până atunci: rezumat din șablon.
+Deterministic risk level from the evidence (scoring.py). The LLM only writes the summary and receives ONLY
+the findings, never the document text (prompt-injection safe). A summary quoting a number that is not in the
+evidence is replaced by the template summary.
+(RO: scor determinist; LLM-ul scrie doar rezumatul, din dovezi; un rezumat cu cifre nesusținute e înlocuit.)
 """
 import logging
 

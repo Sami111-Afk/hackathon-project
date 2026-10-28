@@ -44,7 +44,7 @@ Upload (Dosar / Arena)
 ORCHESTRATOR (backend/app/core/pipeline.py)
    │  stare + evenimente în memorie → SSE; DB scris la finalul fiecărui agent
    │
-   ├─ 1. PAZNIC          PDF text-layer sau OCR → PII (regex+checksum, MRZ, GLiNER, zone de șablon)
+   ├─ 1. PAZNIC          PDF text-layer sau OCR → PII (regex+checksum, MRZ, nume cunoscute, zone de șablon; GLiNER = planificat, neimplementat)
    │                     → etichete + amprente HMAC + seif + imagine redactată + bbox-uri
    │                     + detectare locală de prompt injection
    │
@@ -368,7 +368,7 @@ LLM-ul **nu scrie cod executabil** (ar fi injecție de cod într-un sistem banca
 QR mare + URL scurt, feed live, top 10, plus un grafic pe runde „AI atacator vs AI apărător”.
 
 ### Atacatorul (P2, Samuel)
-Un **fuzzer** (fără LLM — Claude a refuzat rolul de falsificator, iar un algoritm e oricum repetabil și instant): alege câmpuri și trucuri din Forge Studio, citește codurile dovezilor care l-au prins și evită ce l-a dat de gol. Ce trece declanșează self-learning (Claude Opus) → apărătorul învață. Pe ecran: rata de falsuri care trec, pe runde. `POST /api/admin/attacker/start {rounds, auto_approve}`.
+Un **fuzzer** (fără LLM — Claude a refuzat rolul de falsificator, iar un algoritm e oricum repetabil și instant): alege câmpuri și trucuri din Forge Studio, citește codurile dovezilor care l-au prins și evită ce l-a dat de gol. Ce trece declanșează self-learning (Claude Sonnet) → apărătorul învață. Pe ecran: rata de falsuri care trec, pe runde. `POST /api/admin/attacker/start {rounds, auto_approve}`.
 
 ### Dacă nu joacă nimeni
 **Dacă nu joacă nimeni:** clasamentul e populat cu rulările pregătite de echipă, Atacatorul poate fi pornit din admin, un coleg joacă live de pe un telefon proiectat.
@@ -464,7 +464,7 @@ Angajatorul și portofelul clientului sunt simulate pe server pentru demo (vezi 
 | Funcționar (extragere text + imagini) | Haiku 5.5 | rapid, ieftin, bun la extragere și imagini |
 | Arena (volum mare) | Haiku 5.5 | multe cereri |
 | Compliance (rezumat din dovezi) | Sonnet 5.5 | raționament bun, latență mică |
-| Self-learning (propunere de reguli) | Opus 5.5 | puține apeluri, calitatea contează |
+| Self-learning (propunere de reguli) | Sonnet 5.5 | puține apeluri; Opus nu e necesar |
 
 **Notă pentru pitch:** cheia de demo e în regiunea SUA (`us-west-2`). În producție: Bedrock într-o regiune UE (ex. Frankfurt) sau complet on-prem — spunem asta explicit.
 

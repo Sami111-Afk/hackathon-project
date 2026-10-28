@@ -4,6 +4,18 @@
 
 **Live demo:** https://orb-raiffeisen.vercel.app (the bank login token is provided to the jury separately; the backend runs on our demo laptop behind ngrok — if it is down, `?mock=1` shows the demo without a backend) · **Arena (no login, works on a phone):** https://orb-raiffeisen.vercel.app/arena
 
+## For the jury (2 minutes)
+- **Watch:** the 3-minute video (link in the submission form) — one loan file from upload to the analyst's decision.
+- **Try:** the live demo above, or [`/arena`](https://orb-raiffeisen.vercel.app/arena) on a phone.
+- **Read the core code:** [`backend/app/core/pipeline.py`](backend/app/core/pipeline.py) (orchestration, ~140 lines) ·
+  [`backend/app/agents/`](backend/app/agents/) (one folder per agent) · [`backend/app/core/llm.py`](backend/app/core/llm.py)
+  (the single entry point to any LLM, with the PII gate and the audit) · [`agents/compliance/scoring.py`](backend/app/agents/compliance/scoring.py) (the deterministic risk rules).
+- **Verify:** `pytest` + the benchmark without an API key — see [Verify it in 5 minutes](#verify-it-in-5-minutes).
+- **Agent names in the code are Romanian:** `paznic` = Guard · `functionar` = Clerk · `verificator` = Verifier · `detector` = Detector ·
+  `detectiv` = Detective · `compliance` = Compliance. Comments and [ARCHITECTURE.md](ARCHITECTURE.md) are in Romanian; this README is the English entry point.
+- **Core vs extras:** the pipeline above is the submission. `app/arena`, `app/learning` (self-learning), `app/zk` + `zk/` (zero-knowledge) and the
+  homomorphic-encryption check are demo extras / prototypes (see [Implemented vs prototype](#implemented-vs-prototype)). `notes/` and `video/` are team working files.
+
 ## The problem
 
 For every consumer-loan application, a credit analyst reads the ID card, the payslip and the bank statement, recalculates the
@@ -14,7 +26,7 @@ studies on mortgages report hours per file), and identity-fraud rings slip throu
 
 ## What ORB does
 
-ORB runs the same checks in **~12–20 seconds** (8–9 s fully local), shows every finding **on the document itself**, and leaves the
+ORB runs the same checks in **~10–20 seconds** with the cloud AI (median 9 s in the benchmark; ~9 s fully local), shows every finding **on the document itself**, and leaves the
 decision to the analyst.
 
 | Role | What it does |
@@ -47,7 +59,8 @@ the unexpected, instead of guessing:
 
 ### Privacy by design
 - The cloud AI (Claude on AWS Bedrock) only ever sees pseudonymised text: `[PERSOANA_1]`, `[CNP_1]`, `[IBAN_1]`.
-- A **PII gate** re-scans every outgoing request and blocks it if a known personal value is still in it.
+- A **PII gate** re-scans every outgoing request and blocks it if a known personal value (or a CNP/IBAN/phone pattern) is still in it.
+  The first redaction layer is not perfect: in the 60-file benchmark the gate fired on 6 files — those went to a human, nothing left.
 - **ID cards and unclear phone photos never go to the cloud** (if OCR confidence is low we can't guarantee the redaction) — the file goes to a human instead.
 - **One button switches to 100% local AI** (Ollama on the bank's own machine): zero external calls.
 - Documents and personal values are **encrypted at rest**. The app's *Privacy* panel shows the evidence for each file (what the AI saw, the encrypted bytes on disk, the audit).
@@ -57,17 +70,23 @@ the unexpected, instead of guessing:
 | What | Result | How to reproduce |
 |---|---|---|
 | Real AI (Claude Haiku on Bedrock), 60 applications | **0 personal values sent to the cloud · 0 values invented by the AI · 0/12 honest applicants accused** (3/12 sent to a human) · **36/36 simple forgeries caught** · **12/12 "perfect" forgeries (taxes recomputed correctly) sent to a human** — the only trace is that the payslip's net pay never arrives in the bank statement · 56–60/60 per field extracted correctly · ~9–12 s per application | `backend/.venv/bin/python scripts/benchmark_pipeline.py --n 60 --llm bedrock` |
-| Phone photos (simulated: perspective, blur, shadows), real AI, 20 applications | 0 sent to the cloud · 0/4 honest accused (3/4 sent to a human) · 4/4 perfect forgeries sent to a human · extraction drops a lot → ORB routes to a human instead of guessing | `... --n 20 --phone --llm bedrock` |
+| Phone photos (simulated: perspective, blur, shadows), real AI, 20 applications | 0 sent to the cloud · 0/4 honest accused (3/4 sent to a human) · simple forgeries 10/12 (one forged balance came back clear) · 4/4 perfect forgeries sent to a human · extraction drops a lot → ORB routes to a human instead of guessing | `... --n 20 --phone --llm bedrock` |
 | Cost | ~0.005 $ per application (Haiku extracts, Sonnet summarises); 0 in local mode | per-call usage in the audit |
-| Local mode (RTX 4060 laptop, Qwen 4B via Ollama) | ~8–9 s per application, same verdict as the cloud | `LLM_MODE=local` |
+| Local mode (RTX 4060 laptop, Qwen 4B via Ollama) | ~8–9 s per application on Maria's demo file (manual runs, not in the benchmark file) | `LLM_MODE=local` |
 
-Raw results: [`data/benchmark/pipeline_results.json`](data/benchmark/pipeline_results.json). Tests: `cd backend && .venv/bin/python -m pytest -q` (275 passing).
+Raw results: [`data/benchmark/pipeline_results.json`](data/benchmark/pipeline_results.json). Tests: `cd backend && .venv/bin/python -m pytest -q`.
 
 ### Limits — said up front
 - **All data is synthetic** (generated documents, invented CNPs/IBANs/companies) and **the forgeries are ours**: the benchmark proves the
   pipeline is correct on the cases we designed, **not** accuracy on real-world fraud. The next step is labelled files from the bank.
 - A **"perfect" forgery** (taxes recomputed correctly) is not visible from the payslip alone: ORB flags it only because the salary never arrives in the bank statement, and sends it to a human — it is not accused. A forger who also fakes the statement would pass.
 - The risk level is a **severity score, not a probability**.
+- **Thresholds were tuned on the same synthetic set** (seed 2026) they are measured on — the numbers show the rules work on the cases
+  we designed, not that they generalise. A pilot on labelled real files is the real test.
+- **Self-learning** rules are back-tested on 290 synthetic payslips whose salaries sit between 0.6× and 1.5× the role median — a weak
+  test (a rule above 1.5× cannot false-alarm on it). Approved rules apply in the Arena only, not yet in the bank pipeline.
+- **Prompt injection:** the regex check exists, but our low-contrast hidden-text test was caught 0/5 times (OCR never read the text,
+  so it never reached the AI either).
 - The demo's inactive employer comes from a **demo company registry** (real ANAF is queried for real companies).
 - Demo-grade: a single shared access token (production: the bank's SSO/roles), SQLite, Bedrock in `us-west-2` on the organisers'
   account (production: an EU region under the bank's AWS contract, or fully on-prem).
@@ -88,20 +107,20 @@ Raw results: [`data/benchmark/pipeline_results.json`](data/benchmark/pipeline_re
 
 **Prerequisites:** Python 3.11+, Node 20+, **Tesseract with the Romanian language pack**
 (`sudo apt install tesseract-ocr tesseract-ocr-ron` · macOS: `brew install tesseract tesseract-lang`; check with
-`python -c "import pytesseract; print(pytesseract.get_languages())"` → must list `ron`).
+`tesseract --list-langs | grep ron`).
 Without `ron` the Guard cannot OCR the documents and runs as a **recorded stub** (it replays the demo case; a warning is logged).
 Optional: Ollama (local AI), Bedrock or Featherless key (cloud AI). Docker is not needed.
 
 ```bash
+cd backend && python3.11 -m venv .venv && source .venv/bin/activate && pip install -r requirements-core.txt && cd ..
 cp .env.example .env
-# generate the four required secrets (the app refuses to start without them):
-python3 -c "import secrets;from cryptography.fernet import Fernet;print(f'HMAC_SECRET={secrets.token_hex(32)}\nARENA_HMAC_SECRET={secrets.token_hex(32)}\nVAULT_KEY={Fernet.generate_key().decode()}\nBANK_UI_TOKEN={secrets.token_urlsafe(24)}')" >> .env
-cd backend && python3.11 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-core.txt && uvicorn app.main:app --port 8000   # keep it running
+# the four required secrets (the app refuses to start without them): drop the empty lines, then generate them
+sed -i '/^\(HMAC_SECRET\|ARENA_HMAC_SECRET\|VAULT_KEY\|BANK_UI_TOKEN\)=$/d' .env
+python -c "import secrets;from cryptography.fernet import Fernet;print(f'HMAC_SECRET={secrets.token_hex(32)}\nARENA_HMAC_SECRET={secrets.token_hex(32)}\nVAULT_KEY={Fernet.generate_key().decode()}\nBANK_UI_TOKEN={secrets.token_urlsafe(24)}')" >> .env
+cd backend && uvicorn app.main:app --port 8000   # keep it running
 # second terminal, from the repo root:
 cd frontend && npm install && npm run dev        # http://localhost:5173  (?mock=1 = demo without backend)
 ```
-(`cryptography` is installed by `requirements-core.txt`; run the secrets line after `pip install` if it is missing.)
 
 **No API key? It still runs end to end:** with the default `LLM_MODE=mock`, extraction falls back to rules and Compliance uses
 its template summary. Real AI: `LLM_MODE=bedrock` (+ `AWS_BEARER_TOKEN_BEDROCK`), `cloud` (+ `FEATHERLESS_API_KEY`) or
@@ -110,27 +129,30 @@ its template summary. Real AI: `LLM_MODE=bedrock` (+ `AWS_BEARER_TOKEN_BEDROCK`)
 **Demo data:**
 ```bash
 backend/.venv/bin/python -m data.generator.build_demo          # from the repo root: Maria's documents
-TOKEN=$(grep ^BANK_UI_TOKEN .env | cut -d= -f2)
+TOKEN=$(grep '^BANK_UI_TOKEN=.' .env | tail -1 | cut -d= -f2)
 curl -X POST -H "Authorization: Bearer $TOKEN" localhost:8000/api/admin/seed-demo
 curl -X POST -H "Authorization: Bearer $TOKEN" localhost:8000/api/admin/rerun-demo
 ```
-`scripts/start_bank.sh` is our demo-laptop script (Ollama + backend + ngrok tunnel; needs `NGROK_DOMAIN`).
+Maria's file takes ~1 minute in mock mode on a CPU (~10–20 s with the cloud AI). `scripts/start_bank.sh` is our demo-laptop script (Ollama + backend + ngrok tunnel; needs `NGROK_DOMAIN`).
 
 ### Verify it in 5 minutes
 ```bash
-cd backend && .venv/bin/python -m pytest -q                        # → 275 passed
-cd .. && backend/.venv/bin/python scripts/benchmark_pipeline.py --n 12   # no API key needed (rules + template)
+cd backend && .venv/bin/python -m pytest -q        # → ~265–275 passed (ZK / encryption tests skip without nargo, bb, TenSEAL;
+                                                   #   6 slow OCR tests run with: pytest -m slow)
+cd .. && backend/.venv/bin/python scripts/benchmark_pipeline.py --n 12   # ~20 s, no API key (rules + template)
 ```
-The benchmark prints the same table as above (leaks, honest applicants accused / sent to a human, forgeries caught);
-the expected output for Maria's case is `shared/fixtures/maria_case.json`.
+The benchmark prints one line per file and a JSON summary with Romanian keys (`dosare_cu_scurgeri_spre_cloud` = files leaking to
+the cloud, `cinstiti_acuzati` = honest applicants accused, `cinstiti_trimisi_la_om` = sent to a human, `falsuri_prinse` = forgeries
+caught). "LLM indisponibil" warnings are expected in mock mode. It updates `data/benchmark/pipeline_results.json` — `git checkout data/`
+restores the committed results. The expected output for Maria's case is `shared/fixtures/maria_case.json`.
 Details: [ARCHITECTURE.md](ARCHITECTURE.md) (in Romanian) · ZK: [zk/README.md](zk/README.md).
 
 ## Stack
-Python 3.11 · FastAPI · SQLite · Tesseract · Claude (Haiku/Sonnet/Opus) on AWS Bedrock · Ollama (Qwen) · TenSEAL · Noir/Barretenberg ·
+Python 3.11 · FastAPI · SQLite · Tesseract · Claude (Haiku/Sonnet) on AWS Bedrock · Ollama (Qwen) · TenSEAL · Noir/Barretenberg ·
 React + Vite + TypeScript + Tailwind + TanStack Query + Recharts · Vercel + ngrok.
 
 ## Team
 Samuel (orchestrator, Compliance, Arena, self-learning, ZK) · Narcis (Guard, Detector, local AI, deployment) ·
 Stefan (Clerk, Verifier, homomorphic encryption, ANAF) · Erin (frontend, Detective) · Lorena (test data, benchmark, ZK page, slides).
 
-*Internal team notes (Romanian): [`notes/`](notes/) — plan, pitch, reviews.*
+*`notes/` holds the team's internal working notes in Romanian (plan, pitch, reviews) — not part of the submission.*

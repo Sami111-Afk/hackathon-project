@@ -128,7 +128,6 @@ async def decide(case_id: str, body: DecisionIn):
     await store.save(case)
     bus.publish(case_id, "decision", message=f"{case.decision.decided_by}: {body.action}",
                 data=case.decision.model_dump())
-    # TODO (Samuel, P1): action == "correct" → self-learning propune o regulă
     return {**case.decision.model_dump(), "status": case.status}  # frontend-ul așteaptă Decision
 
 
