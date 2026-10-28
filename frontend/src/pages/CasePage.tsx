@@ -1,6 +1,6 @@
 import { FileDown, RotateCcw } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { AgentBand } from '@/components/AgentBand'
 import { AppNav } from '@/components/AppNav'
 import { DecisionPanel } from '@/components/DecisionPanel'
@@ -10,7 +10,8 @@ import { NetworkGraph } from '@/components/NetworkGraph'
 import { Panel } from '@/components/Panel'
 import { VerdictCard } from '@/components/VerdictCard'
 import { useCaseLive } from '@/hooks/useCaseLive'
-import { getGraph, openReport } from '@/lib/api'
+import { getGraph, listCases, openReport } from '@/lib/api'
+import { isMock } from '@/lib/config'
 import type { ConnectionState } from '@/lib/events'
 import { AGENT_INFO } from '@/lib/labels'
 import { AGENTS, type AgentName, type CaseStatus, type Finding } from '@/lib/types'
@@ -31,8 +32,28 @@ const STATUS: Record<CaseStatus, string> = {
 
 const lei = (n?: number | null) => (n ? `${n.toLocaleString('ro-RO')} lei` : '—')
 
+/** `/cases/case_maria` (linkul din meniu) → cel mai recent dosar al Mariei; fiecare rulare a demo-ului are id nou. */
 export function CasePage() {
   const { caseId = 'case_maria' } = useParams()
+  const [latest, setLatest] = useState<string | null>(null)
+  const alias = caseId === 'case_maria' && !isMock()
+  useEffect(() => {
+    if (!alias) return
+    listCases()
+      .then((cases) => {
+        const maria = cases.filter((c) => c.id.startsWith('case_maria_'))
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))[0]
+        setLatest(maria?.id ?? caseId)
+      })
+      .catch(() => setLatest(caseId))
+  }, [alias, caseId])
+  if (!alias) return <CaseView caseId={caseId} />
+  if (latest === null) return <Shell><p className="p-8 text-lg text-ink-2">Se încarcă dosarul.</p></Shell>
+  if (latest !== caseId) return <Navigate to={`/cases/${latest}`} replace />
+  return <CaseView caseId={caseId} />
+}
+
+function CaseView({ caseId }: { caseId: string }) {
   const [replayKey, setReplayKey] = useState(0)
   const { snapshot, state, dispatch, conn, mock } = useCaseLive(caseId, replayKey)
   const [selected, setSelected] = useState<Finding | null>(null)
