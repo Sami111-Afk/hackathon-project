@@ -24,6 +24,12 @@ RING_CODES = {"FRAUD_RING_SUSPECTED", "SHARED_IBAN"}
 # dar AI-ul n-a putut citi tot → un om verifică (benchmark cu Bedrock: 2/12 cinstiți escaladați doar din asta).
 REVIEW_OVERRIDES = {"OCR_LOW_QUALITY", "MRZ_INVALID", "PII_GATE_BLOCKED"}  # nu acuză pe nimeni; un om se uită
 
+# Poză neclară (OCR_LOW_QUALITY): cifrele de control (MRZ, IBAN, CNP) și sumele pot fi citite greșit, iar riscul se
+# adună din semnale născute din OCR (benchmark --phone: 2/8 cinstiți escaladați). Atunci recomandarea e cel mult
+# „review” (un om se uită oricum), cu excepția semnalelor care nu depind de cifrele citite de pe poză.
+NOT_FROM_OCR = {"COMPANY_INACTIVE", "COMPANY_NOT_FOUND", "PROMPT_INJECTION_SUSPECTED", "FRAUD_RING_SUSPECTED",
+                "SHARED_IBAN"}
+
 ESCALATE_AT = 0.70  # de recalibrat pe benchmark: 0 fals pozitive pe dosarele legitime
 REVIEW_AT = 0.35
 
@@ -51,6 +57,8 @@ def score(results: list[AgentResult]) -> tuple[Verdict, list[Finding]]:
         recommendation = "review"
     else:
         recommendation = "clear"
+    if recommendation == "escalate" and "OCR_LOW_QUALITY" in codes and not codes & NOT_FROM_OCR:
+        recommendation = "review"
 
     forged, ring = bool(codes & FORGERY_CODES), bool(codes & RING_CODES)
     if recommendation == "clear":

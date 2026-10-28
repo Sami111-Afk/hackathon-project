@@ -82,6 +82,10 @@ să apară ca încasare.
   de verificat” (`AMOUNT_UNCERTAIN`), nu acuzație; dacă recitirea confirmă cifra (falsul e tipărit) → acuzația rămâne.
   În benchmark: ambele solduri citite greșit au devenit „de verificat”, toate cele 16 extrase falsificate au rămas prinse.
   Tot omul decide.
+- **Poze de telefon** (benchmark `--phone`, perspectivă, umbre, ±3°): **0 date personale scăpate** pe 85 de dosare, dar
+  extragerea scade mult (brutul corect ~25%) → falsurile de pe poze ajung mai mult la verificare umană decât la
+  escaladare, iar dosarele cinstite cu poză neclară merg la om (`OCR_LOW_QUALITY`), **niciunul acuzat**. Nu spunem
+  „merge la fel pe poze”; spunem „pe poze proaste nu acuzăm pe nimeni pe baza cifrelor citite prost — trimitem la om”.
 - Taxele sunt o **simplificare declarată** (fără tichete, avansuri, popriri; deducerea pe tabel simplificat).
 - Registrul ANAF al demo-ului e simulat pentru firmele inventate; pentru CUI-uri reale interogăm ANAF-ul real.
 
