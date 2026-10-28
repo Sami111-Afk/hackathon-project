@@ -5,7 +5,10 @@ import { caseReducer, initialCaseState } from '@/lib/caseReducer'
 import { isMock } from '@/lib/config'
 import { mariaEvents, replayEvents, subscribeCaseEvents, type ConnectionState } from '@/lib/events'
 import type { Case } from '@/lib/types'
+import { withMockGraph } from '@/lib/mockGraph'
 import mariaCase from '@shared/fixtures/maria_case.json'
+
+const mockEvents = withMockGraph(mariaEvents)
 
 /**
  * Snapshot-ul dosarului (TanStack Query) + evenimentele live (SSE sau replay).
@@ -24,7 +27,7 @@ export function useCaseLive(caseId: string, replayKey = 0) {
   useEffect(() => {
     if (mock) {
       dispatch({ type: 'reset' })
-      return replayEvents(mariaEvents, { onEvent: (event) => dispatch({ type: 'event', event }), onState: setConn })
+      return replayEvents(mockEvents, { onEvent: (event) => dispatch({ type: 'event', event }), onState: setConn })
     }
     if (!snapshot.data) return
     dispatch({ type: 'reset', snapshot: snapshot.data })
