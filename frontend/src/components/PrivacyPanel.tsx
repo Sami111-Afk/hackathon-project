@@ -12,7 +12,7 @@ interface Privacy {
     documents: { doc_id: string; filename: string; encrypted_bytes: number; sample: string }[]
     vault: { labels: string[]; count: number; sample: string | null }
   }
-  ai_saw: { llm_calls: number; with_pii: number; blocked: number; models: string[]; redacted_sample: string | null }
+  ai_saw: { llm_calls: number; local_calls?: number; with_pii: number; blocked: number; models: string[]; redacted_sample: string | null }
   homomorphic: null | {
     he_scheme: string; he_formula: string; he_ms: string; he_ciphertext_kb: string; he_context_kb: string
     he_ciphertext_sample: string; verifier_has_secret_key: boolean
@@ -101,7 +101,9 @@ export function PrivacyPanel({ caseId, ready }: { caseId: string; ready: boolean
         </Card>
 
         <Card icon={<EyeOff className="h-4 w-4" />} title="AI-ul n-a văzut date personale" ok={ai.with_pii === 0}
-          status={`${ai.llm_calls} cereri către AI, ${ai.with_pii} cu date personale`}
+          status={ai.llm_calls > 0 && ai.local_calls === ai.llm_calls
+            ? `${ai.llm_calls} cereri către AI, toate pe calculatorul băncii`
+            : `${ai.llm_calls} cereri către AI, ${ai.with_pii} cu date personale`}
           proof={ai.redacted_sample ? <><div className="text-xs text-ink-3">Textul exact primit de AI:</div><Mono>{ai.redacted_sample}</Mono></> : undefined}>
           AI-ul lucrează pe etichete ca [PERSOANA_1] și [CNP_1]. Chiar păcălit printr-un text ascuns, nu are ce date reale să scape.
           {ai.blocked > 0 && ` Poarta anti-date-personale a blocat ${ai.blocked} cereri.`}

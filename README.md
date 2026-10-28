@@ -1,5 +1,8 @@
 # 🔒 ORB — agenți AI care verifică documentele băncii fără să le citească
 
+> **Echipa: planul de acum până la predare e în [`notes/plan.md`](notes/plan.md)** (cine ce face, termene). Pitch-ul: [`notes/pitch.md`](notes/pitch.md).
+
+
 > Hackathon · Tema **Raiffeisen Bank: Operational Efficiency** — *„Explore how AI agents can reduce repetitive work involving documents, data, and verification.”*
 
 **ORB** este un birou virtual de agenți AI pentru back-office-ul băncii. Agenții citesc documentele dintr-o cerere de credit (buletin, fluturaș, extras, adeverință), le verifică, prind falsurile — inclusiv cele făcute cu AI — și leagă dosarele între ele ca să descopere rețele de fraudă. Omul ia decizia, cu toate dovezile în față.
