@@ -56,7 +56,7 @@ class Paznic:
         if not any(ctx.files.get(d.id) for d in case.documents):
             # dosar redat din fixture (rerun-demo), fără fișiere reale → rezultatul de probă
             return await StubAgent(self.name, self.start_message, delay=1.5).run(case, ctx)
-        secret =settings.arena_hmac_secret if case.source == "arena" else settings.hmac_secret
+        secret = settings.arena_hmac_secret if case.source == "arena" else settings.hmac_secret
         redactor = redact.CaseRedactor(secret=secret)
         findings: list[Finding] = []
         hidden: Counter = Counter()

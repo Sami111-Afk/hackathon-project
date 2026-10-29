@@ -42,7 +42,7 @@ export const VERDICT_LABEL: Record<Verdict['label'], string> = {
   clean: 'No issues',
   suspicious: 'Suspicious',
   forged: 'Forged document',
-  identity_fraud: 'Identity theft',
+  identity_fraud: 'Identity-fraud indicators',
   fraud_ring: 'Fraud ring',
 }
 

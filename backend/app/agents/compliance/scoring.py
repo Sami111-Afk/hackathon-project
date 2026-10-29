@@ -36,7 +36,7 @@ NOT_FROM_OCR = {"COMPANY_INACTIVE", "COMPANY_NOT_FOUND", "PROMPT_INJECTION_SUSPE
 
 NOT_EVIDENCE = REVIEW_OVERRIDES | {"EXTRACTION_UNGROUNDED"}
 
-ESCALATE_AT = 0.70  # de recalibrat pe benchmark: 0 fals pozitive pe dosarele legitime
+ESCALATE_AT = 0.70  # set on the benchmark: no honest file escalated
 REVIEW_AT = 0.35
 
 

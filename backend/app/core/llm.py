@@ -225,8 +225,11 @@ async def chat(task: str, *, prompt: str, system: str = "", case_id: str | None 
                 audit.record(kind="llm", destination="bedrock", case_id=case_id, outcome="fallback_cloud")
                 _gate(prompt + "\n" + full_system, images, images_redacted, case_id, "cloud")
                 mode = "cloud"
-                text, usage = await _dispatch(mode, task, full_system, prompt, images, max_tokens,
-                                              json_mode=json_schema, case_id=case_id)
+                try:
+                    text, usage = await _dispatch(mode, task, full_system, prompt, images, max_tokens,
+                                                  json_mode=json_schema, case_id=case_id)
+                except Exception as exc2:
+                    raise LLMUnavailable(f"{mode}: {type(exc2).__name__}") from exc2
             else:
                 raise LLMUnavailable(f"{mode}: {type(exc).__name__}") from exc
         try:
